@@ -6,6 +6,7 @@
 
 #include "TGraph.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 
 #include <string>
 #include <iostream>
@@ -135,6 +136,16 @@ int main() {
     }
   }
 
+  TLegend L_legend(.7,.6,.9,.9,"");
+  L_legend.SetFillColor(0);
+  L_legend.SetTextSize(0.05);
+  L_legend.AddEntry(L_graphs[0],"Q=1");
+  L_legend.AddEntry(L_graphs[1],"Q=2");
+  L_legend.AddEntry(L_graphs[2],"Q=3");
+  L_legend.AddEntry(L_graphs[3],"Q=4");
+  L_legend.AddEntry(L_graphs[4],"Q=5");
+  leg1.DrawClone("Same");
+
   L_sigma_canvas->Print("L_sigma_x_distribution.pdf");
 
 
@@ -182,6 +193,15 @@ int main() {
     T_graphs[j]->SetMarkerColor(j+1);
     T_graphs[j]->SetTitle("Transverse cross section;x;sigma");
   }
+
+  T_legend.SetFillColor(0);
+  T_legend.SetTextSize(0.05);
+  T_legend.AddEntry(T_graphs[0],"Q=1");
+  T_legend.AddEntry(T_graphs[1],"Q=2");
+  T_legend.AddEntry(T_graphs[2],"Q=3");
+  T_legend.AddEntry(T_graphs[3],"Q=4");
+  T_legend.AddEntry(T_graphs[4],"Q=5");
+  leg1.DrawClone("Same");
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
 
