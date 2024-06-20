@@ -122,6 +122,7 @@ int main() {
     }
 
     auto L_sigma_graph = new TGraph(100, L_x_values, L_sigma_values);
+    L_sigma_graph->SetLineColor(j);
     L_sigma_graph->SetTitle("Longitudinal cross section;x;sigma");
     if (first_cycle) {
       L_sigma_graph->Draw("AC*");
@@ -175,6 +176,7 @@ int main() {
     }
 
     auto T_sigma_graph = new TGraph(100, T_x_values, T_sigma_values);
+    T_sigma_graph->SetLineColor(j);
     T_sigma_graph->SetTitle("Transverse cross section;x;sigma");
     if (first_cycle) {
       T_sigma_graph->Draw("AC*");
