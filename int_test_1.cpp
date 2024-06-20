@@ -81,7 +81,7 @@ int main() {
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
-  TGraph* L_grapsh[5];
+  TGraph* L_graphs[5];
   for (int j=0; j<5; j++) {
     Q = 1 + j;
 
@@ -187,9 +187,9 @@ int main() {
 
   for (int j=0; j<5; j++) {
     if (j==0) {
-      T_graphs[5-j]->Draw("AC*");
+      T_graphs[4-j]->Draw("AC*");
     } else {
-      T_graphs[5-j]->Draw("C*");
+      T_graphs[4-j]->Draw("C*");
     }
   }
 
