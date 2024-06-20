@@ -5,6 +5,7 @@
 #include <gsl/gsl_sf_bessel.h>
 
 #include "TGraph.h"
+#include "TCanvas.h"
 
 #include <string>
 #include <iostream>
@@ -21,8 +22,8 @@ const double Q_0 = sqrt(0.15);
 const double x_0 = 0.000041;
 const double lambda_star = 0.288;
 
-double Q = 1;
-double x = 1;
+double Q = 5;
+double x;
 
 double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
 
@@ -82,7 +83,7 @@ int main() {
   double x_values[100], L_sigma_values[100];
   for (int i=0; i<100; i++) {
     cout << i << endl;
-    x = i*0.1;
+    x = (i+1)*0.001;
     x_values[i] = x;
 
     gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
@@ -108,13 +109,20 @@ int main() {
       }
     }
     L_sigma_values[i] = res;
+    cout << res << endl;
+
+    gsl_monte_vegas_free(L_s);
   }
 
-  auto L_sigma_graph = new TGraph(100, x_values, L_sigma_values);
-  g->SetTitle("Longitudinal cross section;x;sigma");
-  g->Draw("AC*");
+  TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
 
-  gsl_monte_vegas_free(L_s);
+  auto L_sigma_graph = new TGraph(100, x_values, L_sigma_values);
+  L_sigma_graph->SetTitle("Longitudinal cross section;x;sigma");
+  L_sigma_graph->Draw("AC*");
+
+  L_sigma_canvas->Print("L_sigma_x_distribution.pdf");
+
+  return 0;
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
