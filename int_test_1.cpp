@@ -84,14 +84,14 @@ int main() {
 
   TGraph* L_graphs[5];
   for (int j=0; j<5; j++) {
-    Q = 1 + j;
+    Q = sqrt(1 + j);
 
     double L_x_values[100], L_sigma_values[100];
     for (int i=0; i<100; i++) {
       x = (i+1)*0.001;
       L_x_values[i] = x;
 
-      cout << "L, Q=" << Q << ", x=" << x << ", res: " << res << endl;
+      cout << "L, Q²=" << Q*Q << ", x=" << x << ", res: " << res << endl;
 
       gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
@@ -123,7 +123,7 @@ int main() {
     L_graphs[j] = new TGraph(100, L_x_values, L_sigma_values);
     L_graphs[j]->SetLineColor(j+1);
     L_graphs[j]->SetMarkerColor(j+1);
-    L_graphs[j]->SetTitle("Longitudinal cross section;x;sigma");
+    L_graphs[j]->SetTitle("Longitudinal cross section;x (GeV);cross section (mb)");
   }
 
   TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
@@ -139,12 +139,13 @@ int main() {
   TLegend L_legend(.7,.6,.9,.9,"");
   L_legend.SetFillColor(0);
   L_legend.SetTextSize(0.05);
-  L_legend.AddEntry(L_graphs[0],"Q=1");
-  L_legend.AddEntry(L_graphs[1],"Q=2");
-  L_legend.AddEntry(L_graphs[2],"Q=3");
-  L_legend.AddEntry(L_graphs[3],"Q=4");
-  L_legend.AddEntry(L_graphs[4],"Q=5");
-  leg1.DrawClone("Same");
+
+  L_legend.AddEntry(L_graphs[0],"Q^{2}=1");
+  L_legend.AddEntry(L_graphs[1],"Q^{2}=2");
+  L_legend.AddEntry(L_graphs[2],"Q^{2}=3");
+  L_legend.AddEntry(L_graphs[3],"Q^{2}=4");
+  L_legend.AddEntry(L_graphs[4],"Q^{2}=5");
+  L_legend.DrawClone("Same");
 
   L_sigma_canvas->Print("L_sigma_x_distribution.pdf");
 
@@ -152,14 +153,14 @@ int main() {
   TGraph* T_graphs[5];
 
   for (int j=0; j<5; j++) {
-    Q = 1 + j;
+    Q = sqrt(1 + j);
 
     double T_x_values[100], T_sigma_values[100];
     for (int i=0; i<100; i++) {
       x = (i+1)*0.001;
       T_x_values[i] = x;
 
-      cout << "T, Q=" << Q << ", x=" << x << ", res: " << res << endl;
+      cout << "T, Q²=" << Q*Q << ", x=" << x << ", res: " << res << endl;
 
       gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
@@ -191,17 +192,8 @@ int main() {
     T_graphs[j] = new TGraph(100, T_x_values, T_sigma_values);
     T_graphs[j]->SetLineColor(j+1);
     T_graphs[j]->SetMarkerColor(j+1);
-    T_graphs[j]->SetTitle("Transverse cross section;x;sigma");
+    T_graphs[j]->SetTitle("Transverse cross section;x (GeV);cross section (mb)");
   }
-
-  T_legend.SetFillColor(0);
-  T_legend.SetTextSize(0.05);
-  T_legend.AddEntry(T_graphs[0],"Q=1");
-  T_legend.AddEntry(T_graphs[1],"Q=2");
-  T_legend.AddEntry(T_graphs[2],"Q=3");
-  T_legend.AddEntry(T_graphs[3],"Q=4");
-  T_legend.AddEntry(T_graphs[4],"Q=5");
-  leg1.DrawClone("Same");
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
 
@@ -212,6 +204,16 @@ int main() {
       T_graphs[4-j]->Draw("C*");
     }
   }
+
+  TLegend T_legend(.7,.6,.9,.9,"");
+  T_legend.SetFillColor(0);
+  T_legend.SetTextSize(0.05);
+  T_legend.AddEntry(T_graphs[0],"Q^{2}=1");
+  T_legend.AddEntry(T_graphs[1],"Q^{2}=2");
+  T_legend.AddEntry(T_graphs[2],"Q^{2}=3");
+  T_legend.AddEntry(T_graphs[3],"Q^{2}=4");
+  T_legend.AddEntry(T_graphs[4],"Q^{2}=5");
+  T_legend.DrawClone("Same");
 
   T_sigma_canvas->Print("T_sigma_x_distribution.pdf");
 
