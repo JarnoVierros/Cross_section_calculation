@@ -12,17 +12,17 @@
 using namespace std;
 
 
-const double alpha_em = 1;
+const double alpha_em = 1/137;
 const int N_c = 3;
 const double e_f = 2.0/3;
 const double m = 1.27; //GeV
 
-const double sigma_0 = 29; //mb
-const double Q_0 = sqrt(0.15);
+const double sigma_0 = 29.12; //mb
+const double Q_0 = 1; //GeV
 const double x_0 = 0.000041;
 const double lambda_star = 0.288;
 
-double Q = 5;
+double Q;
 double x;
 
 double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
@@ -80,87 +80,97 @@ int main() {
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
-  double L_x_values[100], L_sigma_values[100];
-  for (int i=0; i<100; i++) {
-    cout << i << endl;
-    x = (i+1)*0.001;
-    L_x_values[i] = x;
+  TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
 
-    gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
+  for (int j=0; j<5; j++) {
+    Q = 1 + j;
 
-    gsl_monte_vegas_integrate(&L_G, xl, xu, dim, 10000, rng, L_s, &res, &err);
+    double L_x_values[100], L_sigma_values[100];
+    for (int i=0; i<100; i++) {
+      cout << i << endl;
+      x = (i+1)*0.001;
+      L_x_values[i] = x;
 
-    if (print) {
-      cout << "L warmup" << endl;
-      cout << "res: " << res << endl;
-      cout << "err: " << err << endl;
-      cout << "chisq: " << gsl_monte_vegas_chisq(L_s) << endl;
-      cout << endl;
-    }
+      gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
-    for (int i=0; i<3; i++) {
-      gsl_monte_vegas_integrate(&L_G, xl, xu, dim, 100000, rng, L_s, &res, &err);
+      gsl_monte_vegas_integrate(&L_G, xl, xu, dim, 10000, rng, L_s, &res, &err);
 
       if (print) {
+        cout << "L warmup" << endl;
         cout << "res: " << res << endl;
         cout << "err: " << err << endl;
         cout << "chisq: " << gsl_monte_vegas_chisq(L_s) << endl;
         cout << endl;
       }
+
+      for (int i=0; i<3; i++) {
+        gsl_monte_vegas_integrate(&L_G, xl, xu, dim, 100000, rng, L_s, &res, &err);
+
+        if (print) {
+          cout << "res: " << res << endl;
+          cout << "err: " << err << endl;
+          cout << "chisq: " << gsl_monte_vegas_chisq(L_s) << endl;
+          cout << endl;
+        }
+      }
+      L_sigma_values[i] = res;
+      cout << res << endl;
+
+      gsl_monte_vegas_free(L_s);
     }
-    L_sigma_values[i] = res;
-    cout << res << endl;
 
-    gsl_monte_vegas_free(L_s);
+    auto L_sigma_graph = new TGraph(100, L_x_values, L_sigma_values);
+    L_sigma_graph->SetTitle("Longitudinal cross section;x;sigma");
+    L_sigma_graph->Draw("AC*");
+
   }
-
-  TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
-
-  auto L_sigma_graph = new TGraph(100, L_x_values, L_sigma_values);
-  L_sigma_graph->SetTitle("Longitudinal cross section;x;sigma");
-  L_sigma_graph->Draw("AC*");
 
   L_sigma_canvas->Print("L_sigma_x_distribution.pdf");
 
-  double T_x_values[100], T_sigma_values[100];
-  for (int i=0; i<100; i++) {
-    cout << i << endl;
-    x = (i+1)*0.001;
-    T_x_values[i] = x;
 
-    gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+  TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
 
-    gsl_monte_vegas_integrate(&T_G, xl, xu, dim, 10000, rng, T_s, &res, &err);
+  for (int j=0; j<5, j++) {
 
-    if (print) {
-      cout << "T warmup" << endl;
-      cout << "res: " << res << endl;
-      cout << "err: " << err << endl;
-      cout << "chisq: " << gsl_monte_vegas_chisq(T_s) << endl;
-      cout << endl;
-    }
+    double T_x_values[100], T_sigma_values[100];
+    for (int i=0; i<100; i++) {
+      cout << i << endl;
+      x = (i+1)*0.001;
+      T_x_values[i] = x;
 
-    for (int i=0; i<3; i++) {
-      gsl_monte_vegas_integrate(&T_G, xl, xu, dim, 100000, rng, T_s, &res, &err);
+      gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+
+      gsl_monte_vegas_integrate(&T_G, xl, xu, dim, 10000, rng, T_s, &res, &err);
 
       if (print) {
+        cout << "T warmup" << endl;
         cout << "res: " << res << endl;
         cout << "err: " << err << endl;
         cout << "chisq: " << gsl_monte_vegas_chisq(T_s) << endl;
         cout << endl;
       }
+
+      for (int i=0; i<3; i++) {
+        gsl_monte_vegas_integrate(&T_G, xl, xu, dim, 100000, rng, T_s, &res, &err);
+
+        if (print) {
+          cout << "res: " << res << endl;
+          cout << "err: " << err << endl;
+          cout << "chisq: " << gsl_monte_vegas_chisq(T_s) << endl;
+          cout << endl;
+        }
+      }
+      T_sigma_values[i] = res;
+      cout << res << endl;
+
+      gsl_monte_vegas_free(T_s);
     }
-    T_sigma_values[i] = res;
-    cout << res << endl;
 
-    gsl_monte_vegas_free(T_s);
+    auto T_sigma_graph = new TGraph(100, T_x_values, T_sigma_values);
+    T_sigma_graph->SetTitle("Transverse cross section;x;sigma");
+    T_sigma_graph->Draw("AC*");
+
   }
-
-  TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
-
-  auto T_sigma_graph = new TGraph(100, T_x_values, T_sigma_values);
-  T_sigma_graph->SetTitle("Transverse cross section;x;sigma");
-  T_sigma_graph->Draw("AC*");
 
   T_sigma_canvas->Print("T_sigma_x_distribution.pdf");
 
