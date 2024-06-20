@@ -32,13 +32,13 @@ double dipole_amplitude(double r) {
   return sigma_0*(1 - exp(-1*gsl_pow_2((Q_0*r)/(2*pow(x/x_0, lambda_star/2)))));
 }
 
-double integrand(double r_x, double r_y, double z) {
+double L_integrand(double r_x, double r_y, double z) {
   double r = sqrt(r_x*r_x + r_y*r_y);
   return z*z*(1-z)*(1-z)*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z)*r))*dipole_amplitude(r);
 }
 
 double g(double *k, size_t dim, void *params) {
-  return normalization*integrand(k[0], k[1], k[2]);
+  return normalization*L_integrand(k[0], k[1], k[2]);
 }
 
 int main() {
@@ -50,12 +50,12 @@ int main() {
   double xu[3] = {100, 100, 1};
 
   cout << "normalization: " << normalization << endl;
-  cout << "integrand: " << integrand(1, 1, 0.5) << endl;
+  cout << "L_integrand: " << L_integrand(-100, -100, 0.5) << endl;
 
   const gsl_rng_type *T;
   gsl_rng *r;
 
-  gsl_monte_function G = { &g, dim, 0 };
+  gsl_monte_function G = {&g, dim, 0};
 
   gsl_rng_env_setup ();
 
