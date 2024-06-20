@@ -81,19 +81,19 @@ int main() {
   cout << "L warmup" << endl;
   cout << "res: " << res << endl;
   cout << "err: " << err << endl;
-  cout << "chisq: " << gsl_monte_vegas_chisq(s) << endl;
+  cout << "chisq: " << gsl_monte_vegas_chisq(L_s) << endl;
   cout << endl;
 
   for (int i=0; i<3; i++) {
-    gsl_monte_vegas_integrate (&G, xl, xu, dim, 100000, rng, L_s, &res, &err);
+    gsl_monte_vegas_integrate (&L_G, xl, xu, dim, 100000, rng, L_s, &res, &err);
 
     cout << "res: " << res << endl;
     cout << "err: " << err << endl;
-    cout << "chisq: " << gsl_monte_vegas_chisq(s) << endl;
+    cout << "chisq: " << gsl_monte_vegas_chisq(L_s) << endl;
     cout << endl;
   }
 
-  gsl_monte_vegas_free(T_s);
+  gsl_monte_vegas_free(L_s);
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
@@ -110,7 +110,7 @@ int main() {
 
     cout << "res: " << res << endl;
     cout << "err: " << err << endl;
-    cout << "chisq: " << gsl_monte_vegas_chisq(s) << endl;
+    cout << "chisq: " << gsl_monte_vegas_chisq(T_s) << endl;
     cout << endl;
   }
 
