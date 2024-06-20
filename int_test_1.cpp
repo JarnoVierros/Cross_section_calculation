@@ -83,7 +83,6 @@ int main() {
 
   TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
 
-  bool first_cycle = true;
   for (int j=0; j<5; j++) {
     Q = 1 + j;
 
@@ -122,14 +121,14 @@ int main() {
     }
 
     auto L_sigma_graph = new TGraph(100, L_x_values, L_sigma_values);
-    L_sigma_graph->SetLineColor(j);
+    L_sigma_graph->SetLineColor(j+1);
+    L_sigma_graph->SetMarkerColor(j+1);
     L_sigma_graph->SetTitle("Longitudinal cross section;x;sigma");
-    if (first_cycle) {
+    if (j==0) {
       L_sigma_graph->Draw("AC*");
     } else {
       L_sigma_graph->Draw("C*");
     }
-    first_cycle = false;
 
   }
 
@@ -138,8 +137,8 @@ int main() {
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
 
-  first_cycle = true;
   for (int j=0; j<5; j++) {
+    Q = 1 + j;
 
     double T_x_values[100], T_sigma_values[100];
     for (int i=0; i<100; i++) {
@@ -176,15 +175,14 @@ int main() {
     }
 
     auto T_sigma_graph = new TGraph(100, T_x_values, T_sigma_values);
-    T_sigma_graph->SetLineColor(j);
+    T_sigma_graph->SetLineColor(j+1);
+    T_sigma_graph->SetMarkerColor(j+1);
     T_sigma_graph->SetTitle("Transverse cross section;x;sigma");
-    if (first_cycle) {
+    if (j==0) {
       T_sigma_graph->Draw("AC*");
     } else {
       T_sigma_graph->Draw("C*");
     }
-    first_cycle = false;
-
   }
 
   T_sigma_canvas->Print("T_sigma_x_distribution.pdf");
