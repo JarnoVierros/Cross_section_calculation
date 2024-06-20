@@ -81,8 +81,7 @@ int main() {
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
-  TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
-
+  TGraph* L_grapsh[5];
   for (int j=0; j<5; j++) {
     Q = 1 + j;
 
@@ -120,22 +119,26 @@ int main() {
       gsl_monte_vegas_free(L_s);
     }
 
-    auto L_sigma_graph = new TGraph(100, L_x_values, L_sigma_values);
-    L_sigma_graph->SetLineColor(j+1);
-    L_sigma_graph->SetMarkerColor(j+1);
-    L_sigma_graph->SetTitle("Longitudinal cross section;x;sigma");
-    if (j==0) {
-      L_sigma_graph->Draw("AC*");
-    } else {
-      L_sigma_graph->Draw("C*");
-    }
+    L_graphs[j] = new TGraph(100, L_x_values, L_sigma_values);
+    L_graphs[j]->SetLineColor(j+1);
+    L_graphs[j]->SetMarkerColor(j+1);
+    L_graphs[j]->SetTitle("Longitudinal cross section;x;sigma");
+  }
 
+  TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
+
+  for (int j=0; j<5; j++) {
+    if (j==0) {
+      L_graphs[j]->Draw("AC*");
+    } else {
+      L_graphs[j]->Draw("C*");
+    }
   }
 
   L_sigma_canvas->Print("L_sigma_x_distribution.pdf");
 
 
-  TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
+  TGraph* T_graphs[5];
 
   for (int j=0; j<5; j++) {
     Q = 1 + j;
@@ -174,14 +177,19 @@ int main() {
       gsl_monte_vegas_free(T_s);
     }
 
-    auto T_sigma_graph = new TGraph(100, T_x_values, T_sigma_values);
-    T_sigma_graph->SetLineColor(j+1);
-    T_sigma_graph->SetMarkerColor(j+1);
-    T_sigma_graph->SetTitle("Transverse cross section;x;sigma");
+    T_graphs[j] = new TGraph(100, T_x_values, T_sigma_values);
+    T_graphs[j]->SetLineColor(j+1);
+    T_graphs[j]->SetMarkerColor(j+1);
+    T_graphs[j]->SetTitle("Transverse cross section;x;sigma");
+  }
+
+  TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
+
+  for (int j=0; j<5; j++) {
     if (j==0) {
-      T_sigma_graph->Draw("AC*");
+      T_graphs[5-j]->Draw("AC*");
     } else {
-      T_sigma_graph->Draw("C*");
+      T_graphs[5-j]->Draw("C*");
     }
   }
 
