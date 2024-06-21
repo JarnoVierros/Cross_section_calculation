@@ -16,43 +16,42 @@ using namespace std;
 const double alpha_em = 1.0/137;
 const int N_c = 3;
 const double e_f = 2.0/3;
-const double m = 1.27; //GeV
+const double m_f = 1.27; //GeV
 
 const double sigma_0 = 29.12; //mb
 const double Q_0 = 1; //GeV
 const double x_0 = 0.000041;
 const double lambda_star = 0.288;
 
-double Q;
-double x;
+const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
 
-double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
-
-double epsilon(double z) {
-  return sqrt(m*m + z*(1-z)*Q*Q);
+double epsilon(double z, double Q2) {
+  return sqrt(m_f*m_f + z*(1-z)*Q2);
 }
 
-double dipole_amplitude(double r) {
+double dipole_amplitude(double r, double x) {
   return sigma_0*(1 - exp(-1*gsl_pow_2((Q_0*r)/(2*pow(x/x_0, lambda_star/2)))));
 }
 
-double L_integrand(double r_x, double r_y, double z) {
+double L_integrand(double r_x, double r_y, double z double Q2, double x) {
   double r = sqrt(r_x*r_x + r_y*r_y);
-  return 4*Q*Q*z*z*(1-z)*(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z)*r))*dipole_amplitude(r);
+  return 4*Q2*z*z*(1-z)*(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, x);
 }
 
-double T_integrand(double r_x, double r_y, double z) {
+double T_integrand(double r_x, double r_y, double z, double Q2, double x) {
   double r = sqrt(r_x*r_x + r_y*r_y);
-  return (m*m*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z)*r)) + gsl_pow_2(epsilon(z))*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z)*r)))*dipole_amplitude(r);
+  return (m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + gsl_pow_2(epsilon(z, Q2))*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
 }
 
-double L_g(double *k, size_t dim, void *params) {
-  return normalization*L_integrand(k[0], k[1], k[2]);
+double L_g(double *k, size_t dim, double *params) {
+  return normalization*L_integrand(k[0], k[1], k[2], params[0], params[1]);
 }
 
 double T_g(double *k, size_t dim, void *params) {
-  return normalization*T_integrand(k[0], k[1], k[2]);
+  return normalization*T_integrand(k[0], k[1], k[2], params[0], params[1]);
 }
+
+struct parameters {double Q2; double x};
 
 int main() {
 
@@ -65,6 +64,8 @@ int main() {
   double xl[3] = {-100, -100, 0};
   double xu[3] = {100, 100, 1};
 
+  struct parameters params = {0, 0};
+
   if (print) {
     cout << "normalization: " << normalization << endl;
     cout << "extreme L_integrand: " << L_integrand(-100, -100, 0.5) << endl;
@@ -74,8 +75,8 @@ int main() {
   const gsl_rng_type *T;
   gsl_rng *rng;
 
-  gsl_monte_function L_G = {&L_g, dim, 0};
-  gsl_monte_function T_G = {&T_g, dim, 0};
+  gsl_monte_function L_G = {&L_g, dim, &params};
+  gsl_monte_function T_G = {&T_g, dim, &params};
 
   gsl_rng_env_setup ();
 
@@ -84,14 +85,14 @@ int main() {
 
   TGraph* L_graphs[5];
   for (int j=0; j<5; j++) {
-    Q = sqrt(1 + j);
+    Q2 = 1 + j;
 
     double L_x_values[100], L_sigma_values[100];
     for (int i=0; i<100; i++) {
       x = (i+1)*0.001;
       L_x_values[i] = x;
 
-      cout << "L, Q²=" << Q*Q << ", x=" << x << ", res: " << res << endl;
+      cout << "L, Q²=" << Q2 << ", x=" << x << ", res: " << res << endl;
 
       gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
@@ -153,14 +154,14 @@ int main() {
   TGraph* T_graphs[5];
 
   for (int j=0; j<5; j++) {
-    Q = sqrt(1 + j);
+    Q2 = 1 + j;
 
     double T_x_values[100], T_sigma_values[100];
     for (int i=0; i<100; i++) {
       x = (i+1)*0.001;
       T_x_values[i] = x;
 
-      cout << "T, Q²=" << Q*Q << ", x=" << x << ", res: " << res << endl;
+      cout << "T, Q²=" << Q2 << ", x=" << x << ", res: " << res << endl;
 
       gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
