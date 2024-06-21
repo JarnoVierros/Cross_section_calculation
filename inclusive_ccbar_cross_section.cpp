@@ -64,7 +64,7 @@ int main() {
 
   const int Q2_values[] = {1, 2, 3, 4, 5};
 
-  const int x_steps = 1000;
+  const int x_steps = 10;//1000
   const double x_start = 1e-5;
   const double x_step = 2e-5;
 
