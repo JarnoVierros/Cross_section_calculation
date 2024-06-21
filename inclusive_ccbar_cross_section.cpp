@@ -33,7 +33,7 @@ double dipole_amplitude(double r, double x) {
   return sigma_0*(1 - exp(-1*gsl_pow_2((Q_0*r)/(2*pow(x/x_0, lambda_star/2)))));
 }
 
-double L_integrand(double r_x, double r_y, double z double Q2, double x) {
+double L_integrand(double r_x, double r_y, double z, double Q2, double x) {
   double r = sqrt(r_x*r_x + r_y*r_y);
   return 4*Q2*z*z*(1-z)*(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, x);
 }
@@ -43,33 +43,45 @@ double T_integrand(double r_x, double r_y, double z, double Q2, double x) {
   return (m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + gsl_pow_2(epsilon(z, Q2))*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
 }
 
-double L_g(double *k, size_t dim, double *params) {
-  return normalization*L_integrand(k[0], k[1], k[2], params[0], params[1]);
+struct parameters {double Q2; double x;};
+
+double L_g(double *k, size_t dim, void * params) {
+  struct parameters *par = (struct parameters *)params;
+  return normalization*L_integrand(k[0], k[1], k[2], par->Q2, par->x);
 }
 
-double T_g(double *k, size_t dim, void *params) {
-  return normalization*T_integrand(k[0], k[1], k[2], params[0], params[1]);
+double T_g(double *k, size_t dim, void * params) {
+  struct parameters *par = (struct parameters *)params;
+  return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
 }
-
-struct parameters {double Q2; double x};
 
 int main() {
 
-  bool print = false;
-  int iterations = 1;
+  const double integration_radius = 100;
+  const int warmup_calls = 10000;
+  const int integration_calls = 100000;
+  const int integration_iterations = 1;
+
+  const int Q2_values[] = {1, 2, 3, 4, 5};
+
+  const int x_steps = 1000;
+  const double x_start = 1e-5;
+  const double x_step = 2e-5;
+
+  const bool print = false;
 
   const int dim = 3;
   double res, err;
 
-  double xl[3] = {-100, -100, 0};
-  double xu[3] = {100, 100, 1};
+  double xl[3] = {-1*integration_radius, -1*integration_radius, 0};
+  double xu[3] = {integration_radius, integration_radius, 1};
 
-  struct parameters params = {0, 0};
+  struct parameters params = {1, 1};
 
   if (print) {
     cout << "normalization: " << normalization << endl;
-    cout << "extreme L_integrand: " << L_integrand(-100, -100, 0.5) << endl;
-    cout << "extreme T_integrand: " << T_integrand(-100, -100, 0.5) << endl;
+    cout << "extreme L_integrand: " << L_integrand(-100, -100, 0.5, params.Q2, params.x) << endl;
+    cout << "extreme T_integrand: " << T_integrand(-100, -100, 0.5, params.Q2, params.x) << endl;
   }
 
   const gsl_rng_type *T;
@@ -83,20 +95,20 @@ int main() {
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
-  TGraph* L_graphs[5];
-  for (int j=0; j<5; j++) {
-    Q2 = 1 + j;
+  TGraph* L_graphs[size(Q2_values)];
+  for (int j=0; j<size(Q2_values); j++) {
+    params.Q2 = Q2_values[j];
 
-    double L_x_values[100], L_sigma_values[100];
-    for (int i=0; i<100; i++) {
-      x = (i+1)*0.001;
-      L_x_values[i] = x;
+    double L_x_values[x_steps], L_sigma_values[x_steps];
+    for (int i=0; i<x_steps; i++) {
+      params.x = x_start + i*x_step;
+      L_x_values[i] = params.x;
 
-      cout << "L, Q²=" << Q2 << ", x=" << x << ", res: " << res << endl;
+      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
 
       gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
-      gsl_monte_vegas_integrate(&L_G, xl, xu, dim, 10000, rng, L_s, &res, &err);
+      gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
 
       if (print) {
         cout << "L warmup" << endl;
@@ -106,8 +118,8 @@ int main() {
         cout << endl;
       }
 
-      for (int i=0; i<iterations; i++) {
-        gsl_monte_vegas_integrate(&L_G, xl, xu, dim, 100000, rng, L_s, &res, &err);
+      for (int i=0; i<integration_iterations; i++) {
+        gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
 
         if (print) {
           cout << "res: " << res << endl;
@@ -121,19 +133,19 @@ int main() {
       gsl_monte_vegas_free(L_s);
     }
 
-    L_graphs[j] = new TGraph(100, L_x_values, L_sigma_values);
+    L_graphs[j] = new TGraph(x_steps, L_x_values, L_sigma_values);
     L_graphs[j]->SetLineColor(j+1);
     L_graphs[j]->SetMarkerColor(j+1);
-    L_graphs[j]->SetTitle("Longitudinal cross section;x (GeV);cross section (mb)");
+    L_graphs[j]->SetTitle("Longitudinal cross section;x ;cross section (mb)");
   }
 
   TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
 
-  for (int j=0; j<5; j++) {
+  for (int j=0; j<size(Q2_values); j++) {
     if (j==0) {
-      L_graphs[j]->Draw("AC*");
+      L_graphs[j]->Draw("AC");
     } else {
-      L_graphs[j]->Draw("C*");
+      L_graphs[j]->Draw("C");
     }
   }
 
@@ -141,31 +153,30 @@ int main() {
   L_legend.SetFillColor(0);
   L_legend.SetTextSize(0.05);
 
-  L_legend.AddEntry(L_graphs[0],"Q^{2}=1");
-  L_legend.AddEntry(L_graphs[1],"Q^{2}=2");
-  L_legend.AddEntry(L_graphs[2],"Q^{2}=3");
-  L_legend.AddEntry(L_graphs[3],"Q^{2}=4");
-  L_legend.AddEntry(L_graphs[4],"Q^{2}=5");
+  for (int j=0; j<size(Q2_values); j++) {
+    TString label = "Q^{2}=" + to_string(Q2_values[j]);
+    L_legend.AddEntry(L_graphs[j], label);
+  }
   L_legend.DrawClone("Same");
 
   L_sigma_canvas->Print("L_sigma_x_distribution.pdf");
 
 
-  TGraph* T_graphs[5];
+  TGraph* T_graphs[size(Q2_values)];
 
-  for (int j=0; j<5; j++) {
-    Q2 = 1 + j;
+  for (int j=0; j<size(Q2_values); j++) {
+    params.Q2 = Q2_values[j];
 
-    double T_x_values[100], T_sigma_values[100];
-    for (int i=0; i<100; i++) {
-      x = (i+1)*0.001;
-      T_x_values[i] = x;
+    double T_x_values[x_steps], T_sigma_values[x_steps];
+    for (int i=0; i<x_steps; i++) {
+      params.x = x_start + i*x_step;
+      T_x_values[i] = params.x;
 
-      cout << "T, Q²=" << Q2 << ", x=" << x << ", res: " << res << endl;
+      cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
 
       gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
-      gsl_monte_vegas_integrate(&T_G, xl, xu, dim, 10000, rng, T_s, &res, &err);
+      gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
 
       if (print) {
         cout << "T warmup" << endl;
@@ -175,8 +186,8 @@ int main() {
         cout << endl;
       }
 
-      for (int i=0; i<iterations; i++) {
-        gsl_monte_vegas_integrate(&T_G, xl, xu, dim, 100000, rng, T_s, &res, &err);
+      for (int i=0; i<integration_iterations; i++) {
+        gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
 
         if (print) {
           cout << "res: " << res << endl;
@@ -190,30 +201,29 @@ int main() {
       gsl_monte_vegas_free(T_s);
     }
 
-    T_graphs[j] = new TGraph(100, T_x_values, T_sigma_values);
+    T_graphs[j] = new TGraph(x_steps, T_x_values, T_sigma_values);
     T_graphs[j]->SetLineColor(j+1);
     T_graphs[j]->SetMarkerColor(j+1);
-    T_graphs[j]->SetTitle("Transverse cross section;x (GeV);cross section (mb)");
+    T_graphs[j]->SetTitle("Transverse cross section;x ;cross section (mb)");
   }
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
 
-  for (int j=0; j<5; j++) {
+  for (int j=0; j<size(Q2_values); j++) {
     if (j==0) {
-      T_graphs[4-j]->Draw("AC*");
+      T_graphs[4-j]->Draw("AC");
     } else {
-      T_graphs[4-j]->Draw("C*");
+      T_graphs[4-j]->Draw("C");
     }
   }
 
   TLegend T_legend(.7,.6,.9,.9,"");
   T_legend.SetFillColor(0);
   T_legend.SetTextSize(0.05);
-  T_legend.AddEntry(T_graphs[0],"Q^{2}=1");
-  T_legend.AddEntry(T_graphs[1],"Q^{2}=2");
-  T_legend.AddEntry(T_graphs[2],"Q^{2}=3");
-  T_legend.AddEntry(T_graphs[3],"Q^{2}=4");
-  T_legend.AddEntry(T_graphs[4],"Q^{2}=5");
+  for (int j=0; j<size(Q2_values); j++) {
+    TString label = "Q^{2}=" + to_string(Q2_values[j]);
+    T_legend.AddEntry(T_graphs[j], label);
+  }
   T_legend.DrawClone("Same");
 
   T_sigma_canvas->Print("T_sigma_x_distribution.pdf");
