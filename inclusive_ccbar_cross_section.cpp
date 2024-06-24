@@ -66,7 +66,7 @@ int main() {
 
   const int Q2_values[] = {1, 2, 3, 4, 5};
 
-  const int x_steps = 10;
+  const int x_steps = 100;
   const double x_start = 1e-5;
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
@@ -120,7 +120,7 @@ int main() {
   }
 
   TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
-  L_graphs->Draw("AC* PMC PLC");
+  L_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
 
@@ -157,11 +157,11 @@ int main() {
     TGraph* subgraph = new TGraph(x_steps, T_x_values, T_sigma_values);
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
-    L_graphs->Add(subgraph);
+    T_graphs->Add(subgraph);
   }
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
-  T_graphs->Draw("AC* PMC PLC");
+  T_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
 
