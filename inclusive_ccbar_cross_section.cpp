@@ -7,6 +7,7 @@
 #include "TGraph.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+#include "TAxis.h"
 
 #include <string>
 #include <iostream>
@@ -96,6 +97,9 @@ int main() {
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
+  bool first_round = true;
+  double y_min, y_max;
+
   TGraph* L_graphs[size(Q2_values)];
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
@@ -110,6 +114,19 @@ int main() {
       gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
       gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+
+      if (first_round) {
+        y_min = res;
+        y_max = res;
+        first_round = false;
+      } else {
+        if (res < y_min) {
+          y_min = res;
+        }
+        if (res > y_max) {
+          y_max = res;
+        }
+      }
 
       if (print) {
         cout << "L warmup" << endl;
@@ -144,6 +161,7 @@ int main() {
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     if (j==0) {
+      L_graphs[size(Q2_values)-1-j]->GetYaxis()->SetLimits(y_min - 0.05*(y_min-y_max), y_max + 0.05*(y_min-y_max));
       L_graphs[size(Q2_values)-1-j]->Draw("AC*");
     } else {
       L_graphs[size(Q2_values)-1-j]->Draw("C*");
@@ -166,6 +184,7 @@ int main() {
 
 
   TGraph* T_graphs[size(Q2_values)];
+  bool first_round = true;
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
@@ -180,6 +199,19 @@ int main() {
       gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
       gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+
+      if (first_round) {
+        y_min = res;
+        y_max = res;
+        first_round = false;
+      } else {
+        if (res < y_min) {
+          y_min = res;
+        }
+        if (res > y_max) {
+          y_max = res;
+        }
+      }
 
       if (print) {
         cout << "T warmup" << endl;
@@ -208,12 +240,14 @@ int main() {
     T_graphs[j]->SetLineColor(j+1);
     T_graphs[j]->SetMarkerColor(j+1);
     T_graphs[j]->SetTitle("Transverse cross section;x ;cross section (mb)");
+    T_graphs[j]->GetYaxis()->SetLimits(y_min - 0.05*(y_min-y_max), y_max + 0.05*(y_min-y_max));
   }
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     if (j==0) {
+      T_graphs[j]->GetYaxis()->SetLimits(y_min - 0.05*(y_min-y_max), y_max + 0.05*(y_min-y_max));
       T_graphs[j]->Draw("AC*");
     } else {
       T_graphs[j]->Draw("C*");
