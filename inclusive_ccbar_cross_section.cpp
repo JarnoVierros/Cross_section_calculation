@@ -55,10 +55,6 @@ double T_g(double *k, size_t dim, void * params) {
   return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
 }
 
-double get_x(int step, int steps, double start, double stop) {
-  
-}
-
 int main() {
 
   const double integration_radius = 100;
@@ -69,9 +65,9 @@ int main() {
   const int Q2_values[] = {1, 2, 3, 4, 5};
 
   const int x_steps = 100;
-  const double x_start = 0.1;
-  const double x_stop = 1e-5;
-  const double x_step = log(x_stop - x_start)/x_steps;
+  const double x_start = 1e-5;
+  const double x_stop = 0.1;
+  const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
   const bool print = false;
 
@@ -106,7 +102,7 @@ int main() {
 
     double L_x_values[x_steps], L_sigma_values[x_steps];
     for (int i=0; i<x_steps; i++) {
-      params.x = x_start + exp(i*x_step);
+      params.x = pow(10, log10(x_start) + i*x_step);
       L_x_values[i] = params.x;
 
       cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
@@ -176,7 +172,7 @@ int main() {
 
     double T_x_values[x_steps], T_sigma_values[x_steps];
     for (int i=0; i<x_steps; i++) {
-      params.x = x_start + exp(i*x_step);
+      params.x = pow(10, log10(x_start) + i*x_step);
       T_x_values[i] = params.x;
 
       cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
