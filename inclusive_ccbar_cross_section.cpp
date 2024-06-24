@@ -71,8 +71,6 @@ int main() {
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
-  const bool print = false;
-
   const int dim = 3;
   double res, err;
 
@@ -80,12 +78,6 @@ int main() {
   double xu[3] = {integration_radius, integration_radius, 1};
 
   struct parameters params = {1, 1};
-
-  if (print) {
-    cout << "normalization: " << normalization << endl;
-    cout << "extreme L_integrand: " << L_integrand(-100, -100, 0.5, params.Q2, params.x) << endl;
-    cout << "extreme T_integrand: " << T_integrand(-100, -100, 0.5, params.Q2, params.x) << endl;
-  }
 
   const gsl_rng_type *T;
   gsl_rng *rng;
@@ -98,8 +90,8 @@ int main() {
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
-  bool first_round = true;
   TMultiGraph* L_graphs = new TMultiGraph();
+  L_graphs->SetTitle("Longitudinal cross section;x;cross section (mb)");
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
     double L_x_values[x_steps], L_sigma_values[x_steps];
@@ -114,23 +106,8 @@ int main() {
 
       gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
 
-      if (print) {
-        cout << "L warmup" << endl;
-        cout << "res: " << res << endl;
-        cout << "err: " << err << endl;
-        cout << "chisq: " << gsl_monte_vegas_chisq(L_s) << endl;
-        cout << endl;
-      }
-
       for (int i=0; i<integration_iterations; i++) {
         gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
-
-        if (print) {
-          cout << "res: " << res << endl;
-          cout << "err: " << err << endl;
-          cout << "chisq: " << gsl_monte_vegas_chisq(L_s) << endl;
-          cout << endl;
-        }
       }
       L_sigma_values[i] = res;
 
@@ -140,47 +117,20 @@ int main() {
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
     L_graphs->Add(subgraph);
-    /*
-    L_graphs[j] = new TGraph(x_steps, L_x_values, L_sigma_values);
-    L_graphs[j]->SetLineColor(j+1);
-    L_graphs[j]->SetMarkerColor(j+1);
-    L_graphs[j]->SetTitle("Longitudinal cross section;x ;cross section (mb)");
-    */
   }
 
   TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
-  L_graphs->Draw("AC* pmc plc");
-  /*
-  for (long unsigned int j=0; j<size(Q2_values); j++) {
-    if (j==0) {
-      L_graphs[size(Q2_values)-1-j]->GetYaxis()->SetLimits(y_min - 0.05*(y_min-y_max), y_max + 0.05*(y_min-y_max));
-      L_graphs[size(Q2_values)-1-j]->Draw("AC*");
-    } else {
-      L_graphs[size(Q2_values)-1-j]->Draw("C*");
-    }
-  }
-  
-
-  TLegend L_legend(.7,.6,.9,.9,"");
-  L_legend.SetFillColor(0);
-  L_legend.SetTextSize(0.05);
-
-  for (long unsigned int j=0; j<size(Q2_values); j++) {
-    TString label = "Q^{2}=" + to_string(Q2_values[j]);
-    L_legend.AddEntry(L_graphs[j], label);
-  }
-  L_legend.DrawClone("Same");
-  */
+  L_graphs->Draw("AC* PMC PLC");
 
   gPad->SetLogx();
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
   L_sigma_canvas->Print("figures/L_sigma_x_distribution.pdf");
-  /*
+  
 
-  TGraph* T_graphs[size(Q2_values)];
-  first_round = true;
+  TMultiGraph* T_graphs = new TMultiGraph();
+  T_graphs->SetTitle("Transverse cross section;x;cross section (mb)");
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
@@ -196,74 +146,30 @@ int main() {
 
       gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
 
-      if (first_round) {
-        y_min = res;
-        y_max = res;
-        first_round = false;
-      } else {
-        if (res < y_min) {
-          y_min = res;
-        }
-        if (res > y_max) {
-          y_max = res;
-        }
-      }
-
-      if (print) {
-        cout << "T warmup" << endl;
-        cout << "res: " << res << endl;
-        cout << "err: " << err << endl;
-        cout << "chisq: " << gsl_monte_vegas_chisq(T_s) << endl;
-        cout << endl;
-      }
-
       for (int i=0; i<integration_iterations; i++) {
         gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-
-        if (print) {
-          cout << "res: " << res << endl;
-          cout << "err: " << err << endl;
-          cout << "chisq: " << gsl_monte_vegas_chisq(T_s) << endl;
-          cout << endl;
-        }
       }
+
       T_sigma_values[i] = res;
 
       gsl_monte_vegas_free(T_s);
     }
-
-    T_graphs[j] = new TGraph(x_steps, T_x_values, T_sigma_values);
-    T_graphs[j]->SetLineColor(j+1);
-    T_graphs[j]->SetMarkerColor(j+1);
-    T_graphs[j]->SetTitle("Transverse cross section;x ;cross section (mb)");
-    T_graphs[j]->GetYaxis()->SetLimits(y_min - 0.05*(y_min-y_max), y_max + 0.05*(y_min-y_max));
+    TGraph* subgraph = new TGraph(x_steps, T_x_values, T_sigma_values);
+    TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
+    subgraph->SetTitle(subgraph_name);
+    L_graphs->Add(subgraph);
   }
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
-
-  for (long unsigned int j=0; j<size(Q2_values); j++) {
-    if (j==0) {
-      T_graphs[j]->GetYaxis()->SetLimits(y_min - 0.05*(y_min-y_max), y_max + 0.05*(y_min-y_max));
-      T_graphs[j]->Draw("AC*");
-    } else {
-      T_graphs[j]->Draw("C*");
-    }
-  }
-
-  TLegend T_legend(.7,.6,.9,.9,"");
-  T_legend.SetFillColor(0);
-  T_legend.SetTextSize(0.05);
-  for (long unsigned int j=0; j<size(Q2_values); j++) {
-    TString label = "Q^{2}=" + to_string(Q2_values[j]);
-    T_legend.AddEntry(T_graphs[j], label);
-  }
-  T_legend.DrawClone("Same");
+  T_graphs->Draw("AC* PMC PLC");
 
   gPad->SetLogx();
+
+  T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
   T_sigma_canvas->Print("figures/T_sigma_x_distribution.pdf");
 
   gsl_rng_free(rng);
-  */
+  
   return 0;
 }
