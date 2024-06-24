@@ -63,10 +63,8 @@ int main() {
   const int integration_calls = 100000;
   const int integration_iterations = 1;
 
-  const int Q2_values[] = {1, 2, 3, 4, 5};
-
-  const int x_steps = 1;
-  const double x_start = 0.1;
+  const int x_steps = 10;
+  const double x_start = 0.001;
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
@@ -74,7 +72,7 @@ int main() {
   double res, err;
 
   double xl[4] = {-1*integration_radius, -1*integration_radius, 0, 0};
-  double xu[4] = {integration_radius, integration_radius, 1, 100};
+  double xu[4] = {integration_radius, integration_radius, 1, 10000};
 
   struct parameters params = {1};
 
@@ -95,7 +93,7 @@ int main() {
     params.x = pow(10, log10(x_start) + i*x_step);
     L_x_values[i] = params.x;
 
-    cout << "x=" << params.x << ", res: " << res << endl;
+    cout << "x=" << params.x << ", res: " << res << ", integrand at max Q2: " << L_integrand(0.1, 0.1, 0.5, xu[3], params.x) << endl;
 
     gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
@@ -114,7 +112,7 @@ int main() {
   L_sigma_graph->GetYaxis()->SetTitle("#sigma (mb)");
 
   TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
-  L_sigma_graph->Draw("A");
+  L_sigma_graph->Draw("AC*");
 
   gPad->SetLogx();
 
@@ -144,7 +142,7 @@ int main() {
   T_sigma_graph->SetTitle("Transverse cross section integrated over Q^{2}");
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
-  T_sigma_graph->Draw("A");
+  T_sigma_graph->Draw("AC*");
 
   gPad->SetLogx();
 
