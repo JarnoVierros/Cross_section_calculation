@@ -59,6 +59,7 @@ double T_g(double *k, size_t dim, void * params) {
 int main() {
 
   gsl_set_error_handler_off();
+  int status = 0;
 
   const double integration_radius = 100;
   const int warmup_calls = 10000;
@@ -99,11 +100,12 @@ int main() {
 
     gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
-    gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+    status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+    if (status != 0) {throw "gsl error";}
 
     for (int i=0; i<integration_iterations; i++) {
-      int status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
-      cout << "status: " << status << endl;
+      status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
+      if (status != 0) {throw "gsl error";}
     }
     L_sigma_values[i] = res;
 
@@ -131,11 +133,12 @@ int main() {
 
     gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
-    gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+    if (status != 0) {throw "gsl error";}
 
     for (int i=0; i<integration_iterations; i++) {
-      int status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-      cout << "status: " << status << endl;
+      status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+      if (status != 0) {throw "gsl error";}
     }
 
     T_sigma_values[i] = res;
