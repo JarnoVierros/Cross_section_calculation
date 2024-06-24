@@ -86,6 +86,7 @@ int main() {
   gsl_monte_function T_G = {&T_g, dim, &params};
 
   gsl_rng_env_setup ();
+  int status = 0;
 
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
@@ -104,14 +105,17 @@ int main() {
 
       gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
-      gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+      status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+      if (status != 0) {throw "gsl error";}
 
       for (int i=0; i<integration_iterations; i++) {
-        gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
+        status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
+        if (status != 0) {throw "gsl error";}
       }
       L_sigma_values[i] = res;
 
       gsl_monte_vegas_free(L_s);
+      if (status != 0) {throw "gsl error";}
     }
     TGraph* subgraph = new TGraph(x_steps, L_x_values, L_sigma_values);
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
@@ -144,10 +148,12 @@ int main() {
 
       gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
-      gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+      status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+      if (status != 0) {throw "gsl error";}
 
       for (int i=0; i<integration_iterations; i++) {
-        gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+        status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+        if (status != 0) {throw "gsl error";}
       }
 
       T_sigma_values[i] = res;
