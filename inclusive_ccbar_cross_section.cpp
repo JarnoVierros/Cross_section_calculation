@@ -59,6 +59,8 @@ double T_g(double *k, size_t dim, void * params) {
 
 int main() {
 
+  gsl_set_error_handler_off();
+
   const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
@@ -104,7 +106,8 @@ int main() {
 
       gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
-      gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+      int status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+      cout << "status: " << status << endl;
 
       for (int i=0; i<integration_iterations; i++) {
         gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
