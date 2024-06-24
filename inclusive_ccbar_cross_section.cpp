@@ -64,9 +64,9 @@ int main() {
 
   const int Q2_values[] = {1, 2, 3, 4, 5};
 
-  const int x_steps = 10;//1000
-  const double x_start = 1e-5;
-  const double x_step = 2e-5;
+  const int x_steps = 100;
+  const double x_start = 0.01;
+  const double x_step = 0.01;
 
   const bool print = false;
 
@@ -96,7 +96,7 @@ int main() {
   rng = gsl_rng_alloc(T);
 
   TGraph* L_graphs[size(Q2_values)];
-  for (int j=0; j<size(Q2_values); j++) {
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
 
     double L_x_values[x_steps], L_sigma_values[x_steps];
@@ -141,11 +141,11 @@ int main() {
 
   TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
 
-  for (int j=0; j<size(Q2_values); j++) {
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
     if (j==0) {
-      L_graphs[j]->Draw("AC");
+      L_graphs[size(Q2_values)-1-j]->Draw("AC");
     } else {
-      L_graphs[j]->Draw("C");
+      L_graphs[size(Q2_values)-1-j]->Draw("C");
     }
   }
 
@@ -153,18 +153,20 @@ int main() {
   L_legend.SetFillColor(0);
   L_legend.SetTextSize(0.05);
 
-  for (int j=0; j<size(Q2_values); j++) {
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
     TString label = "Q^{2}=" + to_string(Q2_values[j]);
     L_legend.AddEntry(L_graphs[j], label);
   }
   L_legend.DrawClone("Same");
 
-  L_sigma_canvas->Print("L_sigma_x_distribution.pdf");
+  gPad->SetLogx();
+
+  L_sigma_canvas->Print("figures/L_sigma_x_distribution.pdf");
 
 
   TGraph* T_graphs[size(Q2_values)];
 
-  for (int j=0; j<size(Q2_values); j++) {
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
 
     double T_x_values[x_steps], T_sigma_values[x_steps];
@@ -209,24 +211,26 @@ int main() {
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
 
-  for (int j=0; j<size(Q2_values); j++) {
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
     if (j==0) {
-      T_graphs[4-j]->Draw("AC");
+      T_graphs[j]->Draw("AC");
     } else {
-      T_graphs[4-j]->Draw("C");
+      T_graphs[j]->Draw("C");
     }
   }
 
   TLegend T_legend(.7,.6,.9,.9,"");
   T_legend.SetFillColor(0);
   T_legend.SetTextSize(0.05);
-  for (int j=0; j<size(Q2_values); j++) {
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
     TString label = "Q^{2}=" + to_string(Q2_values[j]);
     T_legend.AddEntry(T_graphs[j], label);
   }
   T_legend.DrawClone("Same");
 
-  T_sigma_canvas->Print("T_sigma_x_distribution.pdf");
+  gPad->SetLogx();
+
+  T_sigma_canvas->Print("figures/T_sigma_x_distribution.pdf");
 
   gsl_rng_free(rng);
 
