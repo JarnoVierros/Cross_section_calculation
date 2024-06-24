@@ -8,6 +8,7 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TAxis.h"
+#include "TMultiGraph.h"
 
 #include <string>
 #include <iostream>
@@ -98,14 +99,12 @@ int main() {
   rng = gsl_rng_alloc(T);
 
   bool first_round = true;
-  double y_min, y_max;
-
-  TGraph* L_graphs[size(Q2_values)];
+  TMultiGraph* L_graphs = new TMultiGraph();
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
-
     double L_x_values[x_steps], L_sigma_values[x_steps];
     for (int i=0; i<x_steps; i++) {
+
       params.x = pow(10, log10(x_start) + i*x_step);
       L_x_values[i] = params.x;
 
@@ -114,19 +113,6 @@ int main() {
       gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
       gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
-
-      if (first_round) {
-        y_min = res;
-        y_max = res;
-        first_round = false;
-      } else {
-        if (res < y_min) {
-          y_min = res;
-        }
-        if (res > y_max) {
-          y_max = res;
-        }
-      }
 
       if (print) {
         cout << "L warmup" << endl;
@@ -150,15 +136,19 @@ int main() {
 
       gsl_monte_vegas_free(L_s);
     }
-
+    TGraph* subgraph = new TGraph(x_steps, L_x_values, L_sigma_values);
+    L_graphs->Add(subgraph);
+    /*
     L_graphs[j] = new TGraph(x_steps, L_x_values, L_sigma_values);
     L_graphs[j]->SetLineColor(j+1);
     L_graphs[j]->SetMarkerColor(j+1);
     L_graphs[j]->SetTitle("Longitudinal cross section;x ;cross section (mb)");
+    */
   }
 
   TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
-
+  L_graphs->Draw("a");
+  /*
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     if (j==0) {
       L_graphs[size(Q2_values)-1-j]->GetYaxis()->SetLimits(y_min - 0.05*(y_min-y_max), y_max + 0.05*(y_min-y_max));
@@ -167,6 +157,7 @@ int main() {
       L_graphs[size(Q2_values)-1-j]->Draw("C*");
     }
   }
+  
 
   TLegend L_legend(.7,.6,.9,.9,"");
   L_legend.SetFillColor(0);
@@ -177,14 +168,15 @@ int main() {
     L_legend.AddEntry(L_graphs[j], label);
   }
   L_legend.DrawClone("Same");
+  */
 
   gPad->SetLogx();
 
   L_sigma_canvas->Print("figures/L_sigma_x_distribution.pdf");
-
+  /*
 
   TGraph* T_graphs[size(Q2_values)];
-  bool first_round = true;
+  first_round = true;
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
@@ -268,6 +260,6 @@ int main() {
   T_sigma_canvas->Print("figures/T_sigma_x_distribution.pdf");
 
   gsl_rng_free(rng);
-
+  */
   return 0;
 }
