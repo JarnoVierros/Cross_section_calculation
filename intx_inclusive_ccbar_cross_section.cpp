@@ -61,16 +61,16 @@ int main() {
   gsl_set_error_handler_off();
   int status = 0;
 
-  bool print = true;
+  bool print = false;
 
   const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
   const int integration_iterations = 1;
 
-  const int W_steps = 10;
-  const double W_start = 0.001;
-  const double W_stop = 0.1;
+  const int W_steps = 100;
+  const double W_start = 1e-2;
+  const double W_stop = 1e3;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
 
   const int dim = 4;
@@ -116,7 +116,13 @@ int main() {
         cout << endl;
       }
     }
+    //cout << "res: " << res;
+    if (gsl_isnan(res)) {
+      res = 0;
+      cout << "nan found at W=" << params.W << endl;
+    }
     L_sigma_values[i] = res;
+    //cout << ", recorded: " << L_sigma_values[i] << endl;
 
     gsl_monte_vegas_free(L_s);
   }
