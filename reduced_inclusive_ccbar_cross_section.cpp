@@ -60,6 +60,8 @@ double T_g(double *k, size_t dim, void * params) {
 
 int main() {
 
+  gsl_set_error_handler_off();
+
   const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
@@ -78,24 +80,31 @@ int main() {
     string value = "";
     while(line[i] != ' ') {
       value += line[i];
+      i++;
     }
     Q2_values.push_back(stod(value));
+    i++;
 
     value = "";
     while(line[i] != ' ') {
       value += line[i];
+      i++;
     }
     x_values.push_back(stod(value));
+    i++;
 
     value = "";
     while(line[i] != ' ') {
       value += line[i];
+      i++;
     }
     y_values.push_back(stod(value));
+    i++;
 
     value = "";
     while(line[i] != ' ') {
       value += line[i];
+      i++;
     }
     measured_sigma_values.push_back(stod(value));
     value = "";
@@ -121,7 +130,7 @@ int main() {
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
-  for (int j=0; j<size(Q2_values); j++) {
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
 
     params.Q2 = Q2_values[j];
     params.x = x_values[j];
