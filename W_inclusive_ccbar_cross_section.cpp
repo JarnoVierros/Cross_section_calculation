@@ -59,12 +59,14 @@ double T_g(double *k, size_t dim, void * params) {
 
 int main() {
 
+  gsl_set_error_handler_off();
+
   const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
   const int integration_iterations = 1;
 
-  const int Q2_values[] = {0.01, 0.1, 1, 10, 100};
+  const double Q2_values[] = {0.1, 0.2, 0.4, 0.6, 0.8, 1};
 
   const int W_steps = 100;
   const double W_start = 1;
@@ -128,13 +130,13 @@ int main() {
 
   gPad->SetLogx();
 
-  L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  L_sigma_canvas->BuildLegend(0.15, 0.55, 0.3, 0.9);
 
   L_sigma_canvas->Print("figures/L_sigma_W_distribution.pdf");
   
 
   TMultiGraph* T_graphs = new TMultiGraph();
-  T_graphs->SetTitle("Transverse cross section;W;cross section (mb)");
+  T_graphs->SetTitle("Transverse cross section;W (GeV);cross section (mb)");
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
@@ -171,7 +173,7 @@ int main() {
 
   gPad->SetLogx();
 
-  T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  T_sigma_canvas->BuildLegend(0.15, 0.55, 0.3, 0.9);
 
   T_sigma_canvas->Print("figures/T_sigma_W_distribution.pdf");
 
