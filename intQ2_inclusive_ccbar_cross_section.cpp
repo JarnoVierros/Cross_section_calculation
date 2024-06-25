@@ -61,23 +61,25 @@ int main() {
   gsl_set_error_handler_off();
   int status = 0;
 
-  bool print = true;
+  bool print = false;
 
   const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
-  const int integration_iterations = 1;
+  const int integration_iterations = 3;
 
-  const int x_steps = 10;
+  const int x_steps = 2;
   const double x_start = 0.001;
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
+
+  const double max_Q2 = 1300;
 
   const int dim = 4;
   double res, err;
 
   double xl[4] = {-1*integration_radius, -1*integration_radius, 0, 0};
-  double xu[4] = {integration_radius, integration_radius, 1, 100};
+  double xu[4] = {integration_radius, integration_radius, 1, max_Q2};
 
   struct parameters params = {1};
 
@@ -98,8 +100,6 @@ int main() {
     params.x = pow(10, log10(x_start) + i*x_step);
     L_x_values[i] = params.x;
 
-    cout << "x=" << params.x << ", res: " << res << ", integrand at max Q2: " << L_integrand(0.1, 0.1, 0.5, xu[3], params.x) << endl;
-
     gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
     status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
@@ -109,7 +109,6 @@ int main() {
       status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
       if (status != 0) {throw "gsl error";}
       if (print) {
-        cout << "L warmup" << endl;
         cout << "res: " << res << endl;
         cout << "err: " << err << endl;
         cout << "chisq: " << gsl_monte_vegas_chisq(L_s) << endl;
@@ -117,6 +116,7 @@ int main() {
       }
     }
     L_sigma_values[i] = res;
+    cout << "L, x=" << params.x << ", res: " << res << endl;
 
     gsl_monte_vegas_free(L_s);
   }
@@ -138,8 +138,6 @@ int main() {
     params.x = pow(10, log10(x_start) + i*x_step);
     T_x_values[i] = params.x;
 
-    cout << "x=" << params.x << ", res: " << res << endl;
-
     gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
     status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
@@ -149,7 +147,6 @@ int main() {
       status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
       if (status != 0) {throw "gsl error";}
       if (print) {
-        cout << "L warmup" << endl;
         cout << "res: " << res << endl;
         cout << "err: " << err << endl;
         cout << "chisq: " << gsl_monte_vegas_chisq(T_s) << endl;
@@ -158,6 +155,7 @@ int main() {
     }
 
     T_sigma_values[i] = res;
+    cout << "T, x=" << params.x << ", res: " << res << endl;
 
     gsl_monte_vegas_free(T_s);
   }
