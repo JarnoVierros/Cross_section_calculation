@@ -12,6 +12,7 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 
@@ -45,7 +46,7 @@ double T_integrand(double r_x, double r_y, double z, double Q2, double x) {
   return (m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + gsl_pow_2(epsilon(z, Q2))*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
 }
 
-struct parameters {double Q2; double x; double eta;};
+struct parameters {double Q2; double x; double y;};
 
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
@@ -64,9 +65,41 @@ int main() {
   const int integration_calls = 100000;
   const int integration_iterations = 1;
 
-  double Q2_values[] = {1, 2, 3};
-  double x_values[] = {1, 2, 3};
-  double eta_values[] = {1, 2, 3};
+  vector<double> Q2_values;
+  vector<double> x_values;
+  vector<double> y_values;
+  vector<double> measured_sigma_values;
+
+  ifstream data_file("HERA_data.dat");
+
+  string line;
+  while(getline (data_file, line)) {
+    int i = 0;
+    string value = "";
+    while(line[i] != ' ') {
+      value += line[i];
+    }
+    Q2_values.push_back(stod(value));
+
+    value = "";
+    while(line[i] != ' ') {
+      value += line[i];
+    }
+    x_values.push_back(stod(value));
+
+    value = "";
+    while(line[i] != ' ') {
+      value += line[i];
+    }
+    y_values.push_back(stod(value));
+
+    value = "";
+    while(line[i] != ' ') {
+      value += line[i];
+    }
+    measured_sigma_values.push_back(stod(value));
+    value = "";
+  }
 
   const int dim = 3;
   double res, err;
@@ -124,9 +157,9 @@ int main() {
     double F_L = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_L;
     double F_T = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_T;
     double F_2 = F_L + F_T;
-    double sigma_r = F_2 - eta_values[j]*eta_values[j]/(1+gsl_pow_2(1-eta_values[j]))*F_L;
+    double sigma_r = F_2 - y_values[j]*y_values[j]/(1+gsl_pow_2(1-y_values[j]))*F_L;
 
-    cout << "sigma_r: " << sigma_r << endl;
+    cout << "theory: " << sigma_r << ", experiment: " << measured_sigma_values[j] << ", difference: " << sigma_r-measured_sigma_values[j] << endl;
 
   }
 
