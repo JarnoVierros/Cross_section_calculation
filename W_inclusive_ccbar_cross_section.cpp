@@ -66,7 +66,7 @@ int main() {
   const int integration_calls = 100000;
   const int integration_iterations = 1;
 
-  const double Q2_values[] = {0.1, 0.2, 0.4, 0.6, 0.8, 1};
+  const double Q2_values[] = {1e2, 1e3, 1e4, 1e5, 1e6, 1e7};
 
   const int W_steps = 100;
   const double W_start = 1;
