@@ -26,13 +26,10 @@ const double m_f = 1.27; //GeV
 const double Q_0 = 1; //GeV
 
 const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
-//originals
-//sigma_0=29.12
-//x_0=0.000041
-//lambda_star=0.288
-static double sigma_0 = 2.95851e+01; //mb
-static double x_0 = 1.04141e-04;
-static double lambda_star = 3.60310e-01;
+
+static double sigma_0 = 2.99416e+01; //mb
+static double x_0 = 7.67079e-05;
+static double lambda_star = 3.64361e-01;
 
 double epsilon(double z, double Q2) {
   return sqrt(m_f*m_f + z*(1-z)*Q2);
@@ -71,9 +68,7 @@ struct par_struct
   double y;
   double measured_sigma;
   double relative_measurement_error;
-  double relative_measurement_error;
   double &output;
-  par_struct(double a1, double a2, double a3, double a4, double a5, double &a6) : Q2(a1), x(a2), y(a3), measured_sigma(a4), relative_measurement_error(a5), output(a6) {}
   par_struct(double a1, double a2, double a3, double a4, double a5, double &a6) : Q2(a1), x(a2), y(a3), measured_sigma(a4), relative_measurement_error(a5), output(a6) {}
 };
 
@@ -82,7 +77,6 @@ void integrate_for_delta(par_struct par) {
   double x = par.x;
   double y = par.y;
   double measured_sigma = par.measured_sigma;
-  double relative_measurement_error = par.relative_measurement_error;
   double relative_measurement_error = par.relative_measurement_error;
   double &output = par.output;
 
@@ -157,7 +151,6 @@ static vector<double> x_values;
 static vector<double> y_values;
 static vector<double> measured_sigma_values;
 static vector<double> relative_measurement_errors;
-static vector<double> relative_measurement_errors;
 void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
 
   double chisq = 0;
@@ -169,7 +162,6 @@ void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
   double deltas[size(Q2_values)];
   thread threads[size(Q2_values)];
   for (long unsigned int j=0; j<size(Q2_values); j++) {
-    par_struct par(Q2_values[j], x_values[j], y_values[j], measured_sigma_values[j], relative_measurement_errors[j], deltas[j]);
     par_struct par(Q2_values[j], x_values[j], y_values[j], measured_sigma_values[j], relative_measurement_errors[j], deltas[j]);
     threads[j] = thread(integrate_for_delta, par);
   }
@@ -264,9 +256,10 @@ int main() {
   vstart[0] = sigma_0;
   vstart[1] = x_0;
   vstart[2] = lambda_star;
-  step[0] = 1;
-  step[1] = 0.00001;
-  step[2] = 0.1;
+
+  step[0] = 2.69495e-03;
+  step[1] = 8.78132e-10;
+  step[2] = 2.35894e-06;
   gMinuit->mnparm(0, "a0", vstart[0], step[0], 0,0,ierflg);
   gMinuit->mnparm(1, "a2", vstart[1], step[1], 0,0,ierflg);
   gMinuit->mnparm(2, "a3", vstart[2], step[2], 0,0,ierflg);
@@ -282,14 +275,12 @@ int main() {
   gMinuit->GetParameter(1, val2, err2);
   gMinuit->GetParameter(2, val3, err3);
 
-  double amin, edm, errdef;
-  int nvpar, nparx, icstat;
   gMinuit ->mnstat(amin,edm,errdef,nvpar,nparx,icstat);
 
   cout << "val1: " << val1 << ", err1: " << err1 << endl;
-  cout << "val2: " << val1 << ", err2: " << err1 << endl;
-  cout << "val3: " << val1 << ", err3: " << err1 << endl;
-  cout << "chi2: " << amin << ", ndf: " << size(Q2_values) - 3 << "chi2/ndf: " << amin/(size(Q2_values) - 3) << endl;
+  cout << "val2: " << val2 << ", err2: " << err2 << endl;
+  cout << "val3: " << val3 << ", err3: " << err3 << endl;
+  cout << "chi2: " << amin << ", ndf: " << size(Q2_values) - 3 << ", chi2/ndf: " << amin/(size(Q2_values) - 3) << endl;
 
 
   

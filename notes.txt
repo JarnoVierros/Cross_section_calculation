@@ -1,3 +1,20 @@
 dsigma
 dW
 drapidity of ccbar
+
+best fit:
+sigma_0=2.99416e+01
+x_0=7.67079e-05
+lambda*=3.64361e-01
+error:
+3.82455e-01
+1.07218e-07
+4.66764e-04
+step size:
+2.69453e-03
+5.81603e-10
+2.29054e-06
+
+chi2=209.023
+ndf=49
+chi2/ndf=4.26577
