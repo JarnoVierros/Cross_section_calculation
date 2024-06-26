@@ -240,6 +240,11 @@ int main() {
   TGraph* model_fit = new TGraph(size(Q2_values), measured_x, model_sigma);
   model_fit->Draw("*");
 
+  TLegend* legend = new TLegend(0.7, 0.6, 0.9, 0.9);
+  legend->AddEntry(measurement_data,"Measurement data");
+  legend->AddEntry(model_fit,"Model fit");
+  legend->Draw();
+
   gPad->SetLogx();
 
   comparison_canvas->Print("figures/fit_comparison.pdf");
