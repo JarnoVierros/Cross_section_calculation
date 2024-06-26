@@ -64,7 +64,15 @@ double T_g(double *k, size_t dim, void * params) {
   return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
 }
 
-struct par_struct{double Q2; double x; double y; double measured_sigma; double &output;} par;
+struct par_struct
+{
+  double Q2;
+  double x;
+  double y;
+  double measured_sigma;
+  double &output;
+  par_struct(double a1, double a2, double a3, double a4, double &a5) : Q2(a1), x(a2), y(a3), measured_sigma(a4), output(a5) {}
+};
 
 void integrate_for_delta(par_struct par) {
   double Q2 = par.Q2;
@@ -155,12 +163,7 @@ void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
   double deltas[size(Q2_values)];
   thread threads[size(Q2_values)];
   for (long unsigned int j=0; j<size(Q2_values); j++) {
-    par_struct par;
-    par.Q2 = Q2_values[j];
-    par.x = x_values[j];
-    par.y = y_values[j];
-    par.measured_sigma = measured_sigma_values[j];
-    par.output = deltas[j];
+    par_struct par(Q2_values[j], x_values[j], y_values[j], measured_sigma_values[j], deltas[j]);
     //double par[4] = {Q2_values[j], x_values[j], y_values[j], measured_sigma_values[j], };
     threads[j] = thread(integrate_for_delta, par);
   }
