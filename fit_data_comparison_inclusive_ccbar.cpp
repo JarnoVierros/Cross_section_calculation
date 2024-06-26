@@ -153,6 +153,8 @@ int main() {
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
 
+    cout << "Integrating at Q^2=" << Q2_values[j] << endl;
+
     params.Q2 = Q2_values[j];
     params.x = x_values[j];
 
