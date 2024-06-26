@@ -58,9 +58,9 @@ double T_g(double *k, size_t dim, void * params) {
   return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
 }
 
-bool array_contains(double array[], double element) {
-  for (int i=0; i<sizeof(array); i++) {
-    if (array[i] == element) {
+bool array_contains_similar(int attay_size, double array[], double element) {
+  for (int i=0; i<attay_size; i++) {
+    if (0.97 < abs(array[i]/element) && abs(array[i]/element) < 1.03) {
       return true;
     }
   }
@@ -161,16 +161,33 @@ int main() {
   double measured_x[size(Q2_values)], measured_sigma[size(Q2_values)], measured_x_error[size(Q2_values)], measured_sigma_error[size(Q2_values)], model_sigma[size(Q2_values)];
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
-
+    /*
+    if (x_values[j] != 0.00080) {
+      measured_x[j] = x_values[j];
+      measured_x_error[j] = 0;
+      measured_sigma[j] = 0;
+      measured_sigma_error[j] = 0;
+      model_sigma[j] = 0;
+      continue;
+    }
+    */
     cout << "Integrating at Q^2=" << Q2_values[j] << endl;
 
     params.Q2 = Q2_values[j];
     params.x = x_values[j];
+    int depth = 0;
 
-    while (array_contains(measured_x, measured_x[j])) {
-      measured_x[j] = 1.0/(10-1)*log10(measured_x[j]*10/measured_x[j]);
+    double temp_measured_x = x_values[j];
+    double multiplier = 1;
+    while (array_contains_similar(size(Q2_values), measured_x, temp_measured_x)) {
+      cout << "x=" << temp_measured_x << " already occupied" << endl;
+      multiplier += 0.1;
+      temp_measured_x = x_values[j]*multiplier;
+      cout << "changed to x=" << temp_measured_x << endl;
+      depth++;
+      if (depth>100) {return 1;}
     }
-    measured_x[j] = x_values[j];
+    measured_x[j] = temp_measured_x;
     measured_x_error[j] = 0;
     measured_sigma[j] = measured_sigma_values[j];
     measured_sigma_error[j] = relative_measurement_errors[j]/100*measured_sigma_values[j];
@@ -211,7 +228,7 @@ int main() {
     model_sigma[j] = sigma_r;
 
   }
-
+  cout << size(Q2_values) << endl;
   TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
 
   TGraphErrors* measurement_data = new TGraphErrors(size(Q2_values), measured_x, measured_sigma, measured_x_error, measured_sigma_error);
