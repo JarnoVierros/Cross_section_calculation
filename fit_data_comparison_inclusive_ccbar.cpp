@@ -58,6 +58,15 @@ double T_g(double *k, size_t dim, void * params) {
   return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
 }
 
+bool array_contains(double array[], double element) {
+  for (int i=0; i<sizeof(array); i++) {
+    if (array[i] == element) {
+      return true;
+    }
+  }
+  return false;
+}
+
 int main() {
 
   gsl_set_error_handler_off();
@@ -158,6 +167,9 @@ int main() {
     params.Q2 = Q2_values[j];
     params.x = x_values[j];
 
+    while (array_contains(measured_x, measured_x[j])) {
+      measured_x[j] = 1.0/(10-1)*log10(measured_x[j]*10/measured_x[j]);
+    }
     measured_x[j] = x_values[j];
     measured_x_error[j] = 0;
     measured_sigma[j] = measured_sigma_values[j];
