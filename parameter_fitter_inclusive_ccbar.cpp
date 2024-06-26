@@ -65,6 +65,9 @@ static vector<double> x_values;
 static vector<double> y_values;
 static vector<double> measured_sigma_values;
 void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
+
+  cout << "sigma_0: " << sigma_0 << ", x_0: " << x_0 << ", lambda_star: " << lambda_star << endl;
+
   double chisq = 0;
   double delta;
 
@@ -96,7 +99,7 @@ void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
-  for (int j=0; j<size(Q2_values); j++) {
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
 
     params.Q2 = Q2_values[j];
     params.x = x_values[j];
@@ -143,13 +146,11 @@ void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
 
 int main() {
 
-  const double integration_radius = 100;
-  const int warmup_calls = 10000;
-  const int integration_calls = 100000;
-  const int integration_iterations = 1;
+  const string filename = "HERA_data.dat";
 
-  ifstream data_file("HERA_data.dat");
+  ifstream data_file(filename);
 
+  cout << "Reading: " << filename << endl;
   string line;
   while(getline (data_file, line)) {
     int i = 0;
@@ -178,6 +179,7 @@ int main() {
     measured_sigma_values.push_back(stod(value));
     value = "";
   }
+  cout << "Finished reading file" << endl;
 
   Double_t amin,edm,errdef;
   Int_t nvpar,nparx,icstat;
@@ -188,6 +190,7 @@ int main() {
   static Double_t step[7];
 
   TMinuit* gMinuit = new TMinuit(3);
+  
   gMinuit->SetFCN(data_fit);
 
   arglist[0] = 1;
@@ -206,6 +209,7 @@ int main() {
 
   arglist[0] = 500;
   arglist[1] = 1.;
+  cout << "Starting fitting" << endl;
   gMinuit->mnexcm("MIGRAD", arglist ,2,ierflg);
 
   gMinuit->mnstat(amin,edm,errdef,nvpar,nparx,icstat);

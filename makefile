@@ -4,6 +4,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make intx_inclusive_ccbar_cross_section
 	make W_inclusive_ccbar_cross_section
 	make reduced_inclusive_ccbar_cross_section
+	make parameter_fitter_inclusive_ccbar
 
 inclusive_ccbar_cross_section: inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -24,6 +25,10 @@ W_inclusive_ccbar_cross_section: W_inclusive_ccbar_cross_section.cpp
 reduced_inclusive_ccbar_cross_section: reduced_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c reduced_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
 	g++ reduced_inclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lgsl -lgslcblas -lm -o reduced_inclusive_ccbar_cross_section.exe
+
+parameter_fitter_inclusive_ccbar: parameter_fitter_inclusive_ccbar.cpp
+	g++ -Wall -c parameter_fitter_inclusive_ccbar.cpp $$(root-config --glibs --cflags --libs)
+	g++ parameter_fitter_inclusive_ccbar.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o parameter_fitter_inclusive_ccbar.exe
 
 clean:
 	-rm *.exe
