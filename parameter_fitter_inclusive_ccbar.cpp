@@ -146,6 +146,8 @@ void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
 
 int main() {
 
+  gsl_set_error_handler_off();
+
   const string filename = "HERA_data.dat";
 
   ifstream data_file(filename);
