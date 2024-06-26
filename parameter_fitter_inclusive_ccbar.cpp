@@ -14,6 +14,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <thread>
 using namespace std;
 
 
@@ -25,10 +26,13 @@ const double m_f = 1.27; //GeV
 const double Q_0 = 1; //GeV
 
 const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
-
-static double sigma_0 = 29.12; //mb
-static double x_0 = 0.000041;
-static double lambda_star = 0.288;
+//originals
+//sigma_0=29.12
+//x_0=0.000041
+//lambda_star=0.288
+static double sigma_0 = 2.91669e+01; //mb
+static double x_0 = 4.42767e-05;
+static double lambda_star = 2.88000e-01;
 
 double epsilon(double z, double Q2) {
   return sqrt(m_f*m_f + z*(1-z)*Q2);
@@ -60,20 +64,14 @@ double T_g(double *k, size_t dim, void * params) {
   return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
 }
 
-static vector<double> Q2_values;
-static vector<double> x_values;
-static vector<double> y_values;
-static vector<double> measured_sigma_values;
-void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
+struct par_struct{double Q2; double x; double y; double measured_sigma; double &output;} par;
 
-  cout << "sigma_0: " << sigma_0 << ", x_0: " << x_0 << ", lambda_star: " << lambda_star << endl;
-
-  double chisq = 0;
-  double delta;
-
-  sigma_0 = par[0];
-  x_0 = par[1];
-  lambda_star = par[2];
+void integrate_for_delta(par_struct par) {
+  double Q2 = par.Q2;
+  double x = par.x;
+  double y = par.y;
+  double measured_sigma = par.measured_sigma;
+  double &output = par.output;
 
   const int dim = 3;
   const double integration_radius = 100;
@@ -99,49 +97,83 @@ void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
-  for (long unsigned int j=0; j<size(Q2_values); j++) {
+  params.Q2 = Q2;
+  params.x = x;
 
-    params.Q2 = Q2_values[j];
-    params.x = x_values[j];
+  gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
-    gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+  if (status != 0) {throw "gsl error";}
 
-    status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+  for (int i=0; i<integration_iterations; i++) {
+    status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
     if (status != 0) {throw "gsl error";}
-
-    for (int i=0; i<integration_iterations; i++) {
-      status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
-      if (status != 0) {throw "gsl error";}
-    }
-    
-    double sigma_L = res;
-
-    gsl_monte_vegas_free(L_s);
-
-    gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
-
-    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
-    if (status != 0) {throw "gsl error";}
-
-    for (int i=0; i<integration_iterations; i++) {
-      status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-      if (status != 0) {throw "gsl error";}
-    }
-
-    double sigma_T = res;
-
-    gsl_monte_vegas_free(T_s);
-
-    double F_L = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_L;
-    double F_T = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_T;
-    double F_2 = F_L + F_T;
-    double sigma_r = F_2 - y_values[j]*y_values[j]/(1+gsl_pow_2(1-y_values[j]))*F_L;
+  }
   
-    delta = (sigma_r - measured_sigma_values[j])/1; //put error in denominator
+  double sigma_L = res;
+
+  gsl_monte_vegas_free(L_s);
+
+  gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+
+  status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  if (status != 0) {throw "gsl error";}
+
+  for (int i=0; i<integration_iterations; i++) {
+    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+    if (status != 0) {throw "gsl error";}
+  }
+
+  double sigma_T = res;
+
+  gsl_monte_vegas_free(T_s);
+  gsl_rng_free(rng);
+
+  double F_L = Q2/(4*M_PI*M_PI*alpha_em)*sigma_L;
+  double F_T = Q2/(4*M_PI*M_PI*alpha_em)*sigma_T;
+  double F_2 = F_L + F_T;
+  double sigma_r = F_2 - y*y/(1+gsl_pow_2(1-y))*F_L;
+
+  double delta = (sigma_r - measured_sigma)/1; //put error in denominator
+
+  output = delta;
+}
+
+static vector<double> Q2_values;
+static vector<double> x_values;
+static vector<double> y_values;
+static vector<double> measured_sigma_values;
+void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
+
+  double chisq = 0;
+  double delta;
+
+  sigma_0 = par[0];
+  x_0 = par[1];
+  lambda_star = par[2];
+
+  double deltas[size(Q2_values)];
+  thread threads[size(Q2_values)];
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
+    par_struct par;
+    par.Q2 = Q2_values[j];
+    par.x = x_values[j];
+    par.y = y_values[j];
+    par.measured_sigma = measured_sigma_values[j];
+    par.output = deltas[j];
+    //double par[4] = {Q2_values[j], x_values[j], y_values[j], measured_sigma_values[j], };
+    threads[j] = thread(integrate_for_delta, par);
+  }
+
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
+    threads[j].join();
+    double delta = deltas[j];
     chisq += delta*delta;
   }
+
   f = chisq;
-  gsl_rng_free(rng);
+  
+  cout << "sigma_0: " << sigma_0 << ", x_0: " << x_0 << ", lambda_star: " << lambda_star << ", chisq: " << chisq << endl;
 }
 
 int main() {
