@@ -8,7 +8,7 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TAxis.h"
-#include "TMultiGraph.h"
+#include "TGraphErrors.h"
 
 #include <string>
 #include <iostream>
@@ -149,10 +149,17 @@ int main() {
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
+  double measured_x[size(Q2_values)], measured_sigma[size(Q2_values)], measured_x_error[size(Q2_values)], measured_sigma_error[size(Q2_values)], model_sigma[size(Q2_values)];
+
   for (long unsigned int j=0; j<size(Q2_values); j++) {
 
     params.Q2 = Q2_values[j];
     params.x = x_values[j];
+
+    measured_x[j] = x_values[j];
+    measured_x_error[j] = 0;
+    measured_sigma[j] = measured_sigma_values[j];
+    measured_sigma_error[j] = relative_measurement_errors[j]/100*measured_sigma_values[j];
 
     gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
@@ -187,9 +194,24 @@ int main() {
     double F_2 = F_L + F_T;
     double sigma_r = F_2 - y_values[j]*y_values[j]/(1+gsl_pow_2(1-y_values[j]))*F_L;
 
-    cout << "theory: " << sigma_r << ", experiment: " << measured_sigma_values[j] << ", difference: " << sigma_r-measured_sigma_values[j] << endl;
+    model_sigma[j] = sigma_r;
 
   }
+
+  TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
+
+  TGraphErrors* measurement_data = new TGraphErrors(size(Q2_values), measured_x, measured_sigma, measured_x_error, measured_sigma_error);
+  measurement_data->SetTitle("Reduced cross section fit");
+  measurement_data->Draw("AP");
+  measurement_data->GetXaxis()->SetTitle("x");
+  measurement_data->GetYaxis()->SetTitle("#sigma (mb)");
+
+  TGraph* model_fit = new TGraph(size(Q2_values), measured_x, model_sigma);
+  model_fit->Draw("*");
+
+  gPad->SetLogx();
+
+  comparison_canvas->Print("figures/fit_comparison.pdf");
 
   gsl_rng_free(rng);
   
