@@ -157,24 +157,31 @@ int main() {
     string value = "";
     while(line[i] != ' ') {
       value += line[i];
+      i++;
     }
     Q2_values.push_back(stod(value));
+    i++;
 
     value = "";
     while(line[i] != ' ') {
       value += line[i];
+      i++;
     }
     x_values.push_back(stod(value));
+    i++;
 
     value = "";
     while(line[i] != ' ') {
       value += line[i];
+      i++;
     }
     y_values.push_back(stod(value));
+    i++;
 
     value = "";
     while(line[i] != ' ') {
       value += line[i];
+      i++;
     }
     measured_sigma_values.push_back(stod(value));
     value = "";
