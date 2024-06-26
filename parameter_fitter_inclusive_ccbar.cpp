@@ -22,12 +22,13 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
-const double sigma_0 = 29.12; //mb
 const double Q_0 = 1; //GeV
-const double x_0 = 0.000041;
-const double lambda_star = 0.288;
 
 const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
+
+static double sigma_0 = 29.12; //mb
+static double x_0 = 0.000041;
+static double lambda_star = 0.288;
 
 double epsilon(double z, double Q2) {
   return sqrt(m_f*m_f + z*(1-z)*Q2);
@@ -59,12 +60,23 @@ double T_g(double *k, size_t dim, void * params) {
   return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
 }
 
-
+static vector<double> Q2_values;
+static vector<double> x_values;
+static vector<double> y_values;
+static vector<double> measured_sigma_values;
 void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
   double chisq = 0;
   double delta;
 
+  sigma_0 = par[0];
+  x_0 = par[1];
+  lambda_star = par[2];
+
   const int dim = 3;
+  const double integration_radius = 100;
+  const int warmup_calls = 10000;
+  const int integration_iterations = 1;
+  const int integration_calls = 100000;
   double res, err;
 
   double xl[3] = {-1*integration_radius, -1*integration_radius, 0};
@@ -126,6 +138,7 @@ void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
     chisq += delta*delta;
   }
   f = chisq;
+  gsl_rng_free(rng);
 }
 
 int main() {
@@ -134,11 +147,6 @@ int main() {
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
   const int integration_iterations = 1;
-
-  vector<double> Q2_values;
-  vector<double> x_values;
-  vector<double> y_values;
-  vector<double> measured_sigma_values;
 
   ifstream data_file("HERA_data.dat");
 
@@ -171,10 +179,44 @@ int main() {
     value = "";
   }
 
-  TMinuit* gMinuit = new TMinuit(3);
-  gMinuit0->SetFCN(raw_fcn_gaussian);
+  Double_t amin,edm,errdef;
+  Int_t nvpar,nparx,icstat;
+  Double_t val1,err1,val2,err2,val3,err3;
+  Double_t arglist[10];
+  Int_t ierflg = 0;
+  static Double_t vstart[7];
+  static Double_t step[7];
 
-  gsl_rng_free(rng);
+  TMinuit* gMinuit = new TMinuit(3);
+  gMinuit->SetFCN(data_fit);
+
+  arglist[0] = 1;
+
+  gMinuit->mnexcm("SET ERR", arglist ,1,ierflg);
+
+  vstart[0] = sigma_0;
+  vstart[1] = x_0;
+  vstart[2] = lambda_star;
+  step[0] = 1;
+  step[1] = 0.000001;
+  step[2] = 0.01;
+  gMinuit->mnparm(0, "a0", vstart[0], step[0], 0,0,ierflg);
+  gMinuit->mnparm(1, "a2", vstart[1], step[1], 0,0,ierflg);
+  gMinuit->mnparm(2, "a3", vstart[2], step[2], 0,0,ierflg);
+
+  arglist[0] = 500;
+  arglist[1] = 1.;
+  gMinuit->mnexcm("MIGRAD", arglist ,2,ierflg);
+
+  gMinuit->mnstat(amin,edm,errdef,nvpar,nparx,icstat);
+
+  gMinuit->GetParameter(0, val1, err1);
+  gMinuit->GetParameter(1, val2, err2);
+  gMinuit->GetParameter(2, val3, err3);
+
+  cout << "val1: " << val1 << ", err1: " << err1 << endl;
+  cout << "val2: " << val1 << ", err2: " << err1 << endl;
+  cout << "val3: " << val1 << ", err3: " << err1 << endl;
   
   return 0;
 }
