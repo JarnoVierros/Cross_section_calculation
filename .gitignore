@@ -3,3 +3,4 @@
 .vscode/
 *.pdf
 !archive/*.pdf
+!archive/fit_comparisons/*.pdf
