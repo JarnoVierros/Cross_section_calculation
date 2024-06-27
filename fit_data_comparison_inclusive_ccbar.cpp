@@ -9,10 +9,12 @@
 #include "TLegend.h"
 #include "TAxis.h"
 #include "TGraphErrors.h"
+#include "TMultiGraph.h"
 
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 using namespace std;
 
 
@@ -71,6 +73,8 @@ int main() {
 
   gsl_set_error_handler_off();
 
+  const double Q2_selection = 2000;
+
   const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
@@ -95,6 +99,7 @@ int main() {
       value += line[i];
       i++;
     }
+    if (stod(value) != Q2_selection) {continue;}
     Q2_values.push_back(stod(value));
     i++;
 
@@ -228,17 +233,23 @@ int main() {
     model_sigma[j] = sigma_r;
 
   }
-  cout << size(Q2_values) << endl;
+  cout << "Measurement points: " << size(Q2_values) << endl;
   TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
+
+  TMultiGraph* comparison_graph = new TMultiGraph();
+  stringstream stream;
+  stream << fixed << setprecision(0) << Q2_selection;
+  TString title = "Reduced cross section fit for Q^{2}="+stream.str()+";x;#sigma_{r} (mb)";
+  comparison_graph->SetTitle(title);
 
   TGraphErrors* measurement_data = new TGraphErrors(size(Q2_values), measured_x, measured_sigma, measured_x_error, measured_sigma_error);
   measurement_data->SetTitle("Reduced cross section fit");
-  measurement_data->Draw("AP");
-  measurement_data->GetXaxis()->SetTitle("x");
-  measurement_data->GetYaxis()->SetTitle("#sigma (mb)");
+  comparison_graph->Add(measurement_data, "P");
 
   TGraph* model_fit = new TGraph(size(Q2_values), measured_x, model_sigma);
-  model_fit->Draw("*");
+  comparison_graph->Add(model_fit, "*");
+
+  comparison_graph->Draw("A");
 
   TLegend* legend = new TLegend(0.65, 0.7, 0.9, 0.9);
   legend->AddEntry(measurement_data,"Measurement data");
@@ -248,7 +259,8 @@ int main() {
 
   gPad->SetLogx();
 
-  comparison_canvas->Print("figures/fit_comparison.pdf");
+  TString outfile_name = "figures/fit_comparison_Q2_"+stream.str()+".pdf";
+  comparison_canvas->Print(outfile_name);
 
   gsl_rng_free(rng);
   
