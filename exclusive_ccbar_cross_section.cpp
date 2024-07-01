@@ -25,14 +25,14 @@ const double Q_0 = 1; //GeV
 const double x_0 = 0.000041;
 const double lambda_star = 0.288;
 
-const double normalization = 2*N_c*alpha_em/(2*M_PI*2*M_PI)*e_f*e_f*B_D;
-
-double epsilon(double z, double Q2) {
-  return sqrt(epsilon2(z, Q2));
-}
+const double normalization = 8*N_c*alpha_em/(2*M_PI*2*M_PI)*e_f*e_f*B_D;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
+}
+
+double epsilon(double z, double Q2) {
+  return sqrt(epsilon2(z, Q2));
 }
 
 double dipole_amplitude(double r, double x) {
@@ -40,7 +40,7 @@ double dipole_amplitude(double r, double x) {
 }
 
 double L_core(double r, double x0, double y0, double x1, double y1, double z, double Q2, double x) {
-  return r*gsl_sf_bessel_J0(r/2*sqrt(gsl_pow_2(x0-x1)+gsl_pow_2(y0-y1)))*gsl_sf_bessel_K0(epsilon(x, Q2))*dipole_amplitude(r, x);
+  return r*gsl_sf_bessel_J0(r/2*sqrt(gsl_pow_2(x0-x1)+gsl_pow_2(y0-y1)))*gsl_sf_bessel_K0(epsilon(x, Q2)*r)*dipole_amplitude(r, x);
 }
 
 struct core_parameters {double x0; double y0; double x1; double y1; double z; double Q2; double x;};
@@ -50,11 +50,11 @@ double L_core_g(double *k, size_t dim, void * params) {
   return L_core(k[0], par->x0, par->y0, par->x1, par->y1, par->z, par->Q2, par->x);
 }
 
-double L_integrand(double x0, double y0, double x1, double y1, double z, double Q2, double x) {
+double L_integrand(double x0, double y0, double x1, double y1, double z, double Q2, double x, int seed) {
 
-  const double core_integration_radius = 100;
-  const int core_warmup_calls = 10000;
-  const int core_integration_calls = 100000;
+  const double core_integration_radius = 10;
+  const int core_warmup_calls = 100;
+  const int core_integration_calls = 3000;
   const int core_integration_iterations = 1;
   const int core_dim = 1;
 
@@ -76,6 +76,8 @@ double L_integrand(double x0, double y0, double x1, double y1, double z, double 
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
 
+  //gsl_rng_set(rng, seed);
+
   gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(core_dim);
 
   status = gsl_monte_vegas_integrate(&L_core_G, xl, xu, core_dim, core_warmup_calls, rng, L_s, &core_res, &core_err);
@@ -85,31 +87,49 @@ double L_integrand(double x0, double y0, double x1, double y1, double z, double 
     status = gsl_monte_vegas_integrate(&L_core_G, xl, xu, core_dim, core_integration_calls, rng, L_s, &core_res, &core_err);
     if (status != 0) {throw "gsl error";}
   }
+
+  //cout << x0 << "," << y0 << "," << x1 << "," << y1 << "," << z << " " << "res: " << core_res << ", err: " << core_err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+
   double core_value = core_res;
 
   gsl_monte_vegas_free(L_s);
   gsl_rng_free(rng);
   
-  return exp(-(gsl_pow_2(x0+x1)+gsl_pow_2(y0+y1))*B_D)*gsl_pow_2(core_value);
+  return z*(1-z)*epsilon2(z, Q2)*exp(-(gsl_pow_2(x0+x1)+gsl_pow_2(y0+y1))*B_D)*gsl_pow_2(core_value);
 }
 
 struct parameters {double Q2; double x;};
 
+int integration_index = 0;
 double L_g(double *k, size_t dim, void * params) {
+  if (integration_index%1000==0){
+    cout << integration_index << endl;
+  }
+  integration_index++;
   struct parameters *par = (struct parameters *)params;
-  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], par->Q2, par->x);
+  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], par->Q2, par->x, 0);
 }
 
 int main() {
 
+  gsl_set_error_handler_off();
+
+  if (false) {
+    for (int i=0; i<10; i++) {
+      L_integrand(90, 91, 92, 93, 0.001, 1, 0.001, i+1);
+    }
+    return 0;
+  }
+  
+  
   const double integration_radius = 100;
-  const int warmup_calls = 10000;
-  const int integration_calls = 100000;
+  const int warmup_calls = 100;
+  const int integration_calls = 10000;
   const int integration_iterations = 1;
 
   const int Q2_values[] = {1};
 
-  const int x_steps = 100;
+  const int x_steps = 10;
   const double x_start = 1e-5;
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
@@ -143,8 +163,6 @@ int main() {
       params.x = pow(10, log10(x_start) + i*x_step);
       L_x_values[i] = params.x;
 
-      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
-
       gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
       status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
@@ -154,7 +172,14 @@ int main() {
         status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
         if (status != 0) {throw "gsl error";}
       }
+      if (gsl_isnan(res)) {
+        res = 0;
+        cout << "nan found at x=" << params.x << endl;
+      }
       L_sigma_values[i] = res;
+
+      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+      integration_index = 0;
 
       gsl_monte_vegas_free(L_s);
       if (status != 0) {throw "gsl error";}
