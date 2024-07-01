@@ -99,8 +99,8 @@ struct thread_par_struct
   double Q2;
   double x;
   double &output;
-  double &L_sigma_errors;
-  thread_par_struct(double a1, double a2, double &a3, double &a4) : Q2(a1), x(a2), output(a3), L_sigma_errors(a4) {}
+  double &L_sigma_error;
+  thread_par_struct(double a1, double a2, double &a3, double &a4) : Q2(a1), x(a2), output(a3), L_sigma_error(a4) {}
 };
 
 void integrate_for_sigma(thread_par_struct par) {
@@ -120,6 +120,7 @@ void integrate_for_sigma(thread_par_struct par) {
   params.Q2 = par.Q2;
   params.x = par.x;
   double &output = par.output;
+  double &L_sigma_error = par.L_sigma_error;
 
   const gsl_rng_type *T;
   gsl_rng *rng;
@@ -144,6 +145,7 @@ void integrate_for_sigma(thread_par_struct par) {
     cout << "nan found at x=" << params.x << endl;
   }
   output = res;
+  L_sigma_error = err;
   cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   gsl_monte_vegas_free(L_s);
@@ -161,9 +163,9 @@ int main() {
     return 0;
   }
 
-  const int Q2_values[] = {1};
+  const int Q2_values[] = {1, 3, 5, 8, 10};
 
-  const int x_steps = 5;
+  const int x_steps = 10;
   const double x_start = 1e-5;
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
@@ -198,7 +200,7 @@ int main() {
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  L_sigma_canvas->Print("figures/diff_L_sigma_x_distribution.pdf");
+  L_sigma_canvas->Print("figures/analytical_diff_L_sigma_x_distribution.pdf");
   
   /*
   TMultiGraph* T_graphs = new TMultiGraph();
@@ -241,7 +243,7 @@ int main() {
 
   T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  T_sigma_canvas->Print("figures/T_sigma_x_distribution.pdf");
+  T_sigma_canvas->Print("figures/analytical_T_sigma_x_distribution.pdf");
 
   */
   

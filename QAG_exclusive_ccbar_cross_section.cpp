@@ -69,7 +69,7 @@ double L_integrand(double x0, double y0, double x1, double y1, double z, double 
   if (status != 0) {
     if (status == 18) {
     } else {
-      throw (status);
+      cout<<status<<endl;throw (status);
     }
   }
   /*
@@ -99,15 +99,15 @@ struct thread_par_struct
   double Q2;
   double x;
   double &output;
-  double &L_sigma_errors;
-  thread_par_struct(double a1, double a2, double &a3, double &a4) : Q2(a1), x(a2), output(a3), L_sigma_errors(a4) {}
+  double &L_sigma_error;
+  thread_par_struct(double a1, double a2, double &a3, double &a4) : Q2(a1), x(a2), output(a3), L_sigma_error(a4) {}
 };
 
 void integrate_for_sigma(thread_par_struct par) {
 
   const double integration_radius = 100;
   const int warmup_calls = 10000;
-  const int integration_calls = 100000;
+  const int integration_calls = 1000000;
   const int integration_iterations = 1;
 
   const int dim = 5;
@@ -120,6 +120,7 @@ void integrate_for_sigma(thread_par_struct par) {
   params.Q2 = par.Q2;
   params.x = par.x;
   double &output = par.output;
+  double &L_sigma_error = par.L_sigma_error;
 
   const gsl_rng_type *T;
   gsl_rng *rng;
@@ -134,20 +135,21 @@ void integrate_for_sigma(thread_par_struct par) {
 
   gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
   status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
-  if (status != 0) {throw 101;}
+  if (status != 0) {cout<<status<<endl;throw (status);}
   for (int i=0; i<integration_iterations; i++) {
     status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
-    if (status != 0) {throw 101;}
+    if (status != 0) {cout<<status<<endl;throw (status);}
   }
   if (gsl_isnan(res)) {
     res = 0;
     cout << "nan found at x=" << params.x << endl;
   }
   output = res;
+  L_sigma_error = err;
   cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   gsl_monte_vegas_free(L_s);
-  if (status != 0) {throw 101;}
+  if (status != 0) {cout<<status<<endl;throw (status);}
 }
 
 int main() {
@@ -163,7 +165,7 @@ int main() {
 
   const int Q2_values[] = {1};
 
-  const int x_steps = 5;
+  const int x_steps = 8;
   const double x_start = 1e-5;
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
@@ -195,6 +197,7 @@ int main() {
   L_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
+  gPad->SetLogy();
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
@@ -217,11 +220,11 @@ int main() {
       gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
       status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
-      if (status != 0) {throw 101;}
+      if (status != 0) {cout<<status<<endl;throw (status);}
 
       for (int i=0; i<integration_iterations; i++) {
         status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-        if (status != 0) {throw 101;}
+        if (status != 0) {cout<<status<<endl;throw (status);}
       }
 
       T_sigma_values[i] = res;
