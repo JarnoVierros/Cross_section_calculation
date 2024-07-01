@@ -11,6 +11,7 @@
 #include "TLegend.h"
 #include "TAxis.h"
 #include "TMultiGraph.h"
+#include "TGraphErrors.h"
 
 #include <string>
 #include <iostream>
@@ -98,7 +99,8 @@ struct thread_par_struct
   double Q2;
   double x;
   double &output;
-  thread_par_struct(double a1, double a2, double &a3) : Q2(a1), x(a2), output(a3) {}
+  double &L_sigma_errors;
+  thread_par_struct(double a1, double a2, double &a3, double &a4) : Q2(a1), x(a2), output(a3), L_sigma_errors(a4) {}
 };
 
 void integrate_for_sigma(thread_par_struct par) {
@@ -170,19 +172,20 @@ int main() {
   L_graphs->SetTitle("Longitudinal cross section;x;cross section (GeV^(-2))");
   cout << "Start integration" << endl;
   for (long unsigned int j=0; j<size(Q2_values); j++) {
-    double L_x_values[x_steps], L_sigma_values[x_steps];
+    double L_x_values[x_steps], L_sigma_values[x_steps], L_x_errors[x_steps], L_sigma_errors[x_steps];
     thread threads[x_steps];
     for (int i=0; i<x_steps; i++) {
       double x = pow(10, log10(x_start) + i*x_step);
       L_x_values[i] = x;
-      thread_par_struct par(Q2_values[j], x, L_sigma_values[i]);
+      L_x_errors[i] = 0;
+      thread_par_struct par(Q2_values[j], x, L_sigma_values[i], L_sigma_errors[i]);
       threads[i] = thread(integrate_for_sigma, par);
     }
 
     for (int j=0; j<x_steps; j++) {
       threads[j].join();
     }
-    TGraph* subgraph = new TGraph(x_steps, L_x_values, L_sigma_values);
+    TGraphErrors* subgraph = new TGraphErrors(x_steps, L_x_values, L_sigma_values, L_x_errors, L_sigma_errors);
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
     L_graphs->Add(subgraph);
