@@ -56,21 +56,18 @@ double L_integrand(double x0, double y0, double x1, double y1, double z, double 
   gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
 
   double result, error;
-  double expected = -4.0;
   struct core_parameters params = {x0, y0, x1, y1, z, Q2, x};
 
   gsl_function F;
   F.function = &L_core_g;
   F.params = &params;
 
-  int status = gsl_integration_qags (&F, 0, 10, 0, 0.001, 1000, w, &result, &error);
+  int status = gsl_integration_qags (&F, 0, 10, 0, 0.000001, 1000, w, &result, &error);
   if (status != 0) {throw "gsl error";}
 
-  printf ("result          = % .18f\n", result);
-  printf ("exact result    = % .18f\n", expected);
-  printf ("estimated error = % .18f\n", error);
-  printf ("actual error    = % .18f\n", result - expected);
-  printf ("intervals       = %zu\n", w->size);
+  //printf ("result          = % .18f\n", result);
+  //printf ("estimated error = % .18f\n", error);
+  //printf ("intervals       = %zu\n", w->size);
 
   gsl_integration_workspace_free (w);
 
@@ -97,17 +94,17 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  if (true) {
-    for (int i=0; i<10; i++) {
-      L_integrand(90, 91, 92, 93, 0.001, 1, 0.001, i+1);
+  if (false) {
+    for (int i=0; i<1; i++) {
+      L_integrand(0.1, 0.2, 0.3, 0.4, 0.001, 1, 0.001, i+1);
     }
     return 0;
   }
   
   
   const double integration_radius = 100;
-  const int warmup_calls = 100;
-  const int integration_calls = 10000;
+  const int warmup_calls = 1000;
+  const int integration_calls = 100000;
   const int integration_iterations = 1;
 
   const int Q2_values[] = {1};

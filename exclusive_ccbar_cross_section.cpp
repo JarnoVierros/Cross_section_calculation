@@ -116,15 +116,15 @@ int main() {
 
   if (false) {
     for (int i=0; i<10; i++) {
-      L_integrand(90, 91, 92, 93, 0.001, 1, 0.001, i+1);
+      L_integrand(0.1, 0.2, 0.3, 0.4, 0.001, 1, 0.001, i+1);
     }
     return 0;
   }
   
   
   const double integration_radius = 100;
-  const int warmup_calls = 100;
-  const int integration_calls = 10000;
+  const int warmup_calls = 1000;
+  const int integration_calls = 100000;
   const int integration_iterations = 1;
 
   const int Q2_values[] = {1};
