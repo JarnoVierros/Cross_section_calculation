@@ -5,4 +5,4 @@
 !archive/*.pdf
 !archive/fit_comparisons/*.pdf
 !archive/diffracttive/*.pdf
-.nb
+*.nb
