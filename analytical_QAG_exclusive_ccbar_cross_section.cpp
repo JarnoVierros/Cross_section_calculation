@@ -30,7 +30,7 @@ const double Q_0 = 1; //GeV
 const double x_0 = 0.000041;
 const double lambda_star = 0.288;
 
-const double normalization = M_PI*N_c*alpha_em/(8*2*M_PI*2*M_PI)*e_f*e_f;
+const double normalization = N_c*alpha_em*e_f*e_f*B_D/(2*M_PI);
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -45,7 +45,7 @@ double dipole_amplitude(double r, double x) {
 }
 
 double L_core(double r, double px, double py, double z, double Q2, double x) {
-  return r*gsl_sf_bessel_J0(r/2*sqrt(px+py))*gsl_sf_bessel_K0(epsilon(x, Q2)*r)*dipole_amplitude(r, x);
+  return r*gsl_sf_bessel_J0(r/2*sqrt(px*px+py*py))*gsl_sf_bessel_K0(epsilon(x, Q2)*r)*dipole_amplitude(r, x);
 }
 
 struct core_parameters {double px; double py; double z; double Q2; double x;};
@@ -84,7 +84,7 @@ double L_integrand(double px, double py, double z, double Q2, double x, int seed
   //cout << x0 << "," << y0 << "," << x1 << "," << y1 << "," << z << " " << "res: " << core_res << ", err: " << core_err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   double core_value = result;
-  return z*(1-z)/sqrt(px*py)*epsilon2(z, Q2)*gsl_pow_2(core_value);
+  return 4*z*(1-z)*epsilon2(z, Q2)*gsl_pow_2(core_value);
 }
 
 struct parameters {double Q2; double x;};
@@ -171,11 +171,12 @@ int main() {
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
   TMultiGraph* L_graphs = new TMultiGraph();
-  L_graphs->SetTitle("Longitudinal cross section;x;cross section (GeV^(-2))");
+  L_graphs->SetTitle("Longitudinal cross section;x;cross section (1/GeV^2)");
   cout << "Start integration" << endl;
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     double L_x_values[x_steps], L_sigma_values[x_steps], L_x_errors[x_steps], L_sigma_errors[x_steps];
     thread threads[x_steps];
+
     for (int i=0; i<x_steps; i++) {
       double x = pow(10, log10(x_start) + i*x_step);
       L_x_values[i] = x;
@@ -187,6 +188,7 @@ int main() {
     for (int j=0; j<x_steps; j++) {
       threads[j].join();
     }
+
     TGraphErrors* subgraph = new TGraphErrors(x_steps, L_x_values, L_sigma_values, L_x_errors, L_sigma_errors);
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
