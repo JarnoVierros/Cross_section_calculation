@@ -48,11 +48,29 @@ double L_core(double r, double px, double py, double z, double Q2, double x) {
   return r*gsl_sf_bessel_J0(r/2*sqrt(px*px+py*py))*gsl_sf_bessel_K0(epsilon(x, Q2)*r)*dipole_amplitude(r, x);
 }
 
+double T_core_1(double r, double px, double py, double z, double Q2, double x) {
+  return r*epsilon(z, Q2)*gsl_sf_bessel_J1(r/2*sqrt(px*px+py*py))*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*dipole_amplitude(r, x);
+}
+
+double T_core_2(double r, double px, double py, double z, double Q2, double x) {
+  return r*gsl_sf_bessel_J0(r/2*sqrt(px*px+py*py))*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*dipole_amplitude(r, x);
+}
+
 struct core_parameters {double px; double py; double z; double Q2; double x;};
 
 double L_core_g(double r, void * params) {
   struct core_parameters *par = (struct core_parameters *)params;
   return L_core(r, par->px, par->py, par->z, par->Q2, par->x);
+}
+
+double T_core_1_g(double r, void * params) {
+  struct core_parameters *par = (struct core_parameters *)params;
+  return T_core_1(r, par->px, par->py, par->z, par->Q2, par->x);
+}
+
+double T_core_2_g(double r, void * params) {
+  struct core_parameters *par = (struct core_parameters *)params;
+  return T_core_2(r, par->px, par->py, par->z, par->Q2, par->x);
 }
 
 double L_integrand(double px, double py, double z, double Q2, double x, int seed) {
@@ -87,6 +105,97 @@ double L_integrand(double px, double py, double z, double Q2, double x, int seed
   return 4*z*(1-z)*epsilon2(z, Q2)*gsl_pow_2(core_value);
 }
 
+struct core_integration_thread_struct
+{
+  double px;
+  double py;
+  double z;
+  double Q2;
+  double x;
+  double &output;
+  core_integration_thread_struct(double a1, double a2, double a3, double a4, double a5, double &a6) : px(a1), py(a2), z(a2), Q2(a2), x(a2), output(a6) {}
+};
+
+double integrate_T_core_1(core_integration_thread_struct par) {
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
+
+  double result, error;
+  struct core_parameters params = {par.px, par.py, par.z, par.Q2, par.x};
+  double output = par.output;
+
+  gsl_function F;
+  F.function = &T_core_1_g;
+  F.params = &params;
+
+  int status = gsl_integration_qags (&F, 0, 10, 0, 0.000001, 1000, w, &result, &error);
+  if (status != 0) {
+    if (status == 18) {
+    } else {
+      throw (status);
+    }
+  }
+  /*
+  if (status != 0) {cout << "status: " << status << endl;
+  printf ("result          = % .18f\n", result);
+  printf ("estimated error = % .18f\n", error);
+  printf ("intervals       = %zu\n", w->size);
+  }
+  */
+  gsl_integration_workspace_free (w);
+
+  //cout << x0 << "," << y0 << "," << x1 << "," << y1 << "," << z << " " << "res: " << core_res << ", err: " << core_err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+
+  output = result;
+}
+
+double integrate_T_core_2(core_integration_thread_struct par) {
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
+
+  double result, error;
+  struct core_parameters params = {par.px, par.py, par.z, par.Q2, par.x};
+  double output = par.output;
+
+  gsl_function F;
+  F.function = &T_core_2_g;
+  F.params = &params;
+
+  int status = gsl_integration_qags (&F, 0, 10, 0, 0.000001, 1000, w, &result, &error);
+  if (status != 0) {
+    if (status == 18) {
+    } else {
+      throw (status);
+    }
+  }
+  /*
+  if (status != 0) {cout << "status: " << status << endl;
+  printf ("result          = % .18f\n", result);
+  printf ("estimated error = % .18f\n", error);
+  printf ("intervals       = %zu\n", w->size);
+  }
+  */
+  gsl_integration_workspace_free (w);
+
+  //cout << x0 << "," << y0 << "," << x1 << "," << y1 << "," << z << " " << "res: " << core_res << ", err: " << core_err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+
+  output = result;
+}
+
+double T_integrand(double px, double py, double z, double Q2, double x, int seed) {
+
+  double core_1_integral;
+  core_integration_thread_struct core_1_parameters(px, py, z, Q2, x, core_1_integral);
+  thread core_1_thread(integrate_T_core_1, core_1_parameters);
+
+  double core_2_integral;
+  core_integration_thread_struct core_2_parameters(px, py, z, Q2, x, core_2_integral);
+  thread core_2_thread(integrate_T_core_1, core_2_parameters);
+
+  core_1_thread.join();
+  core_2_thread.join();
+
+  return (z*z + gsl_pow_2(1-z))*gsl_pow_2(core_1_integral) + m_f*m_f*gsl_pow_2(core_2_integral);
+}
+
 struct parameters {double Q2; double x;};
 
 double L_g(double *k, size_t dim, void * params) {
@@ -94,16 +203,21 @@ double L_g(double *k, size_t dim, void * params) {
   return normalization*L_integrand(k[0], k[1], k[2], par->Q2, par->x, 0);
 }
 
+double T_g(double *k, size_t dim, void * params) {
+  struct parameters *par = (struct parameters *)params;
+  return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x, 0);
+}
+
 struct thread_par_struct
 {
   double Q2;
   double x;
-  double &output;
-  double &L_sigma_error;
-  thread_par_struct(double a1, double a2, double &a3, double &a4) : Q2(a1), x(a2), output(a3), L_sigma_error(a4) {}
+  double &sigma;
+  double &sigma_error;
+  thread_par_struct(double a1, double a2, double &a3, double &a4) : Q2(a1), x(a2), sigma(a3), sigma_error(a4) {}
 };
 
-void integrate_for_sigma(thread_par_struct par) {
+void integrate_for_L_sigma(thread_par_struct par) {
 
   const double integration_radius = 100;
   const int warmup_calls = 10000;
@@ -119,8 +233,8 @@ void integrate_for_sigma(thread_par_struct par) {
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
   params.x = par.x;
-  double &output = par.output;
-  double &L_sigma_error = par.L_sigma_error;
+  double &sigma = par.sigma;
+  double &sigma_error = par.sigma_error;
 
   const gsl_rng_type *T;
   gsl_rng *rng;
@@ -135,21 +249,68 @@ void integrate_for_sigma(thread_par_struct par) {
 
   gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
   status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
-  if (status != 0) {throw 101;}
+  if (status != 0) {throw (status);}
   for (int i=0; i<integration_iterations; i++) {
     status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
-    if (status != 0) {throw 101;}
+    if (status != 0) {throw (status);}
   }
   if (gsl_isnan(res)) {
     res = 0;
     cout << "nan found at x=" << params.x << endl;
   }
-  output = res;
-  L_sigma_error = err;
+  sigma = res;
+  sigma_error = err;
   cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   gsl_monte_vegas_free(L_s);
-  if (status != 0) {throw 101;}
+}
+
+void integrate_for_T_sigma(thread_par_struct par) {
+
+  const double integration_radius = 100;
+  const int warmup_calls = 10000;
+  const int integration_calls = 100000;
+  const int integration_iterations = 1;
+
+  const int dim = 3;
+  double res, err;
+
+  double xl[3] = {0, 0, 0};
+  double xu[3] = {integration_radius, integration_radius, 1};
+
+  struct parameters params = {1, 1};
+  params.Q2 = par.Q2;
+  params.x = par.x;
+  double &sigma = par.sigma;
+  double &sigma_error = par.sigma_error;
+
+  const gsl_rng_type *T;
+  gsl_rng *rng;
+
+  gsl_monte_function T_G = {&T_g, dim, &params};
+
+  gsl_rng_env_setup ();
+  int status = 0;
+
+  T = gsl_rng_default;
+  rng = gsl_rng_alloc(T);
+
+  gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  if (status != 0) {throw (status);}
+  for (int i=0; i<integration_iterations; i++) {
+    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+    if (status != 0) {throw (status);}
+  }
+  if (gsl_isnan(res)) {
+    res = 0;
+    cout << "nan found at x=" << params.x << endl;
+  }
+  sigma = res;
+  sigma_error = err;
+  cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+
+  gsl_monte_vegas_free(T_s);
 }
 
 int main() {
@@ -171,22 +332,22 @@ int main() {
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
   TMultiGraph* L_graphs = new TMultiGraph();
-  L_graphs->SetTitle("Longitudinal cross section;x;cross section (1/GeV^2)");
-  cout << "Start integration" << endl;
+  L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (1/GeV^2)");
+  cout << "Starting L integration" << endl;
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     double L_x_values[x_steps], L_sigma_values[x_steps], L_x_errors[x_steps], L_sigma_errors[x_steps];
-    thread threads[x_steps];
+    thread L_threads[x_steps];
 
     for (int i=0; i<x_steps; i++) {
       double x = pow(10, log10(x_start) + i*x_step);
       L_x_values[i] = x;
       L_x_errors[i] = 0;
       thread_par_struct par(Q2_values[j], x, L_sigma_values[i], L_sigma_errors[i]);
-      threads[i] = thread(integrate_for_sigma, par);
+      L_threads[i] = thread(integrate_for_L_sigma, par);
     }
 
     for (int j=0; j<x_steps; j++) {
-      threads[j].join();
+      L_threads[j].join();
     }
 
     TGraphErrors* subgraph = new TGraphErrors(x_steps, L_x_values, L_sigma_values, L_x_errors, L_sigma_errors);
@@ -203,51 +364,42 @@ int main() {
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
   L_sigma_canvas->Print("figures/analytical_diff_L_sigma_x_distribution.pdf");
-  
-  /*
+
+
   TMultiGraph* T_graphs = new TMultiGraph();
-  T_graphs->SetTitle("Transverse cross section;x;cross section (GeV^(-2))");
-
+  T_graphs->SetTitle("Diffractive transverse cross section;x;cross section (1/GeV^2)");
+  cout << "Starting T integration" << endl;
   for (long unsigned int j=0; j<size(Q2_values); j++) {
-    params.Q2 = Q2_values[j];
+    double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps];
+    thread T_threads[x_steps];
 
-    double T_x_values[x_steps], T_sigma_values[x_steps];
     for (int i=0; i<x_steps; i++) {
-      params.x = pow(10, log10(x_start) + i*x_step);
-      T_x_values[i] = params.x;
-
-      cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
-
-      gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
-
-      status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
-      if (status != 0) {throw 101;}
-
-      for (int i=0; i<integration_iterations; i++) {
-        status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-        if (status != 0) {throw 101;}
-      }
-
-      T_sigma_values[i] = res;
-
-      gsl_monte_vegas_free(T_s);
+      double x = pow(10, log10(x_start) + i*x_step);
+      T_x_values[i] = x;
+      T_x_errors[i] = 0;
+      thread_par_struct par(Q2_values[j], x, T_sigma_values[i], T_sigma_errors[i]);
+      T_threads[i] = thread(integrate_for_T_sigma, par);
     }
-    TGraph* subgraph = new TGraph(x_steps, T_x_values, T_sigma_values);
+
+    for (int j=0; j<x_steps; j++) {
+      T_threads[j].join();
+    }
+
+    TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
-    T_graphs->Add(subgraph);
+    L_graphs->Add(subgraph);
   }
 
-  TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
-  T_graphs->Draw("A PMC PLC");
+  TCanvas* L_sigma_canvas = new TCanvas("diff_T_sigma_canvas", "", 1000, 600);
+  L_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
 
-  T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  T_sigma_canvas->Print("figures/analytical_T_sigma_x_distribution.pdf");
+  L_sigma_canvas->Print("figures/analytical_diff_T_sigma_x_distribution.pdf");
 
-  */
   
   return 0;
 }
