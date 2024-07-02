@@ -45,7 +45,7 @@ double dipole_amplitude(double r, double x) {
 }
 
 double L_core(double r, double px, double py, double z, double Q2, double x) {
-  return r*gsl_sf_bessel_J0(r/2*sqrt(px*px+py*py))*gsl_sf_bessel_K0(epsilon(x, Q2)*r)*dipole_amplitude(r, x);
+  return r*gsl_sf_bessel_J0(r/2*sqrt(px*px+py*py))*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*dipole_amplitude(r, x);
 }
 
 double T_core_1(double r, double px, double py, double z, double Q2, double x) {
@@ -83,23 +83,25 @@ double L_integrand(double px, double py, double z, double Q2, double x, int seed
   F.function = &L_core_g;
   F.params = &params;
 
-  int status = gsl_integration_qags (&F, 0, 10, 0, 0.000001, 1000, w, &result, &error);
+  int status = gsl_integration_qags (&F, 0, 10, 0, 0.001, 1000, w, &result, &error);
   if (status != 0) {
     if (status == 18) {
+    } else if (status == 22) {
+      cout << "warning: divergent qags integral" << endl;
     } else {
+      cout << "L_integrand: " << status << endl;
+      cout << px << "," << py << "," << z << "," << Q2 << "," << x << " " << "res: " << result << ", err: " << error << endl;
       throw (status);
     }
   }
   /*
-  if (status != 0) {cout << "status: " << status << endl;
   printf ("result          = % .18f\n", result);
   printf ("estimated error = % .18f\n", error);
   printf ("intervals       = %zu\n", w->size);
-  }
   */
   gsl_integration_workspace_free (w);
 
-  //cout << x0 << "," << y0 << "," << x1 << "," << y1 << "," << z << " " << "res: " << core_res << ", err: " << core_err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+  //cout << px << "," << py << "," << z << "," << Q2 << "," << x << " " << "res: " << result << ", err: " << error << endl;
 
   double core_value = result;
   return 4*z*(1-z)*epsilon2(z, Q2)*gsl_pow_2(core_value);
@@ -113,85 +115,88 @@ struct core_integration_thread_struct
   double Q2;
   double x;
   double &output;
-  core_integration_thread_struct(double a1, double a2, double a3, double a4, double a5, double &a6) : px(a1), py(a2), z(a2), Q2(a2), x(a2), output(a6) {}
+  core_integration_thread_struct(double a1, double a2, double a3, double a4, double a5, double &a6) : px(a1), py(a2), z(a3), Q2(a4), x(a5), output(a6) {}
 };
 
-double integrate_T_core_1(core_integration_thread_struct par) {
+void integrate_T_core_1(core_integration_thread_struct par) {
+  //this_thread::sleep_for(10s);
   gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
 
   double result, error;
   struct core_parameters params = {par.px, par.py, par.z, par.Q2, par.x};
-  double output = par.output;
+  double &output = par.output;
 
   gsl_function F;
   F.function = &T_core_1_g;
   F.params = &params;
-
-  int status = gsl_integration_qags (&F, 0, 10, 0, 0.000001, 1000, w, &result, &error);
+  int status = gsl_integration_qags (&F, 0, 10, 0, 0.001, 1000, w, &result, &error);
   if (status != 0) {
     if (status == 18) {
+    } else if (status == 22) {
+      cout << "warning: divergent qags integral" << endl;
     } else {
+      cout << "integrate_T_core_1 status is: " << status << endl;
       throw (status);
     }
   }
   /*
-  if (status != 0) {cout << "status: " << status << endl;
   printf ("result          = % .18f\n", result);
   printf ("estimated error = % .18f\n", error);
   printf ("intervals       = %zu\n", w->size);
-  }
   */
+  
   gsl_integration_workspace_free (w);
 
-  //cout << x0 << "," << y0 << "," << x1 << "," << y1 << "," << z << " " << "res: " << core_res << ", err: " << core_err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+  //cout << par.px << "," << par.py << "," << par.z << "," << par.Q2 << "," << par.x << " " << "res: " << result << ", err: " << error << endl;
 
   output = result;
 }
 
-double integrate_T_core_2(core_integration_thread_struct par) {
+void integrate_T_core_2(core_integration_thread_struct par) {
   gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
 
   double result, error;
   struct core_parameters params = {par.px, par.py, par.z, par.Q2, par.x};
-  double output = par.output;
+  double &output = par.output;
 
   gsl_function F;
   F.function = &T_core_2_g;
   F.params = &params;
 
-  int status = gsl_integration_qags (&F, 0, 10, 0, 0.000001, 1000, w, &result, &error);
+  int status = gsl_integration_qags (&F, 0, 10, 0, 0.001, 1000, w, &result, &error);
   if (status != 0) {
     if (status == 18) {
+    } else if (status == 22) {
+      cout << "warning: divergent qags integral" << endl;
     } else {
+      cout << "integrate_T_core_2 exception: " << status << endl;
       throw (status);
     }
   }
   /*
-  if (status != 0) {cout << "status: " << status << endl;
+  cout << "integrate_T_core_2 results" << endl;
   printf ("result          = % .18f\n", result);
   printf ("estimated error = % .18f\n", error);
   printf ("intervals       = %zu\n", w->size);
-  }
   */
   gsl_integration_workspace_free (w);
 
-  //cout << x0 << "," << y0 << "," << x1 << "," << y1 << "," << z << " " << "res: " << core_res << ", err: " << core_err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+  //cout << par.px << "," << par.py << "," << par.z << "," << par.Q2 << "," << par.x << " " << "res: " << result << ", err: " << error << endl;
 
   output = result;
 }
 
 double T_integrand(double px, double py, double z, double Q2, double x, int seed) {
-
   double core_1_integral;
   core_integration_thread_struct core_1_parameters(px, py, z, Q2, x, core_1_integral);
-  thread core_1_thread(integrate_T_core_1, core_1_parameters);
-
+  //thread core_1_thread(integrate_T_core_1, core_1_parameters);
+  integrate_T_core_1(core_1_parameters);
   double core_2_integral;
   core_integration_thread_struct core_2_parameters(px, py, z, Q2, x, core_2_integral);
-  thread core_2_thread(integrate_T_core_1, core_2_parameters);
-
-  core_1_thread.join();
-  core_2_thread.join();
+  //thread core_2_thread(integrate_T_core_2, core_2_parameters);
+  integrate_T_core_2(core_2_parameters);
+  //core_1_thread.join();
+  //core_2_thread.join();
 
   return (z*z + gsl_pow_2(1-z))*gsl_pow_2(core_1_integral) + m_f*m_f*gsl_pow_2(core_2_integral);
 }
@@ -249,10 +254,10 @@ void integrate_for_L_sigma(thread_par_struct par) {
 
   gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
   status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
-  if (status != 0) {throw (status);}
+  if (status != 0) {cout << "integrate_for_L_sigma: " << status << endl; throw (status);}
   for (int i=0; i<integration_iterations; i++) {
     status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
-    if (status != 0) {throw (status);}
+    if (status != 0) {cout << "integrate_for_L_sigma: " << status << endl; throw (status);}
   }
   if (gsl_isnan(res)) {
     res = 0;
@@ -297,10 +302,10 @@ void integrate_for_T_sigma(thread_par_struct par) {
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
   status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
-  if (status != 0) {throw (status);}
+  if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
   for (int i=0; i<integration_iterations; i++) {
     status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-    if (status != 0) {throw (status);}
+    if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
   }
   if (gsl_isnan(res)) {
     res = 0;
@@ -379,6 +384,7 @@ int main() {
       T_x_errors[i] = 0;
       thread_par_struct par(Q2_values[j], x, T_sigma_values[i], T_sigma_errors[i]);
       T_threads[i] = thread(integrate_for_T_sigma, par);
+      //this_thread::sleep_for(30s);
     }
 
     for (int j=0; j<x_steps; j++) {
@@ -388,17 +394,17 @@ int main() {
     TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
-    L_graphs->Add(subgraph);
+    T_graphs->Add(subgraph);
   }
 
-  TCanvas* L_sigma_canvas = new TCanvas("diff_T_sigma_canvas", "", 1000, 600);
-  L_graphs->Draw("A PMC PLC");
+  TCanvas* T_sigma_canvas = new TCanvas("diff_T_sigma_canvas", "", 1000, 600);
+  T_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
 
-  L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  L_sigma_canvas->Print("figures/analytical_diff_T_sigma_x_distribution.pdf");
+  T_sigma_canvas->Print("figures/analytical_diff_T_sigma_x_distribution.pdf");
 
   
   return 0;
