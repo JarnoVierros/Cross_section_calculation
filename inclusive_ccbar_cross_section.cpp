@@ -95,7 +95,7 @@ int main() {
   rng = gsl_rng_alloc(T);
 
   TMultiGraph* L_graphs = new TMultiGraph();
-  L_graphs->SetTitle("Longitudinal cross section;x;cross section (mb)");
+  L_graphs->SetTitle("Longitudinal cross section;x;cross section (mb);cross section error (mb)");
 
   ofstream L_output_file("data/inclusive_L_sigma_x.txt");
   L_output_file << "Q2 (GeV);x;sigma (mb)" << endl;
@@ -126,7 +126,7 @@ int main() {
         x << L_x_values[i];
         ostringstream sigma;
         sigma << L_sigma_values[i];
-        string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str();
+        string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str() + ";";
         L_output_file << line << endl;
       }
 
