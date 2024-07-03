@@ -12,6 +12,9 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <ostream>
+#include <sstream>
 using namespace std;
 
 
@@ -93,6 +96,10 @@ int main() {
 
   TMultiGraph* L_graphs = new TMultiGraph();
   L_graphs->SetTitle("Longitudinal cross section;x;cross section (mb)");
+
+  ofstream L_output_file("data/inclusive_L_sigma_x.txt");
+  L_output_file << "Q2 (GeV);x;sigma (mb)" << endl;
+
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
     double L_x_values[x_steps], L_sigma_values[x_steps];
@@ -100,8 +107,6 @@ int main() {
 
       params.x = pow(10, log10(x_start) + i*x_step);
       L_x_values[i] = params.x;
-
-      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
 
       gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
 
@@ -114,6 +119,17 @@ int main() {
       }
       L_sigma_values[i] = res;
 
+      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
+
+      for (int i=0; i<x_steps; i++) {
+        ostringstream x;
+        x << L_x_values[i];
+        ostringstream sigma;
+        sigma << L_sigma_values[i];
+        string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str();
+        L_output_file << line << endl;
+      }
+
       gsl_monte_vegas_free(L_s);
       if (status != 0) {throw "gsl error";}
     }
@@ -122,6 +138,7 @@ int main() {
     subgraph->SetTitle(subgraph_name);
     L_graphs->Add(subgraph);
   }
+  L_output_file.close();
 
   TCanvas* L_sigma_canvas = new TCanvas("L_sigma_canvas", "", 1000, 600);
   L_graphs->Draw("A PMC PLC");
@@ -136,6 +153,9 @@ int main() {
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Transverse cross section;x;cross section (mb)");
 
+  ofstream T_output_file("data/inclusive_T_sigma_x.txt");
+  T_output_file << "Q2 (GeV);x;sigma (mb)" << endl;
+
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     params.Q2 = Q2_values[j];
 
@@ -143,8 +163,6 @@ int main() {
     for (int i=0; i<x_steps; i++) {
       params.x = pow(10, log10(x_start) + i*x_step);
       T_x_values[i] = params.x;
-
-      cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
 
       gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
 
@@ -158,6 +176,17 @@ int main() {
 
       T_sigma_values[i] = res;
 
+      cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
+
+      for (int i=0; i<x_steps; i++) {
+        ostringstream x;
+        x << T_x_values[i];
+        ostringstream sigma;
+        sigma << T_sigma_values[i];
+        string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str();
+        L_output_file << line << endl;
+      }
+
       gsl_monte_vegas_free(T_s);
     }
     TGraph* subgraph = new TGraph(x_steps, T_x_values, T_sigma_values);
@@ -165,6 +194,7 @@ int main() {
     subgraph->SetTitle(subgraph_name);
     T_graphs->Add(subgraph);
   }
+  T_output_file.close();
 
   TCanvas* T_sigma_canvas = new TCanvas("T_sigma_canvas", "", 1000, 600);
   T_graphs->Draw("A PMC PLC");
