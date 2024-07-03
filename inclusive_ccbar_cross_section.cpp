@@ -121,14 +121,12 @@ int main() {
 
       cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
 
-      for (int i=0; i<x_steps; i++) {
-        ostringstream x;
-        x << L_x_values[i];
-        ostringstream sigma;
-        sigma << L_sigma_values[i];
-        string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str() + ";";
-        L_output_file << line << endl;
-      }
+      ostringstream x;
+      x << L_x_values[i];
+      ostringstream sigma;
+      sigma << L_sigma_values[i];
+      string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str() + ";";
+      L_output_file << line << endl;
 
       gsl_monte_vegas_free(L_s);
       if (status != 0) {throw "gsl error";}
@@ -178,14 +176,12 @@ int main() {
 
       cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
 
-      for (int i=0; i<x_steps; i++) {
-        ostringstream x;
-        x << T_x_values[i];
-        ostringstream sigma;
-        sigma << T_sigma_values[i];
-        string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str();
-        L_output_file << line << endl;
-      }
+      ostringstream x;
+      x << T_x_values[i];
+      ostringstream sigma;
+      sigma << T_sigma_values[i];
+      string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str();
+      L_output_file << line << endl;
 
       gsl_monte_vegas_free(T_s);
     }
