@@ -67,9 +67,9 @@ int main() {
   const int integration_calls = 100000;
   const int integration_iterations = 1;
 
-  const int Q2_values[] = {1, 2, 3, 4, 5};
+  const int Q2_values[] = {1, 3, 5, 8, 10};
 
-  const int x_steps = 100;
+  const int x_steps = 10;
   const double x_start = 1e-5;
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
@@ -181,7 +181,7 @@ int main() {
       ostringstream sigma;
       sigma << T_sigma_values[i];
       string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str();
-      L_output_file << line << endl;
+      T_output_file << line << endl;
 
       gsl_monte_vegas_free(T_s);
     }
