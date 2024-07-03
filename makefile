@@ -9,6 +9,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make parameter_fitter_inclusive_ccbar
 	make fit_data_comparison_inclusive_ccbar
 	make analytical_QAG_exclusive_ccbar_cross_section
+	make diffractive_inclusive_ratio
 
 inclusive_ccbar_cross_section: inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -49,6 +50,10 @@ parameter_fitter_inclusive_ccbar: parameter_fitter_inclusive_ccbar.cpp
 fit_data_comparison_inclusive_ccbar: fit_data_comparison_inclusive_ccbar.cpp
 	g++ -Wall -c fit_data_comparison_inclusive_ccbar.cpp $$(root-config --glibs --cflags --libs)
 	g++ fit_data_comparison_inclusive_ccbar.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o fit_data_comparison_inclusive_ccbar.exe
+
+diffractive_inclusive_ratio: diffractive_inclusive_ratio.cpp
+	g++ -Wall -c diffractive_inclusive_ratio.cpp $$(root-config --glibs --cflags --libs)
+	g++ diffractive_inclusive_ratio.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o diffractive_inclusive_ratio.exe
 
 clean:
 	-rm *.exe
