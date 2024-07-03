@@ -25,12 +25,12 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
-const double B_D = 6; //GeV^(-2)
+const double sigma_0 = 29.9416; //GeV^(-2)
 const double Q_0 = 1; //GeV
-const double x_0 = 0.000041;
-const double lambda_star = 0.288;
+const double x_0 = 7.67079e-05;
+const double lambda_star = 3.64361e-01;
 
-const double normalization = N_c*alpha_em*e_f*e_f*B_D/(2*M_PI);
+const double normalization = N_c*alpha_em*e_f*e_f*sigma_0/(2*gsl_pow_2(2*M_PI));
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -265,7 +265,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
   }
   sigma = res;
   sigma_error = err;
-  cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+  cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   gsl_monte_vegas_free(L_s);
 }
@@ -313,7 +313,7 @@ void integrate_for_T_sigma(thread_par_struct par) {
   }
   sigma = res;
   sigma_error = err;
-  cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+  cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
   gsl_monte_vegas_free(T_s);
 }
@@ -337,7 +337,7 @@ int main() {
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
   TMultiGraph* L_graphs = new TMultiGraph();
-  L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (1/GeV^2)");
+  L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (mb)");
   cout << "Starting L integration" << endl;
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     double L_x_values[x_steps], L_sigma_values[x_steps], L_x_errors[x_steps], L_sigma_errors[x_steps];
@@ -372,7 +372,7 @@ int main() {
 
 
   TMultiGraph* T_graphs = new TMultiGraph();
-  T_graphs->SetTitle("Diffractive transverse cross section;x;cross section (1/GeV^2)");
+  T_graphs->SetTitle("Diffractive transverse cross section;x;cross section (mb)");
   cout << "Starting T integration" << endl;
   for (long unsigned int j=0; j<size(Q2_values); j++) {
     double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps];
