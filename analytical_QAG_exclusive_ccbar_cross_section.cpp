@@ -18,6 +18,8 @@
 #include <thread>
 #include <chrono>
 #include <fstream>
+#include <ostream>
+#include <sstream>
 using namespace std;
 
 
@@ -339,9 +341,13 @@ int main() {
 
   TMultiGraph* L_graphs = new TMultiGraph();
   L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (mb)");
+
+  ofstream L_output_file("diff_L_sigma_x.txt");
+  L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
+
   cout << "Starting L integration" << endl;
-  double L_x_values[x_steps], L_sigma_values[x_steps], L_x_errors[x_steps], L_sigma_errors[x_steps];
   for (long unsigned int j=0; j<size(Q2_values); j++) {
+    double L_x_values[x_steps], L_sigma_values[x_steps], L_x_errors[x_steps], L_sigma_errors[x_steps];
     thread L_threads[x_steps];
 
     for (int i=0; i<x_steps; i++) {
@@ -360,7 +366,19 @@ int main() {
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
     L_graphs->Add(subgraph);
+
+    for (int i=0; i<x_steps; i++) {
+      ostringstream x;
+      x << L_x_values[i];
+      ostringstream sigma;
+      sigma << L_sigma_values[i];
+      ostringstream sigma_err;
+      sigma_err << L_sigma_errors[i];
+      string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str() + ";" + sigma_err.str();
+      L_output_file << line << endl;
+    }
   }
+  L_output_file.close();
 
   TCanvas* L_sigma_canvas = new TCanvas("diff_L_sigma_canvas", "", 1000, 600);
   L_graphs->Draw("A PMC PLC");
@@ -370,22 +388,14 @@ int main() {
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
   L_sigma_canvas->Print("figures/analytical_diff_L_sigma_x_distribution.pdf");
-
-
-  ofstream L_output_file("diff_L_sigma_x.txt");
-
-  L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
-
-  for (long unsigned int i=0; i<size(Q2_values); i++) {
-    for (int j=0; j<x_steps; j++) {
-      string line = to_string(Q2_values[i]) + ";" + to_string(L_x_values[j]) + ";" + to_string(L_sigma_values[j]) + ";" + to_string(L_sigma_errors[j]);
-      L_output_file << line << endl;
-    }
-  }
-  L_output_file.close();
+ 
 
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Diffractive transverse cross section;x;cross section (mb)");
+
+  ofstream T_output_file("diff_T_sigma_x.txt");
+  T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
+
   cout << "Starting T integration" << endl;
   double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps];
   for (long unsigned int j=0; j<size(Q2_values); j++) {
@@ -408,7 +418,19 @@ int main() {
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
     T_graphs->Add(subgraph);
+
+    for (int i=0; i<x_steps; i++) {
+      ostringstream x;
+      x << T_x_values[i];
+      ostringstream sigma;
+      sigma << T_sigma_values[i];
+      ostringstream sigma_err;
+      sigma_err << T_sigma_errors[i];
+      string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str() + ";" + sigma_err.str();
+      L_output_file << line << endl;
+    }
   }
+  T_output_file.close();
 
   TCanvas* T_sigma_canvas = new TCanvas("diff_T_sigma_canvas", "", 1000, 600);
   T_graphs->Draw("A PMC PLC");
@@ -418,19 +440,6 @@ int main() {
   T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
   T_sigma_canvas->Print("figures/analytical_diff_T_sigma_x_distribution.pdf");
-  
-  
-  ofstream T_output_file("diff_T_sigma_x.txt");
-
-  T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
-
-  for (long unsigned int i=0; i<size(Q2_values); i++) {
-    for (int j=0; j<x_steps; j++) {
-      string line = to_string(Q2_values[i]) + ";" + to_string(T_x_values[j]) + ";" + to_string(T_sigma_values[j]) + ";" + to_string(T_sigma_errors[j]);
-      L_output_file << line << endl;
-    }
-  }
-  T_output_file.close();
 
   return 0;
 }
