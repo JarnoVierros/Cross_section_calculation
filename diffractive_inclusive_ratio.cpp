@@ -14,9 +14,9 @@ using namespace std;
 
 int main() {
 
-  vector<double> Q2_values;
+  vector<int> Q2_values;
 
-  ifstream inclusive_data_file("asd");
+  ifstream inclusive_data_file("data/inclusive_T_sigma_x.txt");
   string line;
   bool first_line = true;
   while (getline (inclusive_data_file, line)) {
@@ -32,7 +32,7 @@ int main() {
     }
     double Q2_value = stod(Q2_string);
     bool found = false;
-    for (int i=0; i<Q2_values.size(); i++) {
+    for (long unsigned int i=0; i<Q2_values.size(); i++) {
       if (Q2_value == Q2_values[i]) {
         found = true;
         break;
@@ -41,6 +41,9 @@ int main() {
     if (!found) {
       Q2_values.push_back(Q2_value);
     }
+  }
+
+  for (int i=0; i<Q2_values.size(); i++) {
   }
 
   inclusive_data_file.clear();
@@ -72,7 +75,6 @@ int main() {
     }
     i++;
     double x_value = stod(x_value_string);
-
     string sigma_value_string = "";
     while (line[i] != ';') {
       sigma_value_string += line[i];
@@ -80,7 +82,6 @@ int main() {
     }
     i++;
     double sigma_value = stod(sigma_value_string);
-
     if (Q2_values[Q2_index] != Q2_value) {
       x_values.push_back(current_x);
       inclusive_sigma.push_back(current_inclusive_sigma);
@@ -91,9 +92,12 @@ int main() {
     current_x.push_back(x_value);
     current_inclusive_sigma.push_back(sigma_value);
   }
+  x_values.push_back(current_x);
+  inclusive_sigma.push_back(current_inclusive_sigma);
 
-  ifstream diffractive_data_file("asd");
+  ifstream diffractive_data_file("data/diff_T_sigma_x.txt");
 
+  Q2_index = 0;
   current_x = {};
   first_line = true;
   while (getline (diffractive_data_file, line)) {
@@ -125,7 +129,6 @@ int main() {
     }
     i++;
     double sigma_value = stod(sigma_value_string);
-
     if (Q2_values[Q2_index] != Q2_value) {
       x_values.push_back(current_x);
       diff_sigma.push_back(current_diff_sigma);
@@ -136,19 +139,19 @@ int main() {
     current_x.push_back(x_value);
     current_diff_sigma.push_back(sigma_value);
   }
+  x_values.push_back(current_x);
+  diff_sigma.push_back(current_diff_sigma);
 
 
   TMultiGraph* comparison_graphs = new TMultiGraph();
-  comparison_graphs->SetTitle("Ratio between diffractive and inclusive cross section");
-
-  for (int i=0; i < Q2_values.size(); i++) {
+  comparison_graphs->SetTitle("Ratio between diffractive and inclusive transverse cross sections");
+  for (long unsigned int i=0; i < Q2_values.size(); i++) {
     double ratio[x_values[i].size()];
     double x[x_values[i].size()];
-    for (int j=0; x_values[i].size(); j++) {
+    for (int j=0; j<x_values[i].size(); j++) {
       ratio[j] = diff_sigma[i][j]/inclusive_sigma[i][j];
       x[j] = x_values[i][j];
     }
-    vector<double> x = x_values[i];
     TGraph* subgraph = new TGraph(x_values[i].size(), x, ratio);
     TString subgraph_name = "Q^{2}=" + to_string(Q2_values[i]);
     subgraph->SetTitle(subgraph_name);
@@ -162,7 +165,7 @@ int main() {
 
   comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  comparison_canvas->Print("figures/diffractive_inclusive_ratio.pdf");
+  comparison_canvas->Print("figures/diffractive_inclusive_T_ratio.pdf");
   
   return 0;
 }
