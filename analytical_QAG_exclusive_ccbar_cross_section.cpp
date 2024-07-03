@@ -342,7 +342,7 @@ int main() {
   TMultiGraph* L_graphs = new TMultiGraph();
   L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (mb)");
 
-  ofstream L_output_file("diff_L_sigma_x.txt");
+  ofstream L_output_file("data/diff_L_sigma_x.txt");
   L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting L integration" << endl;
@@ -393,12 +393,13 @@ int main() {
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Diffractive transverse cross section;x;cross section (mb)");
 
-  ofstream T_output_file("diff_T_sigma_x.txt");
+  ofstream T_output_file("data/diff_T_sigma_x.txt");
   T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
-  double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps];
+  
   for (long unsigned int j=0; j<size(Q2_values); j++) {
+    double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps];
     thread T_threads[x_steps];
 
     for (int i=0; i<x_steps; i++) {
@@ -427,7 +428,7 @@ int main() {
       ostringstream sigma_err;
       sigma_err << T_sigma_errors[i];
       string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str() + ";" + sigma_err.str();
-      L_output_file << line << endl;
+      T_output_file << line << endl;
     }
   }
   T_output_file.close();
