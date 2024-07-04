@@ -25,12 +25,13 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
-const double B_D = 6; //GeV^(-2)
+const double sigma_0 = 29.9416; //mb
+const double B_D = sigma_0/(4*M_PI); //mb
 const double Q_0 = 1; //GeV
 const double x_0 = 0.000041;
 const double lambda_star = 0.288;
 
-const double normalization = 8*N_c*alpha_em/(2*M_PI*2*M_PI)*e_f*e_f*B_D;
+const double normalization = 2*N_c*alpha_em*B_D*B_D/(2*M_PI*2*M_PI)*e_f*e_f;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -45,7 +46,7 @@ double dipole_amplitude(double r, double x) {
 }
 
 double L_core(double r, double x0, double y0, double x1, double y1, double z, double Q2, double x) {
-  return r*gsl_sf_bessel_J0(r/2*sqrt(gsl_pow_2(x0-x1)+gsl_pow_2(y0-y1)))*gsl_sf_bessel_K0(epsilon(x, Q2)*r)*dipole_amplitude(r, x);
+  return r*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_J0(r/2*sqrt(gsl_pow_2(x0-x1)+gsl_pow_2(y0-y1)))*dipole_amplitude(r, x);
 }
 
 struct core_parameters {double x0; double y0; double x1; double y1; double z; double Q2; double x;};
@@ -84,7 +85,7 @@ double L_integrand(double x0, double y0, double x1, double y1, double z, double 
   //cout << x0 << "," << y0 << "," << x1 << "," << y1 << "," << z << " " << "res: " << core_res << ", err: " << core_err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   double core_value = result;
-  return z*(1-z)*epsilon2(z, Q2)*exp(-(gsl_pow_2(x0+x1)+gsl_pow_2(y0+y1))*B_D)*gsl_pow_2(core_value);
+  return 4*z*(1-z)*epsilon2(z, Q2)*exp(-B_D*(gsl_pow_2(x0+x1)+gsl_pow_2(y0+y1)))*gsl_pow_2(core_value);
 }
 
 struct parameters {double Q2; double x;};

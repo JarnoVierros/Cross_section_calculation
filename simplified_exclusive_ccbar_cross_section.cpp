@@ -28,7 +28,7 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
-const double sigma_0 = 29.9416; //GeV^(-2)
+const double sigma_0 = 29.9416; //mb
 const double Q_0 = 1; //GeV
 const double x_0 = 7.67079e-05;
 const double lambda_star = 3.64361e-01;

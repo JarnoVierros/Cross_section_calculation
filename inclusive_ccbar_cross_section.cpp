@@ -30,8 +30,12 @@ const double lambda_star = 3.64361e-01;
 
 const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
 
+double epsilon2(double z, double Q2) {
+  return m_f*m_f + z*(1-z)*Q2;
+}
+
 double epsilon(double z, double Q2) {
-  return sqrt(m_f*m_f + z*(1-z)*Q2);
+  return sqrt(epsilon2(z, Q2));
 }
 
 double dipole_amplitude(double r, double x) {
@@ -40,12 +44,12 @@ double dipole_amplitude(double r, double x) {
 
 double L_integrand(double r_x, double r_y, double z, double Q2, double x) {
   double r = sqrt(r_x*r_x + r_y*r_y);
-  return 4*Q2*z*z*(1-z)*(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, x);
+  return 4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, x);
 }
 
 double T_integrand(double r_x, double r_y, double z, double Q2, double x) {
   double r = sqrt(r_x*r_x + r_y*r_y);
-  return (m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + gsl_pow_2(epsilon(z, Q2))*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
+  return (m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
 }
 
 struct parameters {double Q2; double x;};
