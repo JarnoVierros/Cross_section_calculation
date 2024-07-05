@@ -16,7 +16,7 @@ int main() {
 
   vector<int> Q2_values;
 
-  ifstream inclusive_data_file("data/inclusive_T_sigma_x.txt");
+  ifstream inclusive_data_file("data/inclusive_L_sigma_x.txt");
   string line;
   bool first_line = true;
   while (getline (inclusive_data_file, line)) {
@@ -43,7 +43,7 @@ int main() {
     }
   }
 
-  for (int i=0; i<Q2_values.size(); i++) {
+  for (long unsigned int i=0; i<Q2_values.size(); i++) {
   }
 
   inclusive_data_file.clear();
@@ -95,7 +95,7 @@ int main() {
   x_values.push_back(current_x);
   inclusive_sigma.push_back(current_inclusive_sigma);
 
-  ifstream diffractive_data_file("data/diff_T_sigma_x.txt");
+  ifstream diffractive_data_file("data/diff_L_sigma_x.txt");
 
   Q2_index = 0;
   current_x = {};
@@ -133,7 +133,7 @@ int main() {
       x_values.push_back(current_x);
       diff_sigma.push_back(current_diff_sigma);
       current_x = {};
-      current_inclusive_sigma = {};
+      current_diff_sigma = {};
       Q2_index++;
     }
     current_x.push_back(x_value);
@@ -144,11 +144,11 @@ int main() {
 
 
   TMultiGraph* comparison_graphs = new TMultiGraph();
-  comparison_graphs->SetTitle("Ratio between diffractive and inclusive transverse cross sections");
+  comparison_graphs->SetTitle("Ratio between diffractive and inclusive longitudinal cross sections");
   for (long unsigned int i=0; i < Q2_values.size(); i++) {
     double ratio[x_values[i].size()];
     double x[x_values[i].size()];
-    for (int j=0; j<x_values[i].size(); j++) {
+    for (long unsigned int j=0; j<x_values[i].size(); j++) {
       ratio[j] = diff_sigma[i][j]/inclusive_sigma[i][j];
       x[j] = x_values[i][j];
     }
@@ -165,7 +165,7 @@ int main() {
 
   comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  comparison_canvas->Print("figures/diffractive_inclusive_T_ratio.pdf");
+  comparison_canvas->Print("figures/diffractive_inclusive_L_ratio.pdf");
   
   return 0;
 }

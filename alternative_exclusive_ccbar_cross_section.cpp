@@ -26,7 +26,7 @@ using namespace std;
 const double alpha_em = 1.0/137;
 const int N_c = 3;
 const double e_f = 2.0/3;
-const double m_f = 1.27; //GeV
+const double m_f = 0; //GeV 1.27
 
 const double sigma_0 = 29.9416; //mb
 const double Q_0 = 1; //GeV
@@ -182,7 +182,7 @@ int main() {
 
   const int Q2_values[] = {1, 3, 5, 8, 10};
 
-  const int x_steps = 100;
+  const int x_steps = 10;
   const double x_start = 1e-5;
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);

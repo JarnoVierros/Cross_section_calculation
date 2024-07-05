@@ -26,7 +26,7 @@ using namespace std;
 const double alpha_em = 1.0/137;
 const int N_c = 3;
 const double e_f = 2.0/3;
-const double m_f = 1.27; //GeV
+const double m_f = 0; //GeV 1.27
 
 const double sigma_0 = 29.9416; //mb
 const double Q_0 = 1; //GeV
@@ -149,7 +149,7 @@ double T_integrand(double px, double py, double z, double Q2, double x, int seed
   F_2.function = &T_core_2_g;
   F_2.params = &params;
 
-  int status = gsl_integration_qags (&F_2, 0, 10, 0, 0.001, 1000, w_2, &result, &error);
+  status = gsl_integration_qags (&F_2, 0, 10, 0, 0.001, 1000, w_2, &result, &error);
   if (status != 0) {
     if (status == 18) {
     } else if (status == 22) {
@@ -312,7 +312,7 @@ int main() {
   TMultiGraph* L_graphs = new TMultiGraph();
   L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (mb)");
 
-  ofstream L_output_file("data/diff_L_sigma_x.txt");
+  ofstream L_output_file("data/simplified_diff_L_sigma_x.txt");
   L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting L integration" << endl;
@@ -357,13 +357,13 @@ int main() {
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  L_sigma_canvas->Print("figures/analytical_diff_L_sigma_x_distribution.pdf");
+  L_sigma_canvas->Print("figures/simplified_diff_L_sigma_x_distribution.pdf");
  
 
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Diffractive transverse cross section;x;cross section (mb)");
 
-  ofstream T_output_file("data/diff_T_sigma_x.txt");
+  ofstream T_output_file("data/simplified_diff_T_sigma_x.txt");
   T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
@@ -410,7 +410,7 @@ int main() {
 
   T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  T_sigma_canvas->Print("figures/analytical_diff_T_sigma_x_distribution.pdf");
+  T_sigma_canvas->Print("figures/simplified_diff_T_sigma_x_distribution.pdf");
 
   return 0;
 }
