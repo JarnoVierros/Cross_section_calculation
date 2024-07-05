@@ -26,7 +26,7 @@ using namespace std;
 const double alpha_em = 1.0/137;
 const int N_c = 3;
 const double e_f = 2.0/3;
-const double m_f = 0; //GeV 1.27
+const double m_f = 1.27; //GeV 1.27
 
 const double sigma_0 = 29.9416; //mb
 const double Q_0 = 1; //GeV
