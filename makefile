@@ -8,6 +8,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make parameter_fitter_inclusive_ccbar
 	make fit_data_comparison_inclusive_ccbar
 	make simplified_exclusive_ccbar_cross_section
+	make alternative_exclusive_ccbar_cross_section
 	make diffractive_inclusive_ratio
 
 inclusive_ccbar_cross_section: inclusive_ccbar_cross_section.cpp
@@ -21,6 +22,10 @@ complicated_exclusive_ccbar_cross_section: complicated_exclusive_ccbar_cross_sec
 simplified_exclusive_ccbar_cross_section: simplified_exclusive_ccbar_cross_section.cpp
 	g++ -Wall -c simplified_exclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
 	g++ simplified_exclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lgsl -lgslcblas -lm -o simplified_exclusive_ccbar_cross_section.exe
+	
+alternative_exclusive_ccbar_cross_section: alternative_exclusive_ccbar_cross_section.cpp
+	g++ -Wall -c alternative_exclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
+	g++ alternative_exclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lgsl -lgslcblas -lm -o alternative_exclusive_ccbar_cross_section.exe
 	
 intQ2_inclusive_ccbar_cross_section: intQ2_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c intQ2_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
