@@ -25,11 +25,11 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
-const double sigma_0 = 29.9416; //mb
+const double sigma_0 = 2.99416e+01; //mb
 const double B_D = sigma_0/(4*M_PI); //mb
 const double Q_0 = 1; //GeV
-const double x_0 = 0.000041;
-const double lambda_star = 0.288;
+const double x_0 = 7.67079e-05;
+const double lambda_star = 3.64361e-01;
 
 const double normalization = 2*N_c*alpha_em*B_D*B_D/(2*M_PI*2*M_PI)*e_f*e_f;
 
