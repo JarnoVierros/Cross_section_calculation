@@ -6,3 +6,4 @@
 !archive/fit_comparisons/*.pdf
 !archive/diffractive/*.pdf
 *.nb
+data/
