@@ -110,29 +110,18 @@ double L_integrand(double px, double py, double z, double Q2, double x, int seed
   return 4*z*(1-z)*epsilon2(z, Q2)*gsl_pow_2(core_value);
 }
 
-struct core_integration_thread_struct
-{
-  double px;
-  double py;
-  double z;
-  double Q2;
-  double x;
-  double &output;
-  core_integration_thread_struct(double a1, double a2, double a3, double a4, double a5, double &a6) : px(a1), py(a2), z(a3), Q2(a4), x(a5), output(a6) {}
-};
 
-void integrate_T_core_1(core_integration_thread_struct par) {
-  //this_thread::sleep_for(10s);
-  gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
+double T_integrand(double px, double py, double z, double Q2, double x, int seed) {
+
+  gsl_integration_workspace * w_1 = gsl_integration_workspace_alloc (1000);
 
   double result, error;
-  struct core_parameters params = {par.px, par.py, par.z, par.Q2, par.x};
-  double &output = par.output;
+  struct core_parameters params = {px, py, z, Q2, x};
 
-  gsl_function F;
-  F.function = &T_core_1_g;
-  F.params = &params;
-  int status = gsl_integration_qags (&F, 0, 10, 0, 0.001, 1000, w, &result, &error);
+  gsl_function F_1;
+  F_1.function = &T_core_1_g;
+  F_1.params = &params;
+  int status = gsl_integration_qags (&F_1, 0, 10, 0, 0.001, 1000, w_1, &result, &error);
   if (status != 0) {
     if (status == 18) {
     } else if (status == 22) {
@@ -147,26 +136,20 @@ void integrate_T_core_1(core_integration_thread_struct par) {
   printf ("estimated error = % .18f\n", error);
   printf ("intervals       = %zu\n", w->size);
   */
-  
-  gsl_integration_workspace_free (w);
+  gsl_integration_workspace_free (w_1);
 
   //cout << par.px << "," << par.py << "," << par.z << "," << par.Q2 << "," << par.x << " " << "res: " << result << ", err: " << error << endl;
 
-  output = result;
-}
+  double core_1_integral = result;
 
-void integrate_T_core_2(core_integration_thread_struct par) {
-  gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
 
-  double result, error;
-  struct core_parameters params = {par.px, par.py, par.z, par.Q2, par.x};
-  double &output = par.output;
+  gsl_integration_workspace * w_2 = gsl_integration_workspace_alloc (1000);
 
-  gsl_function F;
-  F.function = &T_core_2_g;
-  F.params = &params;
+  gsl_function F_2;
+  F_2.function = &T_core_2_g;
+  F_2.params = &params;
 
-  int status = gsl_integration_qags (&F, 0, 10, 0, 0.001, 1000, w, &result, &error);
+  int status = gsl_integration_qags (&F_2, 0, 10, 0, 0.001, 1000, w_2, &result, &error);
   if (status != 0) {
     if (status == 18) {
     } else if (status == 22) {
@@ -182,24 +165,11 @@ void integrate_T_core_2(core_integration_thread_struct par) {
   printf ("estimated error = % .18f\n", error);
   printf ("intervals       = %zu\n", w->size);
   */
-  gsl_integration_workspace_free (w);
+  gsl_integration_workspace_free (w_2);
 
   //cout << par.px << "," << par.py << "," << par.z << "," << par.Q2 << "," << par.x << " " << "res: " << result << ", err: " << error << endl;
 
-  output = result;
-}
-
-double T_integrand(double px, double py, double z, double Q2, double x, int seed) {
-  double core_1_integral;
-  core_integration_thread_struct core_1_parameters(px, py, z, Q2, x, core_1_integral);
-  //thread core_1_thread(integrate_T_core_1, core_1_parameters);
-  integrate_T_core_1(core_1_parameters);
-  double core_2_integral;
-  core_integration_thread_struct core_2_parameters(px, py, z, Q2, x, core_2_integral);
-  //thread core_2_thread(integrate_T_core_2, core_2_parameters);
-  integrate_T_core_2(core_2_parameters);
-  //core_1_thread.join();
-  //core_2_thread.join();
+  double core_2_integral = result;
 
   return (z*z + gsl_pow_2(1-z))*gsl_pow_2(core_1_integral) + m_f*m_f*gsl_pow_2(core_2_integral);
 }
