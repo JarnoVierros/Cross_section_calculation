@@ -66,9 +66,11 @@ double L_integrand(double x0, double y0, double x1, double y1, double z, double 
   F.function = &L_core_g;
   F.params = &params;
 
-  int status = gsl_integration_qags (&F, 0, 10, 0, 0.000001, 1000, w, &result, &error);
+  int status = gsl_integration_qags (&F, 0, 10, 0, 0.001, 1000, w, &result, &error);
   if (status != 0) {
     if (status == 18) {
+    } else if (status == 22) {
+      cout << "Warning: divergent integral" << endl;
     } else {
       cout<<status<<endl;throw (status);
     }
@@ -108,7 +110,7 @@ void integrate_for_sigma(thread_par_struct par) {
 
   const double integration_radius = 100;
   const int warmup_calls = 10000;
-  const int integration_calls = 1000000;
+  const int integration_calls = 5000000;
   const int integration_iterations = 1;
 
   const int dim = 5;
@@ -166,7 +168,7 @@ int main() {
 
   const int Q2_values[] = {1};
 
-  const int x_steps = 8;
+  const int x_steps = 5;
   const double x_start = 1e-5;
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
