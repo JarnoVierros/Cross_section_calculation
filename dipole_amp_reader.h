@@ -139,6 +139,6 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &
         }
     }
 
-    cout << "x sorting finished" << endl;
+    cout << "x sorting finished, table ready" << endl;
 
 }
