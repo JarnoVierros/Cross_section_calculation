@@ -44,8 +44,33 @@ int main() {
             }
         }
     }
+
     cout << endl << endl;
-    for (int i=0; i<3; i++) {
+
+    int i = 1;
+    bool ordered = true;
+    while (true) {
+        cout << i << endl;
+        if (table[0][i][0][1] < table[0][i-1][0][1]) {
+            table[0][i].swap(table[0][i-1]);
+            ordered = false;
+            if (i > 1) {
+                i -= 1;
+                continue;
+            }
+        }
+        i++;
+        if (i == table[0][i].size()) {
+            if (ordered == true) {
+                break;
+            } else {
+                i = 1;
+                ordered = true;
+            }
+        }
+    }
+    cout << "sorting finished" << endl;
+    for (int i=0; i<1; i++) {
         for (int j=0; j<5; j++) {
             for (int k=0; k<5; k++) {
                 int index = i*icof + j*81 + k;
