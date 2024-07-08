@@ -7,8 +7,8 @@ using namespace std;
 
 const double x_0 = 0.01;
 
-const int b_res = 30*30;
-static array<array<array<array<double, 4>, 81>, b_res>, 30> table;
+//const int b_res = 30*30;
+//static array<array<array<array<double, 4>, 81>, b_res>, 30> table;
 
 double calc_b(double r, double b_min, double phi) {
     return sqrt(pow(r/2, 2) + b_min*b_min - r*b_min*cos(phi));
@@ -18,9 +18,9 @@ double calc_x(double Y) {
     return exp(-Y)*x_0;
 }
 
-int main() {
-    cout << "start" << endl;
-    rapidcsv::Document doc("data/dipole_amplitude_with_IP_dependence.csv");
+void load_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> table, string filename) {
+    cout << "Reading " << filename << endl;
+    rapidcsv::Document doc(filename);
     
     vector<double> r = doc.GetColumn<double>("r [GeV^-1]");
     vector<double> b_min = doc.GetColumn<double>("b_min [GeV^-1]");
@@ -102,17 +102,5 @@ int main() {
     }
 
     cout << "x sorting finished" << endl;
-    
-    double previous = table[0][0][0][2];
-    for (int i=0; i<1; i++) {
-        for (int j=0; j<30*30; j++) {
-            for (int k=0; k<81; k++) {
-                int index = i*icof + j*81 + k;
-                if (true) {
-                    cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
-                }
-                previous = table[i][j][k][2];
-            }
-        }
-    }
+
 }
