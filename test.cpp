@@ -1,6 +1,6 @@
 
 #include "dipole_amp_reader.h"
-
+#include <chrono>
 
 int main() {
 
@@ -10,7 +10,7 @@ int main() {
     cout << "test 1" << endl;
     load_dipole_amplitudes(table, filename);
     cout << "test 2" << endl;
-
+    /*
     for (int i=0; i<3; i++) {
         for (int j=0; j<5; j++) {
             for (int k=0; k<5; k++) {
@@ -18,7 +18,14 @@ int main() {
             }
         }
     }
+    */
+    auto start = chrono::high_resolution_clock::now();
+    double res = get_dipole_amplitude(table, 0.0001552151223, 2.43124123e-05, 1.123135e-09);
+    auto stop = chrono::high_resolution_clock::now();
 
-    double res = get_dipole_amplitude(table, 0.001, 1e-4, 1e-3);
+    auto duration = chrono::duration_cast<chrono::nanoseconds>(stop-start);
+    cout << "duration: " << duration.count() << endl;
+
     cout << "amplitude: " << res << endl;
+    //0.000155246, 2.43256e-05, 1.12535e-09, 4.95126e-06
 }
