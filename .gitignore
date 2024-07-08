@@ -6,5 +6,7 @@
 !archive/fit_comparisons/*.pdf
 !archive/diffractive/*.pdf
 !archive/data/*
+!archive/Jdipamp/*
+!archive/data/Jdipamp/*
 *.nb
 /data/
