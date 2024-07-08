@@ -18,7 +18,45 @@ double calc_x(double Y) {
     return exp(-Y)*x_0;
 }
 
-void load_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> &table, string filename) {
+double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> &table, double r, double b, double x) {
+    int i = 0;
+    while (table[i][0][0][0] < r) {
+        i++;
+    }
+    if (i != 0) {
+        if (abs(table[i][0][0][0] - r) > r - table[i-1][0][0][0]) { //absolute value in case r is very large
+            i = i - 1;
+        }
+    }
+
+    int j = 0;
+    while (table[i][j][0][1] < b) {
+        j++;
+    }
+    if (j != 0) {
+        int lower_j = j - 1;
+        while (table[i][j][0][1] == table[i][lower_j][0][1]) {
+            lower_j--;
+        }
+        if (abs(table[i][j][0][1] - b) > b - table[i][lower_j][0][1]) { //absolute value in case b is very large
+            j = lower_j;
+        }
+    }
+
+    int k = 0;
+    while (table[i][j][k][2] < x) {
+        k++;
+    }
+    if (k != 0) {
+        if (abs(table[i][j][k][2] - x) > x - table[i][j][k-1][2]) { //absolute value in case x is very large
+            k = k - 1;
+        }
+    }
+
+    return table[i][j][k][3];
+}
+
+void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &table, string filename) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
     

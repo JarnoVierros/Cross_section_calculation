@@ -8,7 +8,7 @@ int main() {
     string filename = "data/dipole_amplitude_with_IP_dependence.csv";
     
     cout << "test 1" << endl;
-    load_dipole_amplitude(table, filename);
+    load_dipole_amplitudes(table, filename);
     cout << "test 2" << endl;
 
     for (int i=0; i<3; i++) {
@@ -18,4 +18,7 @@ int main() {
             }
         }
     }
+
+    double res = get_dipole_amplitude(table, 0.001, 1e-4, 1e-3);
+    cout << "amplitude: " << res << endl;
 }
