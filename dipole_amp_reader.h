@@ -18,7 +18,7 @@ double calc_x(double Y) {
     return exp(-Y)*x_0;
 }
 
-void load_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> table, string filename) {
+void load_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> &table, string filename) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
     

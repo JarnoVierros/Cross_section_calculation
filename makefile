@@ -59,6 +59,9 @@ diffractive_inclusive_ratio: diffractive_inclusive_ratio.cpp
 dipole_amp_reader: dipole_amp_reader.cpp
 	g++ dipole_amp_reader.cpp -o dipole_amp_reader.exe
 
+test: test.cpp
+	g++ test.cpp -o test.exe
+
 clean:
 	-rm *.exe
 	-rm *.o

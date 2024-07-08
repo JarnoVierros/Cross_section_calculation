@@ -6,8 +6,10 @@ int main() {
 
     static array<array<array<array<double, 4>, 81>, 900>, 30> table;
     string filename = "data/dipole_amplitude_with_IP_dependence.csv";
-
+    
+    cout << "test 1" << endl;
     load_dipole_amplitude(table, filename);
+    cout << "test 2" << endl;
 
     for (int i=0; i<3; i++) {
         for (int j=0; j<5; j++) {
