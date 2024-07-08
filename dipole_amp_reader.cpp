@@ -29,15 +29,31 @@ int main() {
     double fx = calc_x(Y[0]);
     double fN = N[0];
 
-    for (int i=1; i<r.size(); i++) {
-        if (r[i]=fr&&calc_b(r[i], b_min[i], phi[i])==fb&&calc_x(Y[i])) {
-            cout << "r: " << r[i] << endl;
-            cout << "b_min: " << b_min[i] << endl;
-            cout << "phi: " << phi[i] << endl;
-            cout << "Y: " << Y[i] << endl;
-            cout << "N: " << N[i] << endl;
-            cout << "fN: " << fN << endl;
-            cout << endl;
+    array<array<array<array<double, 4>, 81>, 30*30>, 30> table;
+
+    const int icof = 30*30*81;
+
+    for (int i=1; i<30; i++) {
+        for (int j=0; j<30*30; j++) {
+            for (int k; k<81; k++) {
+                int index = i*icof + j*81 + k;
+                cout << index << endl;
+                double b = calc_b(r[index], b_min[index], phi[index]);
+                double x = calc_x(Y[index]);
+                table[i][j][k][0] = r[index];
+                table[i][j][k][1] = b;
+                table[i][j][k][2] = x;
+                table[i][j][k][3] = N[index];
+            }
+        }
+    }
+    cout << endl << endl;
+    for (int i=1; i<3; i++) {
+        for (int j=0; j<5; j++) {
+            for (int k; k<5; k++) {
+                int index = i*icof + j*81 + k;
+                cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
+            }
         }
     }
 
