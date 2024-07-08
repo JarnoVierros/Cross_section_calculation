@@ -10,6 +10,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make simplified_exclusive_ccbar_cross_section
 	make alternative_exclusive_ccbar_cross_section
 	make diffractive_inclusive_ratio
+	make dipole_amp_reader
 
 inclusive_ccbar_cross_section: inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -54,6 +55,9 @@ fit_data_comparison_inclusive_ccbar: fit_data_comparison_inclusive_ccbar.cpp
 diffractive_inclusive_ratio: diffractive_inclusive_ratio.cpp
 	g++ -Wall -c diffractive_inclusive_ratio.cpp $$(root-config --glibs --cflags --libs)
 	g++ diffractive_inclusive_ratio.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o diffractive_inclusive_ratio.exe
+
+dipole_amp_reader: dipole_amp_reader.cpp
+	g++ dipole_amp_reader.cpp -o dipole_amp_reader.exe
 
 clean:
 	-rm *.exe
