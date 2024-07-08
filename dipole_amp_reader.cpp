@@ -34,7 +34,7 @@ int main() {
         for (int j=0; j<30*30; j++) {
             for (int k=0; k<81; k++) {
                 int index = i*icof + j*81 + k;
-                cout << index << endl;
+                //cout << index << endl;
                 double b = calc_b(r[index], b_min[index], phi[index]);
                 double x = calc_x(Y[index]);
                 table[i][j][k][0] = r[index];
@@ -45,39 +45,74 @@ int main() {
         }
     }
 
-    cout << endl << endl;
+    //cout << endl << endl;
 
-    int i = 1;
-    bool ordered = true;
-    while (true) {
-        cout << i << endl;
-        if (table[0][i][0][1] < table[0][i-1][0][1]) {
-            table[0][i].swap(table[0][i-1]);
-            ordered = false;
-            if (i > 1) {
-                i -= 1;
-                continue;
+    for (int j=0; j<30; j++) {
+        int i = 1;
+        bool ordered = true;
+        while (true) {
+            //cout << i << ", " << table[j][i][0][1] << endl;
+            if (table[j][i][0][1] < table[j][i-1][0][1]) {
+                table[j][i].swap(table[j][i-1]);
+                ordered = false;
+                if (i > 1) {
+                    i -= 1;
+                    continue;
+                }
             }
-        }
-        i++;
-        if (i == table[0][i].size()) {
-            if (ordered == true) {
-                break;
-            } else {
-                i = 1;
-                ordered = true;
-            }
-        }
-    }
-    cout << "sorting finished" << endl;
-    for (int i=0; i<1; i++) {
-        for (int j=0; j<5; j++) {
-            for (int k=0; k<5; k++) {
-                int index = i*icof + j*81 + k;
-                cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
+            i++;
+            if (i == table[j].size()) {
+                if (ordered == true) {
+                    break;
+                } else {
+                    i = 1;
+                    ordered = true;
+                }
             }
         }
     }
 
+    cout << "b sorting finished" << endl;
     
+    for (int i=0; i<30; i++) {
+        for (int j=0; j<30*30; j++) {
+            int k = 1;
+            bool ordered = true;
+            while (true) {
+                //cout << k << ", " << table[i][j][k][2] << endl;
+                if (table[i][j][k][2] < table[i][j][k-1][2]) {
+                    table[i][j][k].swap(table[i][j][k-1]);
+                    ordered = false;
+                    if (k > 1) {
+                        k -= 1;
+                        continue;
+                    }
+                }
+                k++;
+                if (k == table[i][j].size()) {
+                    if (ordered == true) {
+                        break;
+                    } else {
+                        k = 1;
+                        ordered = true;
+                    }
+                }
+            }
+        }
+    }
+
+    cout << "x sorting finished" << endl;
+    
+    double previous = table[0][0][0][2];
+    for (int i=0; i<1; i++) {
+        for (int j=0; j<30*30; j++) {
+            for (int k=0; k<81; k++) {
+                int index = i*icof + j*81 + k;
+                if (true) {
+                    cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
+                }
+                previous = table[i][j][k][2];
+            }
+        }
+    }
 }
