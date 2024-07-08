@@ -19,9 +19,13 @@ double calc_x(double Y) {
 }
 
 double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> &table, double r, double b, double x) {
-    int i = 0;
+    //cout << "Getting amplitude, r=" << r << ", b=" << b << ", x=" << x << endl;
+    long unsigned int i = 0;
     while (table[i][0][0][0] < r) {
         i++;
+        if (i == table.size() - 1) {
+            break;
+        }
     }
     if (i != 0) {
         if (abs(table[i][0][0][0] - r) > r - table[i-1][0][0][0]) { //absolute value in case r is very large
@@ -29,9 +33,12 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> &
         }
     }
 
-    int j = 0;
+    long unsigned int j = 0;
     while (table[i][j][0][1] < b) {
         j++;
+        if (j == table[i].size() - 1) {
+            break;
+        }
     }
     if (j != 0) {
         int lower_j = j - 1;
@@ -43,9 +50,12 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> &
         }
     }
 
-    int k = 0;
+    long unsigned int k = 0;
     while (table[i][j][k][2] < x) {
         k++;
+        if (k == table[i][j].size() - 1) {
+            break;
+        }
     }
     if (k != 0) {
         if (abs(table[i][j][k][2] - x) > x - table[i][j][k-1][2]) { //absolute value in case x is very large
@@ -65,6 +75,8 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &
     vector<double> phi = doc.GetColumn<double>("phi");
     vector<double> Y = doc.GetColumn<double>("Y");
     vector<double> N = doc.GetColumn<double>("N");
+
+    cout << "Data read successfully" << endl;
     
     const int icof = 30*30*81;
 
@@ -86,7 +98,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &
     //cout << endl << endl;
 
     for (int j=0; j<30; j++) {
-        int i = 1;
+        long unsigned int i = 1;
         bool ordered = true;
         while (true) {
             //cout << i << ", " << table[j][i][0][1] << endl;
@@ -114,7 +126,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &
     
     for (int i=0; i<30; i++) {
         for (int j=0; j<30*30; j++) {
-            int k = 1;
+            long unsigned int k = 1;
             bool ordered = true;
             while (true) {
                 //cout << k << ", " << table[i][j][k][2] << endl;

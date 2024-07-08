@@ -20,7 +20,7 @@ int main() {
     }
     */
     auto start = chrono::high_resolution_clock::now();
-    double res = get_dipole_amplitude(table, 0.0001552151223, 2.43124123e-05, 1.123135e-09);
+    double res = get_dipole_amplitude(table, 121.77, 11.84, 1e-05);
     auto stop = chrono::high_resolution_clock::now();
 
     auto duration = chrono::duration_cast<chrono::nanoseconds>(stop-start);
