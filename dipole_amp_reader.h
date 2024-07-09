@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <rapidcsv.h>
+#include <math.h>
 
 using namespace std;
 
@@ -11,14 +12,18 @@ const double x_0 = 0.01;
 //static array<array<array<array<double, 4>, 81>, b_res>, 30> table;
 
 double calc_b(double r, double b_min, double phi) {
-    return sqrt(pow(r/2, 2) + b_min*b_min - r*b_min*cos(phi));
+    return sqrt(pow(r/2, 2) + b_min*b_min - r*b_min*cos(M_PI - phi));
 }
 
 double calc_x(double Y) {
     return exp(-Y)*x_0;
 }
 
-double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> &table, double r, double b, double x) {
+double calc_max_phi(double r, double b_min) {
+    return M_PI - acos(r/(2*b_min));
+}
+
+double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &table, double r, double b, double x) {
     //cout << "Getting amplitude, r=" << r << ", b=" << b << ", x=" << x << endl;
     long unsigned int i = 0;
     while (table[i][0][0][0] < r) {
@@ -66,7 +71,7 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 900>, 30> &
     return table[i][j][k][3];
 }
 
-void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &table, string filename) {
+void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &table, string filename) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
     
@@ -79,18 +84,32 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &
     cout << "Data read successfully" << endl;
     
     const int icof = 30*30*81;
+    const int jcof = 30*81;
 
     for (int i=0; i<30; i++) {
-        for (int j=0; j<30*30; j++) {
+        for (int j=0; j<30; j++) {
             for (int k=0; k<81; k++) {
-                int index = i*icof + j*81 + k;
-                //cout << index << endl;
-                double b = calc_b(r[index], b_min[index], phi[index]);
-                double x = calc_x(Y[index]);
-                table[i][j][k][0] = r[index];
-                table[i][j][k][1] = b;
+                double N_mean = 0;
+                double b_mean = 0;
+                int mean_denominator = 0;
+                int sub_index = i*icof + j*jcof;
+                double max_phi = calc_max_phi(r[sub_index], b_min[sub_index]);
+                for (int l=0; l<30; l++) {
+                    int index = sub_index + l*81 + k;
+                    if (phi[index] > max_phi) {
+                        break;
+                    }
+                    b_mean += calc_b(r[index], b_min[index], phi[index]); // factor 2 not needed since the end result is an average, i.e. Nb also doesn't have factor 2
+                    N_mean += N[index];
+                    mean_denominator++;
+                }
+                N_mean = N_mean/mean_denominator;
+                b_mean = b_mean/mean_denominator;
+                double x = calc_x(Y[sub_index + k]); //value of l is set to zero here
+                table[i][j][k][0] = r[sub_index];
+                table[i][j][k][1] = b_mean;
                 table[i][j][k][2] = x;
-                table[i][j][k][3] = N[index];
+                table[i][j][k][3] = N_mean;
             }
         }
     }

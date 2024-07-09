@@ -26,7 +26,7 @@ const double m_f = 1.27; //GeV
 
 const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
 
-static array<array<array<array<double, 4>, 81>, 900>, 30> table;
+static array<array<array<array<double, 4>, 81>, 30>, 30> table;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -83,7 +83,7 @@ int main() {
   double res, err;
 
   double xl[4] = {-1*integration_radius, -1*integration_radius, 0, 0};
-  double xu[4] = {integration_radius, integration_radius, 1, integration_radius};
+  double xu[4] = {integration_radius, integration_radius, 1, 18};
 
   struct parameters params = {1, 1};
 
