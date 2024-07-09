@@ -144,7 +144,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     cout << "b sorting finished" << endl;
     
     for (int i=0; i<30; i++) {
-        for (int j=0; j<30*30; j++) {
+        for (int j=0; j<30; j++) {
             long unsigned int k = 1;
             bool ordered = true;
             while (true) {
