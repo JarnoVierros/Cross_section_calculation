@@ -42,26 +42,24 @@ double dipole_amplitude(double r, double x) {
   return sigma_0*(1 - exp(-1*gsl_pow_2((Q_0*r)/(2*pow(x/x_0, lambda_star/2)))));
 }
 
-double L_integrand(double r_x, double r_y, double z, double Q2, double x) {
-  double r = sqrt(r_x*r_x + r_y*r_y);
-  return 4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, x);
+double L_integrand(double r, double z, double Q2, double x) {
+  return 2*M_PI*r*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, x);
 }
 
-double T_integrand(double r_x, double r_y, double z, double Q2, double x) {
-  double r = sqrt(r_x*r_x + r_y*r_y);
-  return (m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
+double T_integrand(double r, double z, double Q2, double x) {
+  return 2*M_PI*r*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
 }
 
 struct parameters {double Q2; double x;};
 
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*L_integrand(k[0], k[1], k[2], par->Q2, par->x);
+  return normalization*L_integrand(k[0], k[1], par->Q2, par->x);
 }
 
 double T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
+  return normalization*T_integrand(k[0], k[1], par->Q2, par->x);
 }
 
 int main() {
@@ -78,11 +76,11 @@ int main() {
   const double x_stop = 0.1;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
-  const int dim = 3;
+  const int dim = 2;
   double res, err;
 
-  double xl[3] = {-1*integration_radius, -1*integration_radius, 0};
-  double xu[3] = {integration_radius, integration_radius, 1};
+  double xl[2] = {0, 0};
+  double xu[2] = {40, 1};
 
   struct parameters params = {1, 1};
 
