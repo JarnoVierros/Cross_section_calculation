@@ -69,9 +69,9 @@ int main() {
 
   const int Q2_values[] = {1, 3, 5, 8, 10};
 
-  const int x_steps = 10;
+  const int x_steps = 30;
   const double x_start = 1e-5;
-  const double x_stop = 0.1;
+  const double x_stop = 0.01;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
   string filename = "data/dipole_amplitude_with_IP_dependence.csv";
@@ -100,7 +100,7 @@ int main() {
   TMultiGraph* L_graphs = new TMultiGraph();
   L_graphs->SetTitle("Longitudinal cross section;x;cross section (mb);cross section error (mb)");
 
-  ofstream L_output_file("data/inclusive_L_sigma_x.txt");
+  ofstream L_output_file("data/J_inclusive_L_sigma_x.txt");
   L_output_file << "Q2 (GeV);x;sigma (mb)" << endl;
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
@@ -148,13 +148,13 @@ int main() {
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  L_sigma_canvas->Print("figures/L_sigma_x_distribution.pdf");
+  L_sigma_canvas->Print("figures/J_L_sigma_x_distribution.pdf");
   
 
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Transverse cross section;x;cross section (mb)");
 
-  ofstream T_output_file("data/inclusive_T_sigma_x.txt");
+  ofstream T_output_file("data/J_inclusive_T_sigma_x.txt");
   T_output_file << "Q2 (GeV);x;sigma (mb)" << endl;
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
@@ -202,7 +202,7 @@ int main() {
 
   T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  T_sigma_canvas->Print("figures/T_sigma_x_distribution.pdf");
+  T_sigma_canvas->Print("figures/J_T_sigma_x_distribution.pdf");
 
   gsl_rng_free(rng);
   

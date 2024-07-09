@@ -71,9 +71,9 @@ int main() {
 
   const int Q2_values[] = {1, 3, 5, 8, 10};
 
-  const int x_steps = 10;
+  const int x_steps = 30;
   const double x_start = 1e-5;
-  const double x_stop = 0.1;
+  const double x_stop = 0.01;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
   const int dim = 2;
