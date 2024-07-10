@@ -37,11 +37,11 @@ int main() {
     
     double b[30], r[30];
     
-    for (int i=0; i<1; i++) {
-        for (int j=0; j<15; j++) {
-            b[j] = table[i][0][0][1];
-            r[j] = table[i][0][0][0];
-            //cout << j << ": " << b[j] << ", " << r[j] << endl;
+    for (int i=0; i<30; i++) {
+        for (int j=0; j<1; j++) {
+            b[i] = table[i][29][0][1];
+            r[i] = table[i][29][0][0];
+            cout << i << ": " << r[i] << ", " << b[i] << endl;
         }
     }
 
@@ -52,7 +52,7 @@ int main() {
 
     graph->Draw("AL");
 
-    gPad->SetLogx();
+    //gPad->SetLogx();
     //gPad->SetLogy();
 
     canvas->Print("test_b.pdf");
