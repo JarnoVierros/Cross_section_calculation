@@ -181,7 +181,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     double peak_b_min, peak_phi, peak_r, peak_x;
     double peak_N = 0;
     for (int i=15; i<30; i++) {
-        int past_count = 630;
+        int past_count = 900;
         double sub_N[past_count], sub_b[past_count];
         for (int l=40; l<81; l++) {
             for (int j=0; j<30; j++) {
@@ -191,7 +191,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                     if (N[index] > 1e-9) {
                         //continue; // 4.32171e-09
                     }
-                    if (calc_b(r[index], b_min[index], phi[index]) < 0.5) {
+                    if (calc_b(r[index], b_min[index], phi[index]) < 99999) {
                         //cout << N[index] << endl;
                         count++;
                         sub_N[j*30 + k] = N[index];
