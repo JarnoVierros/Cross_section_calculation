@@ -15,6 +15,7 @@ int main() {
     cout << "Amplitude loaded" << endl;
     string nothing;
 
+    double min = 9999;
     double max = 0;
     for (int i=0; i<30; i++) {
         for (int j=0; j<30; j++) {
@@ -23,10 +24,14 @@ int main() {
                 if (table[i][j][k][1] > max) {
                     max = table[i][j][k][1];
                 }
+                if (table[i][j][k][1] < min) {
+                    min = table[i][j][k][1];
+                }
             }
-            getchar();
+            //getchar();
         }
     }
+    cout << "min: " << min << endl;
     cout << "max: " << max << endl;
 
     /*
