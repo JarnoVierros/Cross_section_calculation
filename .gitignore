@@ -8,6 +8,6 @@
 !archive/data/*
 !archive/Jdipamp/*
 !archive/data/Jdipamp/*
-!archive/data/Jdipamp/no_interp/*
+!archive/Jdipamp/no_interp/*
 *.nb
 /data/
