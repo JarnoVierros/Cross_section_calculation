@@ -13,7 +13,7 @@ int main() {
     
     load_dipole_amplitudes(table, filename);
     cout << "Amplitude loaded" << endl;
-    string nothing;
+    
     /*
     double min = 9999;
     double max = 0;
@@ -34,7 +34,7 @@ int main() {
     cout << "min: " << min << endl;
     cout << "max: " << max << endl;
     */
-    
+    /*
     double b[30], r[30];
     
     for (int i=0; i<30; i++) {
@@ -56,7 +56,7 @@ int main() {
     //gPad->SetLogy();
 
     canvas->Print("test_b.pdf");
-    
+    */
     /*
     auto start = chrono::high_resolution_clock::now();
     double res = get_dipole_amplitude(table, 121.77, 11.84, 1e-05);
