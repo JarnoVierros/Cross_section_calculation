@@ -24,7 +24,7 @@ double calc_max_phi(double r, double b_min) {
 }
 
 
-double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &table, double r, double b, double x) {
+double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &table, double r, double b, double x, bool restrict_b=false) {
     //cout << "Getting amplitude, r=" << r << ", b=" << b << ", x=" << x << endl;
     long unsigned int i = 0;
     int r_closer = 0; //shifts i to the cell closer to the desired value
@@ -55,11 +55,17 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     int b_closer = 0;
     bool exact_b = false;
     if (b <= table[i+r_closer][0][0][1]) {
+        if (restrict_b) {
+            return 0;
+        }
         j = 0;
         exact_b = true;
         //cout << "Getting amplitude, r=" << r << ", b=" << b << ", x=" << x << endl;
         //cout << "b less than " << table[i+r_closer][0][0][1] << endl;
     } else if (b >= table[i+r_closer][table[i+r_closer].size()-1][0][1]) {
+        if (restrict_b) {
+            return 0;
+        }
         j = table[i+r_closer].size()-1;
         exact_b = true;
         //cout << "Getting amplitude, r=" << r << ", b=" << b << ", x=" << x << endl;
@@ -148,7 +154,7 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     double return_value = table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
     //cout << r_corr << ", " << b_corr << ", " << x_corr << endl;
     //cout << "return value: " << table[i+r_closer][j+b_closer][k+x_closer][3] << ", " << table[i+r_closer-1][j+b_closer][k+x_closer][3] << ", " << return_value << endl << endl;
-    return return_value;
+    //return return_value;
     return table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
 }
 

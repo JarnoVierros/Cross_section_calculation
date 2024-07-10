@@ -37,7 +37,7 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b, double x) {
-  return 2*M_PI*b*get_dipole_amplitude(table, r, b, x);
+  return 2*M_PI*b*get_dipole_amplitude(table, r, b, x, true);
 }
 
 double L_integrand(double r, double z, double b, double Q2, double x) {
@@ -81,7 +81,7 @@ int main() {
   double res, err;
 
   double xl[4] = {0, 0, 0};
-  double xu[4] = {40, 1, 20};
+  double xu[4] = {34, 1, 24};
 
   struct parameters params = {1, 1};
 
