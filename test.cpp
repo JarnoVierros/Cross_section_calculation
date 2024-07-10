@@ -2,7 +2,7 @@
 #include "TGraph.h"
 #include "TCanvas.h"
 
-#include "dipole_amp_reader.h"
+#include "new_dipole_amp_reader.h"
 #include <chrono>
 #include <iostream>
 

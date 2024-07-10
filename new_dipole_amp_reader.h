@@ -6,6 +6,7 @@
 
 #include "TGraph.h"
 #include "TCanvas.h"
+#include "TAxis.h"
 
 using namespace std;
 
@@ -176,22 +177,49 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     const int icof = 30*30*81;
     const int jcof = 30*81;
 
-    for (int i=0; i<30; i++) {
-        double sub_N[900], sub_b[900];
-        for (int l=0; l<81; l++) {
+    int count = 0;
+    double peak_b_min, peak_phi, peak_r, peak_x;
+    double peak_N = 0;
+    for (int i=15; i<30; i++) {
+        int past_count = 630;
+        double sub_N[past_count], sub_b[past_count];
+        for (int l=40; l<81; l++) {
             for (int j=0; j<30; j++) {
                 for (int k=0; k<30; k++) {
                     int index = i*icof + j*jcof + k*81 + l;
-                    sub_N[j*30 + k] = N[index];
-                    sub_b[j*30 + k] = calc_b(r[index], b_min[index], phi[index]);
+                    
+                    if (N[index] > 1e-9) {
+                        //continue; // 4.32171e-09
+                    }
+                    if (calc_b(r[index], b_min[index], phi[index]) < 0.5) {
+                        //cout << N[index] << endl;
+                        count++;
+                        sub_N[j*30 + k] = N[index];
+                        sub_b[j*30 + k] = calc_b(r[index], b_min[index], phi[index]);
+                        if (peak_N < N[index]) {
+                            peak_N = N[index];
+                            peak_x = Y[index];
+                            peak_b_min = b_min[index];
+                            peak_phi = phi[index];
+                            peak_r = r[index];
+                        }
+                    }
                 }
             }
+            cout << peak_r << ", " << peak_b_min << ", " << peak_phi << ", " << peak_x << ", " << peak_N << ", " << endl;
+            cout << "index: " << count << endl;
+            TGraph* graph = new TGraph(past_count, sub_b, sub_N);
+            TString title = "Dipole amplitude at r="+to_string(r[i*icof])+", x="+to_string(exp(-Y[i*icof+l])*0.01);
+            graph->SetTitle(title);
+            graph->GetXaxis()->SetTitle("b");
+            graph->GetYaxis()->SetTitle("N");
+            TCanvas* canvas = new TCanvas();
+            graph->Draw("AP");
+            gPad->SetLogx();
+            //gPad->SetLogy();
+            canvas->Print("test.pdf");
+            return;
         }
-        TGraph* graph = new TGraph(900, sub_b, sub_N);
-        TCanvas* canvas = new TCanvas();
-        graph->Draw("A");
-        canvas->Print("test.pdf");
-        return;
     }
 
     //cout << endl << endl;
