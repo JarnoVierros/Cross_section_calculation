@@ -162,8 +162,11 @@ int main() {
   comparison_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
-
-  comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  if (false) {
+    comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  } else {
+    comparison_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
+  }
 
   comparison_canvas->Print("figures/Jani_GBW_L_ratio.pdf");
   
