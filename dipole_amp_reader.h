@@ -23,52 +23,105 @@ double calc_max_phi(double r, double b_min) {
     return M_PI - acos(r/(2*b_min));
 }
 
+
 double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &table, double r, double b, double x) {
     //cout << "Getting amplitude, r=" << r << ", b=" << b << ", x=" << x << endl;
     long unsigned int i = 0;
-    while (table[i][0][0][0] < r) {
-        i++;
-        if (i == table.size() - 1) {
-            break;
+    int r_closer = 0; //shifts i to the cell closer to the desired value
+    if (r <= table[0][0][0][0]) {
+        i = 0;
+    } else if (r >= table[table.size()-1][0][0][0]) {
+        i = table.size()-1;
+    } else {
+        while (table[i][0][0][0] < r) {
+            i++;
+            if (i >= table.size()) {
+                throw 1;
+            }
         }
-    }
-    if (i != 0) {
-        if (abs(table[i][0][0][0] - r) > r - table[i-1][0][0][0]) { //absolute value in case r is very large
-            i = i - 1;
+        if (table[i][0][0][0] == r) {
+            r_closer = 0;
+        }else if (table[i][0][0][0] - r < r - table[i-1][0][0][0]) {
+            r_closer = 0;
+        } else {
+            r_closer = -1;
         }
     }
 
     long unsigned int j = 0;
-    while (table[i][j][0][1] < b) {
-        j++;
-        if (j == table[i].size() - 1) {
-            break;
+    int b_closer = 0;
+    if (b <= table[i][0][0][1]) {
+        j = 0;
+    } else if (r >= table[i][table[i].size()][0][1]) {
+        j = table[i].size()-1;
+    } else {
+        while (table[i][j][0][1] < b) {
+            j++;
+            if (j >= table[i].size()) {
+                throw 1;
+            }
         }
-    }
-    if (j != 0) {
-        int lower_j = j - 1;
-        while (table[i][j][0][1] == table[i][lower_j][0][1]) {
-            lower_j--;
-        }
-        if (abs(table[i][j][0][1] - b) > b - table[i][lower_j][0][1]) { //absolute value in case b is very large
-            j = lower_j;
+        if (table[i][j][0][1] == b) {
+            b_closer = 0;
+        }else if (table[i][j][0][1] - b < b - table[i][j-1][0][1]) {
+            b_closer = 0;
+        } else {
+            b_closer = -1;
         }
     }
 
     long unsigned int k = 0;
-    while (table[i][j][k][2] < x) {
-        k++;
-        if (k == table[i][j].size() - 1) {
-            break;
+    int x_closer = 0; // 2 meas exact match
+    if (x <= table[i][j][0][2]) {
+        k = 0;
+    } else if (x >= table[i][j][table[i][j].size()][2]) {
+        k = table[i][j].size()-1;
+    } else {
+        while (table[i][j][k][2] < x) {
+            k++;
+            if (k >= table[i][j].size()) {
+                throw 1;
+            }
         }
-    }
-    if (k != 0) {
-        if (abs(table[i][j][k][2] - x) > x - table[i][j][k-1][2]) { //absolute value in case x is very large
-            k = k - 1;
+        if (table[i][j][k][2] == x) {
+            x_closer = 0;
+        }else if (table[i][j][k][2] - x < x - table[i][j][k-1][2]) {
+            x_closer = 0;
+        } else {
+            x_closer = -1;
         }
     }
 
-    return table[i][j][k][3];
+    double r_corr, b_corr, x_corr;
+
+    if (r == table[i][0][0][0]) {
+        r_corr = 0;
+    } else {
+        r_corr = (r - table[i-1][0][0][0])/(table[i][0][0][0] - table[i-1][0][0][0])*(table[i][j+b_closer][k+x_closer][3] - table[i-1][j+b_closer][k+x_closer][3]);
+        if (r_closer == 0) {
+            r_corr = -1*(1-r_corr);
+        }
+    }
+
+    if (b == table[i][j][0][1]) {
+        b_corr = 0;
+    } else {
+        b_corr = (b - table[i+r_closer][j-1][0][1])/(table[i+r_closer][j][0][1] - table[i+r_closer][j-1][0][1])*(table[i+r_closer][j][k+x_closer][3] - table[i+r_closer][j-1][k+x_closer][3]);
+        if (b_closer == 0) {
+            b_corr = -1*(1-b_corr);
+        }
+    }
+
+    if (x == table[i][j][k][2]) {
+        x_corr = 0;
+    } else {
+        x_corr = (x - table[i+r_closer][j+b_closer][k-1][2])/(table[i+r_closer][j+b_closer][k][2] - table[i+r_closer][j+b_closer][k-1][2])*(table[i+r_closer][j+b_closer][k][3] - table[i+r_closer][j+b_closer][k-1][3]);
+        if (x_closer == 0) {
+            x_corr = -1*(1-x_corr);
+        }
+    }
+
+    return table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
 }
 
 void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &table, string filename) {
