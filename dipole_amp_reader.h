@@ -38,7 +38,7 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     } else {
         while (table[i][0][0][0] < r) {
             i++;
-            if (i >= table.size()) {
+            if (i > table.size()-1) {
                 throw 1;
             }
         }
@@ -57,13 +57,17 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     if (b <= table[i+r_closer][0][0][1]) {
         j = 0;
         exact_b = true;
-    } else if (b >= table[i+r_closer][table[i+r_closer].size()][0][1]) {
+        //cout << "Getting amplitude, r=" << r << ", b=" << b << ", x=" << x << endl;
+        //cout << "b less than " << table[i+r_closer][0][0][1] << endl;
+    } else if (b >= table[i+r_closer][table[i+r_closer].size()-1][0][1]) {
         j = table[i+r_closer].size()-1;
         exact_b = true;
+        //cout << "Getting amplitude, r=" << r << ", b=" << b << ", x=" << x << endl;
+        //cout << "b more than " << table[i+r_closer][table[i+r_closer].size()-1][0][1] << endl;
     } else {
         while (table[i+r_closer][j][0][1] < b) {
             j++;
-            if (j >= table[i+r_closer].size()) {
+            if (j > table[i+r_closer].size()-1) {
                 throw 1;
             }
         }
@@ -82,13 +86,13 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     if (x <= table[i+r_closer][j+b_closer][0][2]) {
         k = 0;
         exact_x = true;
-    } else if (x >= table[i+r_closer][j+b_closer][table[i+r_closer][j+b_closer].size()][2]) {
+    } else if (x >= table[i+r_closer][j+b_closer][table[i+r_closer][j+b_closer].size()-1][2]) {
         k = table[i+r_closer][j+b_closer].size()-1;
         exact_x = true;
     } else {
         while (table[i+r_closer][j+b_closer][k][2] < x) {
             k++;
-            if (k >= table[i+r_closer][j+b_closer].size()) {
+            if (k > table[i+r_closer][j+b_closer].size()-1) {
                 throw 1;
             }
         }
@@ -106,30 +110,45 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     if (exact_r) {
         r_corr = 0;
     } else {
-        r_corr = (r - table[i-1][0][0][0])/(table[i][0][0][0] - table[i-1][0][0][0])*(table[i][j+b_closer][k+x_closer][3] - table[i-1][j+b_closer][k+x_closer][3]);
         if (r_closer == 0) {
-            r_corr = -1*(1-r_corr);
+            r_corr = -1*(table[i][j+b_closer][k+x_closer][3] - table[i-1][j+b_closer][k+x_closer][3])*(1-(r - table[i-1][0][0][0])/(table[i][0][0][0] - table[i-1][0][0][0]));
+        } else {
+            r_corr = (r - table[i-1][0][0][0])/(table[i][0][0][0] - table[i-1][0][0][0])*(table[i][j+b_closer][k+x_closer][3] - table[i-1][j+b_closer][k+x_closer][3]);
         }
+        //cout << endl;
+        //cout << "r=" << r << ", low=" << table[i-1][0][0][0] << ", high=" << table[i][0][0][0] << ", closer=" << r_closer << endl;
+        //cout << "location=" << (r - table[i-1][0][0][0])/(table[i][0][0][0] - table[i-1][0][0][0]) << ", higher_N=" << table[i][j+b_closer][k+x_closer][3] << ", lower_N=" << table[i-1][j+b_closer][k+x_closer][3] << ", corr=" << r_corr << endl;
+        //cout << endl;
     }
 
     if (exact_b) {
         b_corr = 0;
     } else {
-        b_corr = (b - table[i+r_closer][j-1][0][1])/(table[i+r_closer][j][0][1] - table[i+r_closer][j-1][0][1])*(table[i+r_closer][j][k+x_closer][3] - table[i+r_closer][j-1][k+x_closer][3]);
         if (b_closer == 0) {
-            b_corr = -1*(1-b_corr);
+            b_corr = -1*(table[i+r_closer][j][k+x_closer][3] - table[i+r_closer][j-1][k+x_closer][3])*(1 - (b - table[i+r_closer][j-1][0][1])/(table[i+r_closer][j][0][1] - table[i+r_closer][j-1][0][1]));
+        } else {
+            b_corr = (b - table[i+r_closer][j-1][0][1])/(table[i+r_closer][j][0][1] - table[i+r_closer][j-1][0][1])*(table[i+r_closer][j][k+x_closer][3] - table[i+r_closer][j-1][k+x_closer][3]);
         }
+        //cout << endl;
+        //cout << "b=" << b << ", low=" << table[i+r_closer][j-1][0][1] << ", high=" << table[i+r_closer][j][0][1] << ", closer=" << b_closer << endl;
+        //cout << "location=" << (b - table[i+r_closer][j-1][0][1])/(table[i+r_closer][j][0][1] - table[i+r_closer][j-1][0][1]) << ", higher_N=" << table[i+r_closer][j][k+x_closer][3] << ", lower_N=" << table[i+r_closer][j-1][k+x_closer][3] << ", corr=" << b_corr << endl;
+        //cout << endl;
     }
 
     if (exact_x) {
         x_corr = 0;
     } else {
-        x_corr = (x - table[i+r_closer][j+b_closer][k-1][2])/(table[i+r_closer][j+b_closer][k][2] - table[i+r_closer][j+b_closer][k-1][2])*(table[i+r_closer][j+b_closer][k][3] - table[i+r_closer][j+b_closer][k-1][3]);
         if (x_closer == 0) {
-            x_corr = -1*(1-x_corr);
+            x_corr = -1*(table[i+r_closer][j+b_closer][k][3] - table[i+r_closer][j+b_closer][k-1][3])*(1 - (x - table[i+r_closer][j+b_closer][k-1][2])/(table[i+r_closer][j+b_closer][k][2] - table[i+r_closer][j+b_closer][k-1][2]));
+        } else {
+            x_corr = (x - table[i+r_closer][j+b_closer][k-1][2])/(table[i+r_closer][j+b_closer][k][2] - table[i+r_closer][j+b_closer][k-1][2])*(table[i+r_closer][j+b_closer][k][3] - table[i+r_closer][j+b_closer][k-1][3]);
         }
     }
-
+    
+    double return_value = table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
+    //cout << r_corr << ", " << b_corr << ", " << x_corr << endl;
+    //cout << "return value: " << table[i+r_closer][j+b_closer][k+x_closer][3] << ", " << table[i+r_closer-1][j+b_closer][k+x_closer][3] << ", " << return_value << endl << endl;
+    return return_value;
     return table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
 }
 
