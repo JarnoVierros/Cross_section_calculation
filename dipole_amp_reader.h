@@ -28,10 +28,13 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     //cout << "Getting amplitude, r=" << r << ", b=" << b << ", x=" << x << endl;
     long unsigned int i = 0;
     int r_closer = 0; //shifts i to the cell closer to the desired value
+    bool exact_r = false;
     if (r <= table[0][0][0][0]) {
         i = 0;
+        exact_r = true;
     } else if (r >= table[table.size()-1][0][0][0]) {
         i = table.size()-1;
+        exact_r = true;
     } else {
         while (table[i][0][0][0] < r) {
             i++;
@@ -50,20 +53,23 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
 
     long unsigned int j = 0;
     int b_closer = 0;
-    if (b <= table[i][0][0][1]) {
+    bool exact_b = false;
+    if (b <= table[i+r_closer][0][0][1]) {
         j = 0;
-    } else if (r >= table[i][table[i].size()][0][1]) {
-        j = table[i].size()-1;
+        exact_b = true;
+    } else if (b >= table[i+r_closer][table[i+r_closer].size()][0][1]) {
+        j = table[i+r_closer].size()-1;
+        exact_b = true;
     } else {
-        while (table[i][j][0][1] < b) {
+        while (table[i+r_closer][j][0][1] < b) {
             j++;
-            if (j >= table[i].size()) {
+            if (j >= table[i+r_closer].size()) {
                 throw 1;
             }
         }
-        if (table[i][j][0][1] == b) {
+        if (table[i+r_closer][j][0][1] == b) {
             b_closer = 0;
-        }else if (table[i][j][0][1] - b < b - table[i][j-1][0][1]) {
+        }else if (table[i+r_closer][j][0][1] - b < b - table[i+r_closer][j-1][0][1]) {
             b_closer = 0;
         } else {
             b_closer = -1;
@@ -72,20 +78,23 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
 
     long unsigned int k = 0;
     int x_closer = 0; // 2 meas exact match
-    if (x <= table[i][j][0][2]) {
+    bool exact_x = false;
+    if (x <= table[i+r_closer][j+b_closer][0][2]) {
         k = 0;
-    } else if (x >= table[i][j][table[i][j].size()][2]) {
-        k = table[i][j].size()-1;
+        exact_x = true;
+    } else if (x >= table[i+r_closer][j+b_closer][table[i+r_closer][j+b_closer].size()][2]) {
+        k = table[i+r_closer][j+b_closer].size()-1;
+        exact_x = true;
     } else {
-        while (table[i][j][k][2] < x) {
+        while (table[i+r_closer][j+b_closer][k][2] < x) {
             k++;
-            if (k >= table[i][j].size()) {
+            if (k >= table[i+r_closer][j+b_closer].size()) {
                 throw 1;
             }
         }
-        if (table[i][j][k][2] == x) {
+        if (table[i+r_closer][j+b_closer][k][2] == x) {
             x_closer = 0;
-        }else if (table[i][j][k][2] - x < x - table[i][j][k-1][2]) {
+        }else if (table[i+r_closer][j+b_closer][k][2] - x < x - table[i+r_closer][j+b_closer][k-1][2]) {
             x_closer = 0;
         } else {
             x_closer = -1;
@@ -94,7 +103,7 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
 
     double r_corr, b_corr, x_corr;
 
-    if (r == table[i][0][0][0]) {
+    if (exact_r) {
         r_corr = 0;
     } else {
         r_corr = (r - table[i-1][0][0][0])/(table[i][0][0][0] - table[i-1][0][0][0])*(table[i][j+b_closer][k+x_closer][3] - table[i-1][j+b_closer][k+x_closer][3]);
@@ -103,7 +112,7 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
         }
     }
 
-    if (b == table[i][j][0][1]) {
+    if (exact_b) {
         b_corr = 0;
     } else {
         b_corr = (b - table[i+r_closer][j-1][0][1])/(table[i+r_closer][j][0][1] - table[i+r_closer][j-1][0][1])*(table[i+r_closer][j][k+x_closer][3] - table[i+r_closer][j-1][k+x_closer][3]);
@@ -112,7 +121,7 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
         }
     }
 
-    if (x == table[i][j][k][2]) {
+    if (exact_x) {
         x_corr = 0;
     } else {
         x_corr = (x - table[i+r_closer][j+b_closer][k-1][2])/(table[i+r_closer][j+b_closer][k][2] - table[i+r_closer][j+b_closer][k-1][2])*(table[i+r_closer][j+b_closer][k][3] - table[i+r_closer][j+b_closer][k-1][3]);
