@@ -14,7 +14,7 @@ int main() {
     load_dipole_amplitudes(table, filename);
     cout << "Amplitude loaded" << endl;
     string nothing;
-
+    /*
     double min = 9999;
     double max = 0;
     for (int i=0; i<30; i++) {
@@ -33,19 +33,19 @@ int main() {
     }
     cout << "min: " << min << endl;
     cout << "max: " << max << endl;
-
-    /*
-    double b[30], N[30];
+    */
+    
+    double b[30], r[30];
     
     for (int i=0; i<1; i++) {
         for (int j=0; j<15; j++) {
-            b[j] = table[i][j][0][1];
-            N[j] = table[i][j][0][3];
-            cout << j << ": " << b[j] << ", " << N[j] << endl;
+            b[j] = table[i][0][0][1];
+            r[j] = table[i][0][0][0];
+            //cout << j << ": " << b[j] << ", " << r[j] << endl;
         }
     }
 
-    TGraph* graph = new TGraph(15, b, N);
+    TGraph* graph = new TGraph(30, r, b);
     graph->SetLineColor(2);
 
     TCanvas* canvas = new TCanvas();
@@ -56,7 +56,7 @@ int main() {
     //gPad->SetLogy();
 
     canvas->Print("test_b.pdf");
-    */
+    
     /*
     auto start = chrono::high_resolution_clock::now();
     double res = get_dipole_amplitude(table, 121.77, 11.84, 1e-05);
