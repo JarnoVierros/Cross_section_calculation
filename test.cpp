@@ -14,6 +14,30 @@ int main() {
     load_dipole_amplitudes(table, filename);
     cout << "Amplitude loaded" << endl;
     
+
+    double min_bs[30*81];
+    double x[30*81];
+    int count = 0;
+    for (int i=0; i<30; i++) {
+        for (int k=0; k<81; k++) {
+            //cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
+            min_bs[count] = table[i][0][k][1];
+            x[count] = count;
+        }
+    }
+
+    TGraph* graph = new TGraph(30*81, x, min_bs);
+    //graph->SetLineColor(2);
+
+    TCanvas* canvas = new TCanvas();
+
+    graph->Draw("AP");
+
+    //gPad->SetLogx();
+    //gPad->SetLogy();
+
+    canvas->Print("test_b.pdf");
+
     /*
     double min = 9999;
     double max = 0;
