@@ -247,23 +247,27 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
 
             TGraph* averages_graph = new TGraph(30, centers, averages);
 
-            vector<TLine*> lines(30);
-            for (int n=0; n<30; n++) {
+            vector<TLine*> lines(31);
+            for (int n=0; n<31; n++) {
                 lines[n] = new TLine();
                 lines[n]->SetX1(borders[n]);
                 lines[n]->SetX2(borders[n]);
                 lines[n]->SetY1(0);
-                lines[n]->SetY2(max_N);
+                lines[n]->SetY2(1.1*max_N);
+                //cout << borders[n] << ", " << max_N << endl;
             }
 
             TCanvas* canvas = new TCanvas();
 
-            for (int n=0; n<30; n++) {
+            averages_graph->GetXaxis()->SetLimits(borders[0]/1.5, borders[30]*1.5);
+            averages_graph->Draw("A*");
+            datapoints->Draw("P");
+
+            for (int n=0; n<31; n++) {
                 lines[n]->Draw();
             }
 
-            datapoints->Draw("AP");
-            averages_graph->Draw("*");
+            gPad->SetLogx();
 
             TString title = "b_figs/r_" + to_string(r[i*icof]) + "_x_" + to_string(calc_x(Y[i*icof+l])) + ".pdf";
             canvas->Print(title);

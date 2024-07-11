@@ -75,7 +75,7 @@ int main() {
     canvas->Print("test_b.pdf");
     */
 
-    
+    /*
     for (int i=0; i<30; i++) {
         for (int j=0; j<30; j++) {
             for (int k=0; k<81; k++) {
@@ -88,7 +88,7 @@ int main() {
             }
         }
     }
-    
+    */
     /*
     double b[30], r[30];
     
