@@ -7,6 +7,7 @@
 #include "TGraph.h"
 #include "TCanvas.h"
 #include "TAxis.h"
+#include "TLine.h"
 
 using namespace std;
 
@@ -202,8 +203,9 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                     sub_N.push_back(N[index]);
                 }
             }
-            
-            for (double n=0; n<30; n++) {
+            double centers[30], averages[30], borders[31];
+            double max_N = 0;
+            for (int n=0; n<30; n++) {
                 int hits = 0;
                 double total_N = 0;
                 double b_center = pow(10, log10(b_start) + n*b_step);
@@ -230,8 +232,41 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                 table[i][n][l][1] = b_center;
                 table[i][n][l][2] = sub_x[n];
                 table[i][n][l][3] = total_N/hits;
-                cout << table[i][n][l][0] << ", " << table[i][n][l][1] << ", " << table[i][n][l][2] << ", " << table[i][n][l][3] << endl;
+
+                if (max_N < total_N/hits) {max_N = total_N/hits;}
+                centers[n] = b_center;
+                averages[n] = total_N/hits;
+                borders[n] = low_limit;
+                if (n==29) {borders[30] = high_limit;}
+                //cout << table[i][n][l][0] << ", " << table[i][n][l][1] << ", " << table[i][n][l][2] << ", " << table[i][n][l][3] << endl;
             }
+            double* sub_b_arr = &sub_b[0];
+            double* sub_N_arr = &sub_N[0];
+            int array_size = sub_b.size();
+            TGraph* datapoints = new TGraph(array_size, sub_b_arr, sub_N_arr);
+
+            TGraph* averages_graph = new TGraph(30, centers, averages);
+
+            vector<TLine*> lines(30);
+            for (int n=0; n<30; n++) {
+                lines[n] = new TLine();
+                lines[n]->SetX1(borders[n]);
+                lines[n]->SetX2(borders[n]);
+                lines[n]->SetY1(0);
+                lines[n]->SetY2(max_N);
+            }
+
+            TCanvas* canvas = new TCanvas();
+
+            for (int n=0; n<30; n++) {
+                lines[n]->Draw();
+            }
+
+            datapoints->Draw("AP");
+            averages_graph->Draw("*");
+
+            TString title = "b_figs/r_" + to_string(r[i*icof]) + "_x_" + to_string(calc_x(Y[i*icof+l])) + ".pdf";
+            canvas->Print(title);
         }
     }
 
