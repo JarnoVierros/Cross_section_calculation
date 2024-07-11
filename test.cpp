@@ -8,33 +8,42 @@
 
 int main() {
 
-    static array<array<array<array<double, 4>, 81>, 900>, 30> table;
+    static array<array<array<array<double, 4>, 81>, 30>, 30> table;
     string filename = "data/dipole_amplitude_with_IP_dependence.csv";
     
     load_dipole_amplitudes(table, filename);
     cout << "Amplitude loaded" << endl;
     
-
+    /*
     double min_bs[30*81];
     double x[30*81];
     int count = 0;
     for (int i=0; i<30; i++) {
         for (int k=0; k<81; k++) {
             //cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
-            min_bs[count] = table[i][899][k][1];
+            min_bs[count] = table[i][0][k][1];
             x[count] = count;
             count++;
         }
     }
+    */
 
-    TGraph* graph = new TGraph(100, x, min_bs);
+    double b[30];
+    double N[30];
+    for (int i=0; i<30; i++) {
+        //cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
+        b[i] = table[0][i][0][1];
+        N[i] = table[0][i][0][3];
+    }
+
+    TGraph* graph = new TGraph(100, b, N);
     //graph->SetLineColor(2);
 
     TCanvas* canvas = new TCanvas();
 
     graph->Draw("A*");
 
-    //gPad->SetLogx();
+    gPad->SetLogx();
     //gPad->SetLogy();
 
     canvas->Print("test_b.pdf");

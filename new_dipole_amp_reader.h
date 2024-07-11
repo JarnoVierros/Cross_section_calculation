@@ -162,7 +162,7 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     return table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
 }
 
-void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &table, string filename) {
+void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &table, string filename) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
     
@@ -177,34 +177,31 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &
     const int icof = 30*30*81;
     const int jcof = 30*81;
 
+    const int b_steps = 30;
+    const double b_start = 0;
+    const double b_stop = 17.3;
+    const double b_step = 1.0/(b_steps-1)*log10(b_stop/b_start);
+
     for (int i=0; i<30; i++) {
         for (int l=0; l<81; l++) {
+            vector<double> sub_r, sub_b, sub_x, sub_N;
             for (int j=0; j<30; j++) {
                 for (int k=0; k<30; k++) {
                     int index = i*icof + j*jcof + k*81 + l;
                     if (phi[index] > calc_max_phi(r[index], b_min[index])) {
-                        table[i][j*30+k][l][0] = 0;
-                        table[i][j*30+k][l][1] = 0;
-                        table[i][j*30+k][l][2] = 0;
-                        table[i][j*30+k][l][3] = 0;
-                        continue;
+                        continue; //Skip if phi is in forbidden region
                     }
-                    table[i][j*30+k][l][0] = r[index];
-                    table[i][j*30+k][l][1] = calc_b(r[index], b_min[index], phi[index]);
-                    table[i][j*30+k][l][2] = calc_x(Y[index]);
-                    table[i][j*30+k][l][3] = N[index];
-                    if (i<9) {
-                        continue;
-                    }
-                    if (i==29&&l==80&&j==29&&k==29) {
-                        cout << "Here: " << endl;
-                        cout << r[index] << endl;
-                        cout << calc_b(r[index], b_min[index], phi[index]) << endl;
-                        cout << calc_x(Y[index]) << endl;
-                        cout << N[index] << endl;
-                    }
-                    
+                    sub_r.push_back(r[index]);
+                    sub_b.push_back(calc_b(r[index], b_min[index], phi[index]));
+                    sub_x.push_back(calc_x(Y[index]));
+                    sub_N.push_back(N[index]);
                 }
+            }
+            for (int n=0; n<30; n++) {
+                table[i][n][l][0] = 1;
+                table[i][n][l][1] = pow(10, log10(b_start) + n*b_step);
+                table[i][n][l][2] = 1;
+                table[i][n][l][3] = 1;
             }
         }
     }
@@ -241,7 +238,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &
     cout << "b sorting finished" << endl;
     
     for (int i=0; i<30; i++) {
-        for (int j=0; j<900; j++) {
+        for (int j=0; j<30; j++) {
             long unsigned int k = 1;
             bool ordered = true;
             while (true) {
