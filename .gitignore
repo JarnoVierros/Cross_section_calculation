@@ -9,5 +9,6 @@
 !archive/Jdipamp/*
 !archive/data/Jdipamp/*
 !archive/Jdipamp/no_interp/*
+!/b_figs/*
 *.nb
 /data/

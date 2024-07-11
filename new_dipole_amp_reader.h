@@ -183,7 +183,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     const int jcof = 30*81;
 
     const int b_steps = 30;
-    const double b_start = 1e-05; //2.37024e-05
+    const double b_start = 4e-5; //2.37024e-05
     const double b_stop = 17.3;
     const double b_step = 1.0/(b_steps-1)*log10(b_stop/b_start);
 
@@ -198,12 +198,15 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                         //cout << "skipping" << endl;
                         break; //Skip if phi is in forbidden region
                     }
-                    sub_b.push_back(calc_b(r[index], b_min[index], phi[index]));
+                    double sub_b_value = calc_b(r[index], b_min[index], phi[index]);
+                    if (sub_b_value == 0) {
+                        cout << "zero found" << endl;
+                        sub_b_value = 2.5e-5;
+                    }
+                    //if (sub_b_value>2) {continue;}
+                    sub_b.push_back(sub_b_value);
                     sub_x.push_back(calc_x(Y[index]));
                     sub_N.push_back(N[index]);
-                    if (i==29&&l==80&&j==29&&k==29) {
-                        cout << "final: " << calc_b(r[index], b_min[index], phi[index]) << ", " << N[index] << endl;
-                    }
                 }
             }
             double centers[30], averages[30], borders[31];
@@ -212,8 +215,18 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                 int hits = 0;
                 double total_N = 0;
                 double b_center = pow(10, log10(b_start) + n*b_step);
-                double low_limit = sqrt(pow(10, log10(b_start) + (n-1)*b_step)*pow(10, log10(b_start) + n*b_step));
-                double high_limit = sqrt(pow(10, log10(b_start) + n*b_step)*pow(10, log10(b_start) + (n+1)*b_step));;
+                double low_limit;
+                if (n == 0) {
+                    low_limit = 2e-5;
+                } else {
+                    low_limit = sqrt(pow(10, log10(b_start) + (n-1)*b_step)*pow(10, log10(b_start) + n*b_step));
+                }
+                double high_limit;
+                if (n == 29) {
+                    high_limit = 1.5*b_center;
+                } else {
+                    high_limit = sqrt(pow(10, log10(b_start) + n*b_step)*pow(10, log10(b_start) + (n+1)*b_step));
+                }
                 //cout << "options: " << sub_b.size() << endl;
                 for (int m=0; m<sub_b.size(); m++) {
                     if (low_limit < sub_b[m] && sub_b[m] < high_limit) {
@@ -247,6 +260,8 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
             double* sub_N_arr = &sub_N[0];
             int array_size = sub_b.size();
             TGraph* datapoints = new TGraph(array_size, sub_b_arr, sub_N_arr);
+            datapoints->SetMarkerStyle(6);
+            datapoints->SetMarkerColor(2);
 
             TGraph* averages_graph = new TGraph(30, centers, averages);
 
@@ -263,7 +278,12 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
             TCanvas* canvas = new TCanvas();
 
             averages_graph->GetXaxis()->SetLimits(borders[0]/1.5, borders[30]*1.5);
+            //averages_graph->GetXaxis()->SetLimits(5e-7, 2);
             averages_graph->Draw("A*");
+            TString title = "N as a function of b at r=" + to_string(r[i*icof]) + ", x="+to_string(calc_x(Y[i*icof+l]));
+            averages_graph->SetTitle(title);
+            averages_graph->GetXaxis()->SetTitle("b");
+            averages_graph->GetYaxis()->SetTitle("N");
             datapoints->Draw("P");
 
             for (int n=0; n<31; n++) {
@@ -271,8 +291,9 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
             }
 
             gPad->SetLogx();
+            //gPad->SetLogy();
 
-            TString title = "b_figs/r_" + to_string(r[i*icof]) + "_x_" + to_string(calc_x(Y[i*icof+l])) + ".pdf";
+            title = "b_figs/r_" + to_string(r[i*icof]) + "_x_" + to_string(calc_x(Y[i*icof+l])) + ".pdf";
             canvas->Print(title);
         }
     }
