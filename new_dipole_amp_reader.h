@@ -196,11 +196,14 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                     //cout << "phi=" << phi[index] << ", max=" << calc_max_phi(r[index], b_min[index]) << endl;
                     if (phi[index] > calc_max_phi(r[index], b_min[index])) {
                         //cout << "skipping" << endl;
-                        continue; //Skip if phi is in forbidden region
+                        break; //Skip if phi is in forbidden region
                     }
                     sub_b.push_back(calc_b(r[index], b_min[index], phi[index]));
                     sub_x.push_back(calc_x(Y[index]));
                     sub_N.push_back(N[index]);
+                    if (i==29&&l==80&&j==29&&k==29) {
+                        cout << "final: " << calc_b(r[index], b_min[index], phi[index]) << ", " << N[index] << endl;
+                    }
                 }
             }
             double centers[30], averages[30], borders[31];
