@@ -162,7 +162,7 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     return table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
 }
 
-void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &table, string filename) {
+void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 900>, 30> &table, string filename) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
     
@@ -185,20 +185,31 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                     if (phi[index] > calc_max_phi(r[index], b_min[index])) {
                         table[i][j*30+k][l][0] = 0;
                         table[i][j*30+k][l][1] = 0;
-                        table[i][j*30+k][l][0] = 0;
-                        table[i][j*30+k][l][0] = 0;
+                        table[i][j*30+k][l][2] = 0;
+                        table[i][j*30+k][l][3] = 0;
                         continue;
                     }
                     table[i][j*30+k][l][0] = r[index];
                     table[i][j*30+k][l][1] = calc_b(r[index], b_min[index], phi[index]);
-                    table[i][j*30+k][l][0] = calc_x(Y[index]);
-                    table[i][j*30+k][l][0] = r[i];
+                    table[i][j*30+k][l][2] = calc_x(Y[index]);
+                    table[i][j*30+k][l][3] = N[index];
+                    if (i<9) {
+                        continue;
+                    }
+                    if (i==29&&l==80&&j==29&&k==29) {
+                        cout << "Here: " << endl;
+                        cout << r[index] << endl;
+                        cout << calc_b(r[index], b_min[index], phi[index]) << endl;
+                        cout << calc_x(Y[index]) << endl;
+                        cout << N[index] << endl;
+                    }
+                    
                 }
             }
         }
     }
 
-    return;
+    cout << "Variable conversion finished" << endl;
 
     //cout << endl << endl;
 
@@ -230,7 +241,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     cout << "b sorting finished" << endl;
     
     for (int i=0; i<30; i++) {
-        for (int j=0; j<30; j++) {
+        for (int j=0; j<900; j++) {
             long unsigned int k = 1;
             bool ordered = true;
             while (true) {
