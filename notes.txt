@@ -18,3 +18,7 @@ step size:
 chi2=209.023
 ndf=49
 chi2/ndf=4.26577
+
+smallest max b: 17.3
+largest min b: 0
+second smallest b: 2.37024e-05
