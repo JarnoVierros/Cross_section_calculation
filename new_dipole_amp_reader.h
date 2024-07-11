@@ -24,7 +24,11 @@ double calc_x(double Y) {
 }
 
 double calc_max_phi(double r, double b_min) {
-    return M_PI - acos(r/(2*b_min));
+    if (r > 2*b_min) {
+        return 2*M_PI;
+    } else {
+        return M_PI - acos(r/(2*b_min));
+    }
 }
 
 
@@ -178,35 +182,58 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     const int jcof = 30*81;
 
     const int b_steps = 30;
-    const double b_start = 0;
+    const double b_start = 1e-05; //2.37024e-05
     const double b_stop = 17.3;
     const double b_step = 1.0/(b_steps-1)*log10(b_stop/b_start);
 
     for (int i=0; i<30; i++) {
         for (int l=0; l<81; l++) {
-            vector<double> sub_r, sub_b, sub_x, sub_N;
+            vector<double> sub_b, sub_x, sub_N;
             for (int j=0; j<30; j++) {
                 for (int k=0; k<30; k++) {
                     int index = i*icof + j*jcof + k*81 + l;
+                    //cout << "phi=" << phi[index] << ", max=" << calc_max_phi(r[index], b_min[index]) << endl;
                     if (phi[index] > calc_max_phi(r[index], b_min[index])) {
+                        //cout << "skipping" << endl;
                         continue; //Skip if phi is in forbidden region
                     }
-                    sub_r.push_back(r[index]);
                     sub_b.push_back(calc_b(r[index], b_min[index], phi[index]));
                     sub_x.push_back(calc_x(Y[index]));
                     sub_N.push_back(N[index]);
                 }
             }
-            for (int n=0; n<30; n++) {
-                table[i][n][l][0] = 1;
-                table[i][n][l][1] = pow(10, log10(b_start) + n*b_step);
-                table[i][n][l][2] = 1;
-                table[i][n][l][3] = 1;
+            
+            for (double n=0; n<30; n++) {
+                int hits = 0;
+                double total_N = 0;
+                double b_center = pow(10, log10(b_start) + n*b_step);
+                double low_limit = sqrt(pow(10, log10(b_start) + (n-1)*b_step)*pow(10, log10(b_start) + n*b_step));
+                double high_limit = sqrt(pow(10, log10(b_start) + n*b_step)*pow(10, log10(b_start) + (n+1)*b_step));;
+                //cout << "options: " << sub_b.size() << endl;
+                for (int m=0; m<sub_b.size(); m++) {
+                    if (low_limit < sub_b[m] && sub_b[m] < high_limit) {
+                        hits++;
+                        total_N += sub_N[m];
+                    }
+                }
+                //cout << "hits: " << hits << endl;
+                if (hits < 1) {
+                    if (n == 0) {
+                        hits = 1;
+                        total_N = 0;
+                    } else {
+                        hits = 1;
+                        total_N = table[i][n-1][l][3];
+                    }
+                }
+                table[i][n][l][0] = r[i*icof];
+                table[i][n][l][1] = b_center;
+                table[i][n][l][2] = sub_x[n];
+                table[i][n][l][3] = total_N/hits;
+                cout << table[i][n][l][0] << ", " << table[i][n][l][1] << ", " << table[i][n][l][2] << ", " << table[i][n][l][3] << endl;
             }
         }
     }
-
-    cout << "Variable conversion finished" << endl;
 
     //cout << endl << endl;
 

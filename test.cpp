@@ -27,7 +27,7 @@ int main() {
         }
     }
     */
-
+    /*
     double b[30];
     double N[30];
     for (int i=0; i<30; i++) {
@@ -36,21 +36,48 @@ int main() {
         N[i] = table[0][i][0][3];
     }
 
-    TGraph* graph = new TGraph(100, b, N);
-    //graph->SetLineColor(2);
+    double edge[31], edgeN[31];
+    const int b_steps = 30;
+    const double b_start = 1e-05; //2.37024e-05
+    const double b_stop = 17.3;
+    const double b_step = 1.0/(b_steps-1)*log10(b_stop/b_start);
+    const int edge_b_steps = b_steps + 2;
+    const double edge_b_start = pow(10, log10(b_start) - 1/2*b_step);
+    const double edge_b_stop = pow(10, log10(b_stop) + 1/2*b_step);;
+    const double edge_b_step = 1.0/(edge_b_steps-1)*log10(edge_b_stop/edge_b_start);
+    cout << edge_b_start << endl;
+    cout << edge_b_step << endl;
+    cout << endl;
+    for (int i=0; i<29; i++) {
+        double local_start = pow(10, log10(b_start) + i*b_step);
+        double local_stop = pow(10, log10(b_start) + (i+1)*b_step);
+        //edge[i] = pow(10, 1/2*log10(local_start*local_stop));
+        edge[i+1] = sqrt(local_start*local_stop);
+        edgeN[i+1] = 1.1;
+        cout << edge[i+1] << endl;
+    }
+    edge[0] = edge[1]/2;
+    edgeN[0] = 1.1;
+    edge[30] = edge[29]*2;
+    edgeN[30] = 1.1;
+
+    TGraph* edge_graph = new TGraph(31, edge, edgeN);
+    TGraph* graph = new TGraph(30, b, N);
 
     TCanvas* canvas = new TCanvas();
-
-    graph->Draw("A*");
+    edge_graph->Draw("A*");
+    graph->Draw("*");
+    
 
     gPad->SetLogx();
     //gPad->SetLogy();
 
     canvas->Print("test_b.pdf");
+    */
 
-    /*
+    
     for (int i=0; i<30; i++) {
-        for (int j=0; j<900; j++) {
+        for (int j=0; j<30; j++) {
             for (int k=0; k<81; k++) {
                 if (i == 29) {
                     cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
@@ -61,7 +88,7 @@ int main() {
             }
         }
     }
-    */
+    
     /*
     double b[30], r[30];
     
