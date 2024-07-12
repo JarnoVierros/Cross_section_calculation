@@ -81,7 +81,7 @@ void integrate_for_delta(par_struct par) {
   double &output = par.output;
 
   const int dim = 3;
-  const double integration_radius = 100;
+  const double integration_radius = 10;
   const int warmup_calls = 10000;
   const int integration_iterations = 1;
   const int integration_calls = 100000;
@@ -181,7 +181,7 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const string filename = "HERA_data.dat";
+  const string filename = "data/HERA_data.dat";
 
   ifstream data_file(filename);
 

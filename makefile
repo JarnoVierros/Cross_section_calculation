@@ -7,6 +7,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make W_inclusive_ccbar_cross_section
 	make reduced_inclusive_ccbar_cross_section
 	make parameter_fitter_inclusive_ccbar
+	make old_parameter_fitter_inclusive_ccbar
 	make fit_data_comparison_inclusive_ccbar
 	make J_data_comparison_inclusive_ccbar
 	make simplified_exclusive_ccbar_cross_section
@@ -53,6 +54,10 @@ reduced_inclusive_ccbar_cross_section: reduced_inclusive_ccbar_cross_section.cpp
 parameter_fitter_inclusive_ccbar: parameter_fitter_inclusive_ccbar.cpp
 	g++ -Wall -c parameter_fitter_inclusive_ccbar.cpp $$(root-config --glibs --cflags --libs)
 	g++ parameter_fitter_inclusive_ccbar.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o parameter_fitter_inclusive_ccbar.exe
+
+old_parameter_fitter_inclusive_ccbar: old_parameter_fitter_inclusive_ccbar.cpp
+	g++ -Wall -c old_parameter_fitter_inclusive_ccbar.cpp $$(root-config --glibs --cflags --libs)
+	g++ old_parameter_fitter_inclusive_ccbar.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o old_parameter_fitter_inclusive_ccbar.exe
 
 J_data_comparison_inclusive_ccbar: J_data_comparison_inclusive_ccbar.cpp
 	g++ -Wall -c J_data_comparison_inclusive_ccbar.cpp $$(root-config --glibs --cflags --libs)

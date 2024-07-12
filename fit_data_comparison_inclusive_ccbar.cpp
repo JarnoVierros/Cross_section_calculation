@@ -23,10 +23,10 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
-const double sigma_0 = 2.99416e+01; //mb
+const double sigma_0 = 1.42659; //2.99416e+01; //mb
 const double Q_0 = 1; //GeV
-const double x_0 = 7.67079e-05;
-const double lambda_star = 3.64361e-01;
+const double x_0 = 0.0683667; //7.67079e-05;
+const double lambda_star = 0.696735; //3.64361e-01;
 
 const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
 
@@ -80,7 +80,7 @@ int main() {
   const int integration_calls = 100000;
   const int integration_iterations = 1;
 
-  const string filename = "HERA_data.dat";
+  const string filename = "data/HERA_data.dat";
 
   vector<double> Q2_values;
   vector<double> x_values;
@@ -88,7 +88,7 @@ int main() {
   vector<double> measured_sigma_values;
   vector<double> relative_measurement_errors;
 
-  ifstream data_file("HERA_data.dat");
+  ifstream data_file(filename);
 
   cout << "Reading: " << filename << endl;
   string line;
@@ -99,7 +99,7 @@ int main() {
       value += line[i];
       i++;
     }
-    if (stod(value) != Q2_selection) {continue;}
+    //if (stod(value) != Q2_selection) {continue;}
     Q2_values.push_back(stod(value));
     i++;
 

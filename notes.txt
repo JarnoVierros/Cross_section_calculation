@@ -22,3 +22,17 @@ chi2/ndf=4.26577
 smallest max b: 17.3
 largest min b: 0
 second smallest b: 2.37024e-05
+
+
+J_dipamp full fit:
+chisq=3058.72, ndf=52, chisq/ndf=58.8216
+
+For x<1e-3:
+chisq=96.4682, ndf=23, chisq/ndf=4.19427
+
+
+Polar coordinate integration fit:
+val1 (sigma_0): 29.8768, err1: 2.48562e-06
+val2 (x_0): 7.93284e-05, err2: 3.30173e-08
+val3 (lambda_star): 0.367773, err3: 0.319797
+chi2: 209.004, ndf: 49, chi2/ndf: 4.26538
