@@ -31,34 +31,36 @@ static double sigma_0 = 2.99416e+01; //mb
 static double x_0 = 7.67079e-05;
 static double lambda_star = 3.64361e-01;
 
+double epsilon2(double z, double Q2) {
+  return m_f*m_f + z*(1-z)*Q2;
+}
+
 double epsilon(double z, double Q2) {
-  return sqrt(m_f*m_f + z*(1-z)*Q2);
+  return sqrt(epsilon2(z, Q2));
 }
 
 double dipole_amplitude(double r, double x) {
   return sigma_0*(1 - exp(-1*gsl_pow_2((Q_0*r)/(2*pow(x/x_0, lambda_star/2)))));
 }
 
-double L_integrand(double r_x, double r_y, double z, double Q2, double x) {
-  double r = sqrt(r_x*r_x + r_y*r_y);
-  return 4*Q2*z*z*(1-z)*(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, x);
+double L_integrand(double r, double z, double Q2, double x) {
+  return 2*M_PI*r*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, x);
 }
 
-double T_integrand(double r_x, double r_y, double z, double Q2, double x) {
-  double r = sqrt(r_x*r_x + r_y*r_y);
-  return (m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + gsl_pow_2(epsilon(z, Q2))*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
+double T_integrand(double r, double z, double Q2, double x) {
+  return 2*M_PI*r*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
 }
 
-struct parameters {double Q2; double x; double y;};
+struct parameters {double Q2; double x;};
 
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*L_integrand(k[0], k[1], k[2], par->Q2, par->x);
+  return normalization*L_integrand(k[0], k[1], par->Q2, par->x);
 }
 
 double T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
+  return normalization*T_integrand(k[0], k[1], par->Q2, par->x);
 }
 
 struct par_struct
@@ -80,15 +82,15 @@ void integrate_for_delta(par_struct par) {
   double relative_measurement_error = par.relative_measurement_error;
   double &output = par.output;
 
-  const int dim = 3;
+  const int dim = 2;
   const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_iterations = 1;
   const int integration_calls = 100000;
   double res, err;
 
-  double xl[3] = {-1*integration_radius, -1*integration_radius, 0};
-  double xu[3] = {integration_radius, integration_radius, 1};
+  double xl[2] = {0, 0};
+  double xu[2] = {34, 1};
 
   struct parameters params = {1, 1};
 
