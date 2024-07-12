@@ -290,6 +290,9 @@ int main() {
     gsl_rng_free(rng);
 
     for (long unsigned int j=0; j<size(Q2_values); j++) {
+      //if (x_values[j] > 1e-3) {
+      //  continue;
+      //}
       double delta = (model_sigma[j] - measured_sigma[j])/(measured_sigma_error[j]);
       chisq += delta*delta;
       ndf++;
