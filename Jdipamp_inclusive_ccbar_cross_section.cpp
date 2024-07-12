@@ -24,6 +24,8 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
+const double GeV_to_barn = 0.3894;
+
 const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
 
 static array<array<array<array<double, 4>, 81>, 30>, 30> table;
@@ -120,7 +122,7 @@ int main() {
         status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
         if (status != 0) {throw "gsl error";}
       }
-      L_sigma_values[i] = res;
+      L_sigma_values[i] = GeV_to_barn*res; // unit change to mb
 
       cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
 
