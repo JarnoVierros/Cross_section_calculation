@@ -80,8 +80,8 @@ int main() {
   const int dim = 3;
   double res, err;
 
-  double xl[4] = {0, 0, 0};
-  double xu[4] = {34, 1, 24};
+  double xl[3] = {0, 0, 0};
+  double xu[3] = {34, 1, 20};
 
   struct parameters params = {1, 1};
 
