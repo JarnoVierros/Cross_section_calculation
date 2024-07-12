@@ -73,17 +73,17 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const double Q2_selection = 2000;
+  const double Q2_selection = 7;
 
-  const double integration_radius = 100;
+  //const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
   const int integration_iterations = 1;
 
-  const string filename = "HERA_data.dat";
+  const string data_filename = "data/HERA_data.dat";
 
-  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
-  load_dipole_amplitudes(table, filename);
+  string dipamp_filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  load_dipole_amplitudes(table, dipamp_filename);
 
   vector<double> Q2_values;
   vector<double> x_values;
@@ -91,9 +91,9 @@ int main() {
   vector<double> measured_sigma_values;
   vector<double> relative_measurement_errors;
 
-  ifstream data_file("HERA_data.dat");
+  ifstream data_file(data_filename);
 
-  cout << "Reading: " << filename << endl;
+  cout << "Reading: " << data_filename << endl;
   string line;
   while(getline (data_file, line)) {
     long unsigned int i = 0;
@@ -102,7 +102,7 @@ int main() {
       value += line[i];
       i++;
     }
-    //if (stod(value) != Q2_selection) {continue;}
+    if (stod(value) != Q2_selection) {continue;}
     Q2_values.push_back(stod(value));
     i++;
 
@@ -262,7 +262,7 @@ int main() {
 
   gPad->SetLogx();
 
-  TString outfile_name = "figures/fit_comparison_Q2_"+stream.str()+".pdf";
+  TString outfile_name = "figures/J_data_comparison_Q2_"+stream.str()+".pdf";
   comparison_canvas->Print(outfile_name);
 
   gsl_rng_free(rng);

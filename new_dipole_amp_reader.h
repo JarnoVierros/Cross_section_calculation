@@ -201,7 +201,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                     }
                     double sub_b_value = calc_b(r[index], b_min[index], phi[index]);
                     if (sub_b_value == 0) {
-                        cout << "zero found" << endl;
+                        //cout << "zero found" << endl;
                         sub_b_value = 2.5e-5;
                     }
                     //if (sub_b_value>2) {continue;}
@@ -229,7 +229,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                     high_limit = sqrt(pow(10, log10(b_start) + n*b_step)*pow(10, log10(b_start) + (n+1)*b_step));
                 }
                 //cout << "options: " << sub_b.size() << endl;
-                for (int m=0; m<sub_b.size(); m++) {
+                for (long unsigned int m=0; m<sub_b.size(); m++) {
                     if (low_limit < sub_b[m] && sub_b[m] < high_limit) {
                         hits++;
                         total_N += sub_N[m];
