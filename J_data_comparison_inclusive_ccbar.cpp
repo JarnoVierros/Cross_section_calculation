@@ -85,6 +85,9 @@ int main() {
   string dipamp_filename = "data/dipole_amplitude_with_IP_dependence.csv";
   load_dipole_amplitudes(table, dipamp_filename);
 
+  double chisq = 0;
+  int ndf = 0;
+
   double Q2_selections[12] = {2.5, 5, 7, 12, 18, 32, 60, 120, 200, 350, 650, 2000};
   for (int n=0; n<12; n++) {
 
@@ -286,7 +289,14 @@ int main() {
 
     gsl_rng_free(rng);
 
+    for (long unsigned int j=0; j<size(Q2_values); j++) {
+      double delta = (model_sigma[j] - measured_sigma[j])/(measured_sigma_error[j]);
+      chisq += delta*delta;
+      ndf++;
+    }
   }
+
+  cout << "chisq=" << chisq << ", ndf=" << ndf << ", chisq/ndf=" << chisq/ndf << endl;
   
   return 0;
 }
