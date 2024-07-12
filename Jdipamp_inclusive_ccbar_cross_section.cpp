@@ -17,7 +17,7 @@
 #include <sstream>
 using namespace std;
 
-#include "dipole_amp_reader.h"
+#include "new_dipole_amp_reader.h"
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
@@ -37,7 +37,7 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b, double x) {
-  return 2*M_PI*b*get_dipole_amplitude(table, r, b, x, true);
+  return 2*M_PI*b*get_dipole_amplitude(table, r, b, x, false);
 }
 
 double L_integrand(double r, double z, double b, double Q2, double x) {

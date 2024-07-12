@@ -160,10 +160,11 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
         }
     }
     
-    double return_value = table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
+    //double return_value = table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
     //cout << r_corr << ", " << b_corr << ", " << x_corr << endl;
     //cout << "return value: " << table[i+r_closer][j+b_closer][k+x_closer][3] << ", " << table[i+r_closer-1][j+b_closer][k+x_closer][3] << ", " << return_value << endl << endl;
     //return return_value;
+
     return table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
 }
 
