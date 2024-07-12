@@ -167,7 +167,7 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     return table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
 }
 
-void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &table, string filename) {
+void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &table, string filename, double plot=false) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
     
@@ -248,53 +248,56 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                 table[i][n][l][1] = b_center;
                 table[i][n][l][2] = sub_x[n];
                 table[i][n][l][3] = total_N/hits;
-
-                if (max_N < total_N/hits) {max_N = total_N/hits;}
-                centers[n] = b_center;
-                averages[n] = total_N/hits;
-                borders[n] = low_limit;
-                if (n==29) {borders[30] = high_limit;}
-                //cout << table[i][n][l][0] << ", " << table[i][n][l][1] << ", " << table[i][n][l][2] << ", " << table[i][n][l][3] << endl;
+                if (plot) {
+                    if (max_N < total_N/hits) {max_N = total_N/hits;}
+                    centers[n] = b_center;
+                    averages[n] = total_N/hits;
+                    borders[n] = low_limit;
+                    if (n==29) {borders[30] = high_limit;}
+                    //cout << table[i][n][l][0] << ", " << table[i][n][l][1] << ", " << table[i][n][l][2] << ", " << table[i][n][l][3] << endl;
+                }
             }
-            double* sub_b_arr = &sub_b[0];
-            double* sub_N_arr = &sub_N[0];
-            int array_size = sub_b.size();
-            TGraph* datapoints = new TGraph(array_size, sub_b_arr, sub_N_arr);
-            datapoints->SetMarkerStyle(6);
-            datapoints->SetMarkerColor(2);
+            if (plot) {
+                double* sub_b_arr = &sub_b[0];
+                double* sub_N_arr = &sub_N[0];
+                int array_size = sub_b.size();
+                TGraph* datapoints = new TGraph(array_size, sub_b_arr, sub_N_arr);
+                datapoints->SetMarkerStyle(6);
+                datapoints->SetMarkerColor(2);
 
-            TGraph* averages_graph = new TGraph(30, centers, averages);
+                TGraph* averages_graph = new TGraph(30, centers, averages);
 
-            vector<TLine*> lines(31);
-            for (int n=0; n<31; n++) {
-                lines[n] = new TLine();
-                lines[n]->SetX1(borders[n]);
-                lines[n]->SetX2(borders[n]);
-                lines[n]->SetY1(0);
-                lines[n]->SetY2(1.1*max_N);
-                //cout << borders[n] << ", " << max_N << endl;
+                vector<TLine*> lines(31);
+                for (int n=0; n<31; n++) {
+                    lines[n] = new TLine();
+                    lines[n]->SetX1(borders[n]);
+                    lines[n]->SetX2(borders[n]);
+                    lines[n]->SetY1(0);
+                    lines[n]->SetY2(1.1*max_N);
+                    //cout << borders[n] << ", " << max_N << endl;
+                }
+
+                TCanvas* canvas = new TCanvas();
+
+                averages_graph->GetXaxis()->SetLimits(borders[0]/1.5, borders[30]*1.5);
+                //averages_graph->GetXaxis()->SetLimits(5e-7, 2);
+                averages_graph->Draw("A*");
+                TString title = "N as a function of b at r=" + to_string(r[i*icof]) + ", x="+to_string(calc_x(Y[i*icof+l]));
+                averages_graph->SetTitle(title);
+                averages_graph->GetXaxis()->SetTitle("b");
+                averages_graph->GetYaxis()->SetTitle("N");
+                datapoints->Draw("P");
+
+                for (int n=0; n<31; n++) {
+                    lines[n]->Draw();
+                }
+
+                gPad->SetLogx();
+                //gPad->SetLogy();
+
+                title = "b_figs/r_" + to_string(r[i*icof]) + "_x_" + to_string(calc_x(Y[i*icof+l])) + ".pdf";
+                canvas->Print(title);
             }
-
-            TCanvas* canvas = new TCanvas();
-
-            averages_graph->GetXaxis()->SetLimits(borders[0]/1.5, borders[30]*1.5);
-            //averages_graph->GetXaxis()->SetLimits(5e-7, 2);
-            averages_graph->Draw("A*");
-            TString title = "N as a function of b at r=" + to_string(r[i*icof]) + ", x="+to_string(calc_x(Y[i*icof+l]));
-            averages_graph->SetTitle(title);
-            averages_graph->GetXaxis()->SetTitle("b");
-            averages_graph->GetYaxis()->SetTitle("N");
-            datapoints->Draw("P");
-
-            for (int n=0; n<31; n++) {
-                lines[n]->Draw();
-            }
-
-            gPad->SetLogx();
-            //gPad->SetLogy();
-
-            title = "b_figs/r_" + to_string(r[i*icof]) + "_x_" + to_string(calc_x(Y[i*icof+l])) + ".pdf";
-            canvas->Print(title);
         }
     }
 

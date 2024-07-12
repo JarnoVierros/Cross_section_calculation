@@ -75,20 +75,16 @@ int main() {
     canvas->Print("test_b.pdf");
     */
 
-    /*
+    
     for (int i=0; i<30; i++) {
         for (int j=0; j<30; j++) {
             for (int k=0; k<81; k++) {
-                if (i == 29) {
-                    cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
-                }
+                cout << table[i][j][k][0] << ", " << table[i][j][k][1] << ", " << table[i][j][k][2] << ", " << table[i][j][k][3] << endl;
             }
-            if (i==29) {
-                getchar();
-            }
+            getchar();
         }
     }
-    */
+    
     /*
     double b[30], r[30];
     
