@@ -80,7 +80,7 @@ int main() {
   double res, err;
 
   double xl[2] = {0, 0};
-  double xu[2] = {40, 1};
+  double xu[2] = {34, 1};
 
   struct parameters params = {1, 1};
 
