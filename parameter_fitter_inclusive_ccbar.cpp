@@ -75,6 +75,7 @@ struct par_struct
 };
 
 void integrate_for_delta(par_struct par) {
+
   double Q2 = par.Q2;
   double x = par.x;
   double y = par.y;
@@ -183,10 +184,13 @@ int main() {
 
   gsl_set_error_handler_off();
 
+  const double upper_x_cut = 1e-2;
+
   const string filename = "data/HERA_data.dat";
 
   ifstream data_file(filename);
 
+  double Q2_value, x_value, y_value, measured_sigma_value, relative_measurement_error;
   cout << "Reading: " << filename << endl;
   string line;
   while(getline (data_file, line)) {
@@ -196,7 +200,7 @@ int main() {
       value += line[i];
       i++;
     }
-    Q2_values.push_back(stod(value));
+    Q2_value = stod(value);
     i++;
 
     value = "";
@@ -204,7 +208,7 @@ int main() {
       value += line[i];
       i++;
     }
-    x_values.push_back(stod(value));
+    x_value = stod(value);
     i++;
 
     value = "";
@@ -212,7 +216,7 @@ int main() {
       value += line[i];
       i++;
     }
-    y_values.push_back(stod(value));
+    y_value = stod(value);
     i++;
 
     value = "";
@@ -220,7 +224,7 @@ int main() {
       value += line[i];
       i++;
     }
-    measured_sigma_values.push_back(stod(value));
+    measured_sigma_value = stod(value);
     i++;
 
     for (int j=0; j<3; j++) {
@@ -235,7 +239,17 @@ int main() {
       value += line[i];
       i++;
     }
-    relative_measurement_errors.push_back(stod(value));
+    relative_measurement_error = stod(value);
+
+    if (upper_x_cut < x_value) {
+      continue;
+    }
+
+    Q2_values.push_back(Q2_value);
+    x_values.push_back(x_value);
+    y_values.push_back(y_value);
+    measured_sigma_values.push_back(measured_sigma_value);
+    relative_measurement_errors.push_back(relative_measurement_error);
   }
   cout << "Finished reading file" << endl;
 
@@ -255,13 +269,13 @@ int main() {
 
   gMinuit->mnexcm("SET ERR", arglist ,1,ierflg);
 
-  vstart[0] = sigma_0;
-  vstart[1] = x_0;
-  vstart[2] = lambda_star;
+  vstart[0] = 2.43535e+01;
+  vstart[1] = 1.20160e-04;
+  vstart[2] = 3.27112e-01;
 
-  step[0] = 2.69546e-03;
-  step[1] = 2.96307e-10;
-  step[2] = 4.06871e-07;
+  step[0] = 1.57510e-04;
+  step[1] = 8.26512e-13;
+  step[2] = 1.58326e-08;
   gMinuit->mnparm(0, "a0", vstart[0], step[0], 0,0,ierflg);
   gMinuit->mnparm(1, "a2", vstart[1], step[1], 0,0,ierflg);
   gMinuit->mnparm(2, "a3", vstart[2], step[2], 0,0,ierflg);
