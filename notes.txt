@@ -32,7 +32,14 @@ chisq=96.4682, ndf=23, chisq/ndf=4.19427
 
 
 Polar coordinate integration fit:
-val1 (sigma_0): 29.8768, err1: 2.48562e-06
-val2 (x_0): 7.93284e-05, err2: 3.30173e-08
-val3 (lambda_star): 0.367773, err3: 0.319797
-chi2: 209.004, ndf: 49, chi2/ndf: 4.26538
+sigma_0: 2.99415e+01, err: 3.04097e-01, step: 2.62791e-03
+x_0: 7.67082e-05, err: 9.02145e-10, step: 3.65773e-11
+lambda_star: 3.64361e-01, err: 4.08240e-06, step: 1.73741e-07
+chi2: 209.244, ndf: 49, chi2/ndf: 4.27029
+
+
+Polar coordinate integration fit for x<1e-2
+sigma_0: 2.61843e+01, err: 3.42187e-01, step: 1.83371e-03
+x_0: 8.66918e-05, err: 1.41945e-07, step: 4.66933e-10
+lambda_star: 3.15655e-01, err: 1.01142e-04, step: 4.09235e-07
+chi2: 119.562, ndf: 42, chi2/ndf: 2.84672
