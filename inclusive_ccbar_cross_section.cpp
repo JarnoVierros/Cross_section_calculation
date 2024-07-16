@@ -58,7 +58,28 @@ double L_integrand(double r, double z, double Q2, double x) {
 }
 
 double T_integrand(double r, double z, double Q2, double x) {
-  return 2*M_PI*r*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
+  int status = 0;
+  gsl_sf_result bessel_result_1;
+  gsl_sf_result bessel_result_2;
+  status = gsl_sf_bessel_K0_e(epsilon(z, Q2)*r, &bessel_result_1);
+  if (status !=0) {
+    if (status == 15) {
+      bessel_result_1.val = 0;
+    } else {
+      cout << "GSL error in L_integrand: " << status << endl;
+      throw 1;
+    }
+  }
+  status = gsl_sf_bessel_K1_e(epsilon(z, Q2)*r, &bessel_result_2);
+  if (status !=0) {
+    if (status == 15) {
+      bessel_result_2.val = 0;
+    } else {
+      cout << "GSL error in L_integrand: " << status << endl;
+      throw 1;
+    }
+  }
+  return 2*M_PI*r*(m_f*m_f*gsl_pow_2(bessel_result_1.val) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(bessel_result_2.val))*dipole_amplitude(r, x);
 }
 
 struct parameters {double Q2; double x;};
