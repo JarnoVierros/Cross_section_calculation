@@ -49,7 +49,7 @@ double T_integrand(double r_x, double r_y, double z, double Q2, double x) {
   return (m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + gsl_pow_2(epsilon(z, Q2))*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, x);
 }
 
-struct parameters {double Q2; double x; double y;};
+struct parameters {double Q2; double x;};
 
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
@@ -81,7 +81,7 @@ void integrate_for_delta(par_struct par) {
   double &output = par.output;
 
   const int dim = 3;
-  const double integration_radius = 10;
+  const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_iterations = 1;
   const int integration_calls = 100000;

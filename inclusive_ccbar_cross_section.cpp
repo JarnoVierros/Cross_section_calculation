@@ -64,7 +64,7 @@ double T_g(double *k, size_t dim, void * params) {
 
 int main() {
 
-  const double integration_radius = 100;
+  //const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
   const int integration_iterations = 1;
@@ -80,7 +80,7 @@ int main() {
   double res, err;
 
   double xl[2] = {0, 0};
-  double xu[2] = {34, 1};
+  double xu[2] = {34.64, 1};
 
   struct parameters params = {1, 1};
 

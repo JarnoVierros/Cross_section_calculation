@@ -29,7 +29,7 @@ const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
 
 static double sigma_0 = 2.99389e+01; //mb
 static double x_0 = 7.67074e-05;
-static double lambda_star = 3.64365e-01;
+const double lambda_star = 3.64361e-01;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -91,7 +91,7 @@ void integrate_for_delta(par_struct par) {
   double res, err;
 
   double xl[2] = {0, 0};
-  double xu[2] = {1000, 1};
+  double xu[2] = {10000, 1};
 
   struct parameters params = {1, 1};
 
@@ -160,7 +160,7 @@ void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
 
   sigma_0 = par[0];
   x_0 = par[1];
-  lambda_star = par[2];
+  //lambda_star = par[2];
 
   double deltas[size(Q2_values)];
   thread threads[size(Q2_values)];
@@ -184,7 +184,7 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const double upper_x_cut = 1e-2;
+  const double upper_x_cut = 1e+10; //1e-2;
 
   const string filename = "data/HERA_data.dat";
 
@@ -269,21 +269,23 @@ int main() {
 
   gMinuit->mnexcm("SET ERR", arglist ,1,ierflg);
 
-  vstart[0] = 2.43535e+01;
-  vstart[1] = 1.20160e-04;
-  vstart[2] = 3.27112e-01;
+  vstart[0] = 2.99415e+01;
+  vstart[1] = 7.67079e-05;
+  //vstart[2] = 3.64361e-01;
 
-  step[0] = 1.57510e-04;
-  step[1] = 8.26512e-13;
-  step[2] = 1.58326e-08;
+  step[0] = 2.69472e-03;
+  step[1] = 5.81649e-10;
+  //step[2] = 2.29051e-06;
   gMinuit->mnparm(0, "a0", vstart[0], step[0], 0,0,ierflg);
   gMinuit->mnparm(1, "a2", vstart[1], step[1], 0,0,ierflg);
-  gMinuit->mnparm(2, "a3", vstart[2], step[2], 0,0,ierflg);
+  //gMinuit->mnparm(2, "a3", vstart[2], step[2], 0,0,ierflg);
 
   arglist[0] = 500;
   arglist[1] = 1.;
   cout << "Starting fitting" << endl;
+  //gMinuit->mnhess();
   gMinuit->mnexcm("MIGRAD", arglist ,2,ierflg);
+  //gMinuit->mnhess();
 
   gMinuit->mnstat(amin,edm,errdef,nvpar,nparx,icstat);
 

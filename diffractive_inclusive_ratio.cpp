@@ -16,10 +16,10 @@ int main() {
 
   vector<int> Q2_values;
 
-  ifstream inclusive_data_file("archive/data/Jdipamp/J_inclusive_L_sigma_x.txt");
+  ifstream denominator_data_file("archive/data/inclusive_T_sigma_x.txt");
   string line;
   bool first_line = true;
-  while (getline (inclusive_data_file, line)) {
+  while (getline (denominator_data_file, line)) {
     if (first_line) {
       first_line = false;
       continue;
@@ -46,15 +46,15 @@ int main() {
   for (long unsigned int i=0; i<Q2_values.size(); i++) {
   }
 
-  inclusive_data_file.clear();
-  inclusive_data_file.seekg(0);
+  denominator_data_file.clear();
+  denominator_data_file.seekg(0);
 
-  vector<vector<double>> x_values, inclusive_sigma, diff_sigma;
-  vector<double> current_x, current_inclusive_sigma, current_diff_sigma;
+  vector<vector<double>> x_values, denominator, numerator;
+  vector<double> current_x, current_denominator, current_numerator;
   int Q2_index = 0;
 
   first_line = true;
-  while (getline (inclusive_data_file, line)) {
+  while (getline (denominator_data_file, line)) {
     if (first_line) {
       first_line = false;
       continue;
@@ -84,23 +84,23 @@ int main() {
     double sigma_value = stod(sigma_value_string);
     if (Q2_values[Q2_index] != Q2_value) {
       x_values.push_back(current_x);
-      inclusive_sigma.push_back(current_inclusive_sigma);
+      denominator.push_back(current_denominator);
       current_x = {};
-      current_inclusive_sigma = {};
+      current_denominator = {};
       Q2_index++;
     }
     current_x.push_back(x_value);
-    current_inclusive_sigma.push_back(sigma_value);
+    current_denominator.push_back(sigma_value);
   }
   x_values.push_back(current_x);
-  inclusive_sigma.push_back(current_inclusive_sigma);
+  denominator.push_back(current_denominator);
 
-  ifstream diffractive_data_file("data/J_inclusive_L_sigma_x.txt");
+  ifstream numerator_data_file("archive/data/Jdipamp/J_T_inclusive_sigma_x.txt");
 
   Q2_index = 0;
   current_x = {};
   first_line = true;
-  while (getline (diffractive_data_file, line)) {
+  while (getline (numerator_data_file, line)) {
     if (first_line) {
       first_line = false;
       continue;
@@ -131,25 +131,25 @@ int main() {
     double sigma_value = stod(sigma_value_string);
     if (Q2_values[Q2_index] != Q2_value) {
       x_values.push_back(current_x);
-      diff_sigma.push_back(current_diff_sigma);
+      numerator.push_back(current_numerator);
       current_x = {};
-      current_diff_sigma = {};
+      current_numerator = {};
       Q2_index++;
     }
     current_x.push_back(x_value);
-    current_diff_sigma.push_back(sigma_value);
+    current_numerator.push_back(sigma_value);
   }
   x_values.push_back(current_x);
-  diff_sigma.push_back(current_diff_sigma);
+  numerator.push_back(current_numerator);
 
 
   TMultiGraph* comparison_graphs = new TMultiGraph();
-  comparison_graphs->SetTitle("Longitudinal J cross section b-controlled/normal ratio");
+  comparison_graphs->SetTitle("Inclusive T cross section with Jani's amplitude divided by GBW");
   for (long unsigned int i=0; i < Q2_values.size(); i++) {
     double ratio[x_values[i].size()];
     double x[x_values[i].size()];
     for (long unsigned int j=0; j<x_values[i].size(); j++) {
-      ratio[j] = diff_sigma[i][j]/inclusive_sigma[i][j];
+      ratio[j] = numerator[i][j]/denominator[i][j];
       x[j] = x_values[i][j];
     }
     TGraph* subgraph = new TGraph(x_values[i].size(), x, ratio);
@@ -168,7 +168,7 @@ int main() {
     comparison_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
   }
 
-  comparison_canvas->Print("figures/J_L_b_control_normal_ratio.pdf");
+  comparison_canvas->Print("figures/Inclusive_T_J_GBW_ratio.pdf");
   
   return 0;
 }
