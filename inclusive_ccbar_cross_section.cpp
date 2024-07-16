@@ -124,7 +124,7 @@ int main() {
   gsl_monte_function L_G = {&L_g, dim, &params};
   gsl_monte_function T_G = {&T_g, dim, &params};
 
-  gsl_rng_env_setup ();
+  gsl_rng_env_setup();
   int status = 0;
 
   T = gsl_rng_default;
