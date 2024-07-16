@@ -129,6 +129,7 @@ double get_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>, 
         exact_x = true;
     } else {
         while (table[i_closer][j_closer][k_closer][l][3] < x) {
+            //cout << table[i_closer][j_closer][k_closer][l][3] << endl;
             l++;
             if (l > table[i_closer][j_closer][k_closer].size()-1) {
                 throw 1;
@@ -240,11 +241,11 @@ void load_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 30>, 
                 for (int k=0; k<30; k++) {
                     for (int l=0; l<81; l++) {
                     int index = i*icof + j*jcof + k*81 + l;
-                    table[i][j][k][l][0] = r[index];
-                    table[i][j][k][l][1] = b_min[index];
-                    table[i][j][k][l][2] = phi[index];
+                    table[i][j][k][80-l][0] = r[index];
+                    table[i][j][k][80-l][1] = b_min[index];
+                    table[i][j][k][80-l][2] = phi[index];
                     table[i][j][k][80-l][3] = calc_x(Y[index]);
-                    table[i][j][k][l][4] = N[index];
+                    table[i][j][k][80-l][4] = N[index];
                 }
             }
         }

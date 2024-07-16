@@ -67,7 +67,7 @@ int main() {
   const int integration_calls = 100000;
   const int integration_iterations = 1;
 
-  const int Q2_values[] = {1, 3, 5, 8, 10};
+  const int Q2_values[] = {1, 3, 5};
 
   const int x_steps = 30;
   const double x_start = 1e-5;
@@ -123,7 +123,7 @@ int main() {
       L_sigma_values[i] = res; // no unit change to mb needed(?)
       L_sigma_errors[i] = err;
 
-      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
+      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << endl;
 
       ostringstream x;
       x << L_x_values[i];
