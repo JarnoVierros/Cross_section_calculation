@@ -253,9 +253,9 @@ int main() {
 
   gMinuit->mnexcm("SET ERR", arglist ,1,ierflg);
 
-  vstart[0] = sigma_0;
-  vstart[1] = x_0;
-  vstart[2] = lambda_star;
+  vstart[0] = 2.99415e+01;
+  vstart[1] = 7.67079e-05;
+  vstart[2] = 3.64361e-01;
 
   step[0] = 2.69495e-03;
   step[1] = 8.78132e-10;

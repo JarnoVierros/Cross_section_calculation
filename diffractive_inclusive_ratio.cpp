@@ -16,7 +16,7 @@ int main() {
 
   vector<int> Q2_values;
 
-  ifstream denominator_data_file("archive/data/inclusive_T_sigma_x.txt");
+  ifstream denominator_data_file("data/old_inclusive_T_sigma_x.txt");
   string line;
   bool first_line = true;
   while (getline (denominator_data_file, line)) {
@@ -95,7 +95,7 @@ int main() {
   x_values.push_back(current_x);
   denominator.push_back(current_denominator);
 
-  ifstream numerator_data_file("archive/data/Jdipamp/J_T_inclusive_sigma_x.txt");
+  ifstream numerator_data_file("data/inclusive_T_sigma_x.txt");
 
   Q2_index = 0;
   current_x = {};
@@ -144,7 +144,7 @@ int main() {
 
 
   TMultiGraph* comparison_graphs = new TMultiGraph();
-  comparison_graphs->SetTitle("Inclusive T cross section with Jani's amplitude divided by GBW");
+  comparison_graphs->SetTitle("New vs old integral inclusive T cross section ratio");
   for (long unsigned int i=0; i < Q2_values.size(); i++) {
     double ratio[x_values[i].size()];
     double x[x_values[i].size()];
@@ -168,7 +168,7 @@ int main() {
     comparison_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
   }
 
-  comparison_canvas->Print("figures/Inclusive_T_J_GBW_ratio.pdf");
+  comparison_canvas->Print("figures/coordinate_system_T_ratio.pdf");
   
   return 0;
 }

@@ -66,6 +66,8 @@ double T_g(double *k, size_t dim, void * params) {
 
 int main() {
 
+  gsl_set_error_handler_off();
+
   const double integration_radius = 100;
   const int warmup_calls = 10000;
   const int integration_calls = 100000;
@@ -117,13 +119,16 @@ int main() {
       status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
       if (status != 0) {throw "gsl error";}
 
-      for (int i=0; i<integration_iterations; i++) {
+      while (true) {
         status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
         if (status != 0) {throw "gsl error";}
+        if (gsl_monte_vegas_chisq(L_s) < 2 && 0 < gsl_monte_vegas_chisq(L_s)) {
+          break;
+        }
       }
       L_sigma_values[i] = res;
 
-      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
+      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
       ostringstream x;
       x << L_x_values[i];
@@ -171,14 +176,17 @@ int main() {
       status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
       if (status != 0) {throw "gsl error";}
 
-      for (int i=0; i<integration_iterations; i++) {
+      while (true) {
         status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
         if (status != 0) {throw "gsl error";}
+        if (gsl_monte_vegas_chisq(T_s) < 2 && 0 < gsl_monte_vegas_chisq(T_s)) {
+          break;
+        }
       }
 
       T_sigma_values[i] = res;
 
-      cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
+      cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
       ostringstream x;
       x << T_x_values[i];

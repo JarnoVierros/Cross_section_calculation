@@ -43,7 +43,18 @@ double dipole_amplitude(double r, double x) {
 }
 
 double L_integrand(double r, double z, double Q2, double x) {
-  return 2*M_PI*r*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, x);
+  int status = 0;
+  gsl_sf_result bessel_result;
+  status = gsl_sf_bessel_K0_e(epsilon(z, Q2)*r, &bessel_result);
+  if (status !=0) {
+    if (status == 15) {
+      bessel_result.val = 0;
+    } else {
+      cout << "GSL error in L_integrand: " << status << endl;
+      throw 1;
+    }
+  }
+  return 2*M_PI*r*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(bessel_result.val)*dipole_amplitude(r, x);
 }
 
 double T_integrand(double r, double z, double Q2, double x) {
@@ -64,9 +75,11 @@ double T_g(double *k, size_t dim, void * params) {
 
 int main() {
 
+  gsl_set_error_handler_off();
+
   //const double integration_radius = 100;
-  const int warmup_calls = 10000;
-  const int integration_calls = 100000;
+  const int warmup_calls = 100000;
+  const int integration_calls = 1000000;
   const int integration_iterations = 1;
 
   const int Q2_values[] = {1, 3, 5, 8, 10};
@@ -80,7 +93,7 @@ int main() {
   double res, err;
 
   double xl[2] = {0, 0};
-  double xu[2] = {34.64, 1};
+  double xu[2] = {100, 1};
 
   struct parameters params = {1, 1};
 
@@ -115,13 +128,18 @@ int main() {
       status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
       if (status != 0) {throw "gsl error";}
 
-      for (int i=0; i<integration_iterations; i++) {
+      while (true) {
         status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
         if (status != 0) {throw "gsl error";}
+        if (gsl_monte_vegas_chisq(L_s) < 5) {
+          break;
+        }
+        cout << "repeating: " << gsl_monte_vegas_chisq(L_s) << endl;
       }
+
       L_sigma_values[i] = res;
 
-      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
+      cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res  << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
       ostringstream x;
       x << L_x_values[i];
@@ -169,14 +187,17 @@ int main() {
       status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
       if (status != 0) {throw "gsl error";}
 
-      for (int i=0; i<integration_iterations; i++) {
+      while (true) {
         status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
         if (status != 0) {throw "gsl error";}
+        if (gsl_monte_vegas_chisq(T_s) < 5) {
+          break;
+        }
       }
 
       T_sigma_values[i] = res;
 
-      cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << endl;
+      cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << res << ", err: " << err << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
       ostringstream x;
       x << T_x_values[i];

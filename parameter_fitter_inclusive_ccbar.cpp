@@ -29,7 +29,7 @@ const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
 
 static double sigma_0 = 2.99389e+01; //mb
 static double x_0 = 7.67074e-05;
-const double lambda_star = 3.64361e-01;
+static double lambda_star = 3.64361e-01;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -85,9 +85,9 @@ void integrate_for_delta(par_struct par) {
 
   const int dim = 2;
   //const double integration_radius = 100;
-  const int warmup_calls = 10000;
-  const int integration_iterations = 1;
-  const int integration_calls = 100000;
+  const int warmup_calls = 100000;
+  //const int integration_iterations = 1;
+  const int integration_calls = 1000000;
   double res, err;
 
   double xl[2] = {0, 0};
@@ -115,9 +115,13 @@ void integrate_for_delta(par_struct par) {
   status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
   if (status != 0) {throw "gsl error";}
 
-  for (int i=0; i<integration_iterations; i++) {
+  while (true) {
     status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
     if (status != 0) {throw "gsl error";}
+    if (gsl_monte_vegas_chisq(L_s) < 5) {
+      break;
+    }
+    //cout << "retry: " << gsl_monte_vegas_chisq(L_s) << endl;
   }
   
   double sigma_L = res;
@@ -129,9 +133,13 @@ void integrate_for_delta(par_struct par) {
   status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
   if (status != 0) {throw "gsl error";}
 
-  for (int i=0; i<integration_iterations; i++) {
+  while (true) {
     status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
     if (status != 0) {throw "gsl error";}
+    if (gsl_monte_vegas_chisq(T_s) < 5) {
+      break;
+    }
+    //cout << "retry: " << gsl_monte_vegas_chisq(T_s) << endl;
   }
 
   double sigma_T = res;
@@ -160,7 +168,7 @@ void data_fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
 
   sigma_0 = par[0];
   x_0 = par[1];
-  //lambda_star = par[2];
+  lambda_star = par[2];
 
   double deltas[size(Q2_values)];
   thread threads[size(Q2_values)];
@@ -271,14 +279,14 @@ int main() {
 
   vstart[0] = 2.99415e+01;
   vstart[1] = 7.67079e-05;
-  //vstart[2] = 3.64361e-01;
+  vstart[2] = 3.64361e-01;
 
   step[0] = 2.69472e-03;
   step[1] = 5.81649e-10;
-  //step[2] = 2.29051e-06;
+  step[2] = 2.29051e-06;
   gMinuit->mnparm(0, "a0", vstart[0], step[0], 0,0,ierflg);
   gMinuit->mnparm(1, "a2", vstart[1], step[1], 0,0,ierflg);
-  //gMinuit->mnparm(2, "a3", vstart[2], step[2], 0,0,ierflg);
+  gMinuit->mnparm(2, "a3", vstart[2], step[2], 0,0,ierflg);
 
   arglist[0] = 500;
   arglist[1] = 1.;
