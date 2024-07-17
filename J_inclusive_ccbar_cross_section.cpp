@@ -30,9 +30,13 @@ const double m_f = 1.27; //GeV
 const double normalization = 8/M_PI*alpha_em*N_c*e_f*e_f;
 
 //35, 34, 33, 32, 30, 25, 20, 15, 10, 5, 4, 3, 2, 1, 0.5
+// 17, 16, 15, 10, 5, 1
 
-const double r_limit = 0.5; // 34.64
-const double b_min_limit = 17.32;
+const double r_limit = 34.64; // 34.64
+const double b_min_limit = 12; // 17.32
+
+const bool print_r_limit = false;
+const bool print_b_min_limit = true;
 
 const int warmup_calls = 10000;
 const int integration_calls = 100000;
@@ -180,22 +184,43 @@ int main() {
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
   stringstream r_limit_stream;
-  r_limit_stream << fixed << setprecision(1) << r_limit;
+  r_limit_stream << fixed << setprecision(0) << r_limit;
   string r_limit_string = r_limit_stream.str();
 
-  stringstream r_limit_filename_stream;
-  r_limit_filename_stream << fixed << setprecision(0) << r_limit;
-  TString r_limit_filename_string = r_limit_filename_stream.str() + "_" +to_string(r_limit)[r_limit_filename_stream.str().length()+1]+to_string(r_limit)[r_limit_filename_stream.str().length()+2];
-  //TString r_limit_filename_string = r_limit_string;
+  //stringstream r_limit_filename_stream;
+  //r_limit_filename_stream << fixed << setprecision(0) << r_limit;
+  //TString r_limit_filename_string = r_limit_filename_stream.str() + "_" +to_string(r_limit)[r_limit_filename_stream.str().length()+1]+to_string(r_limit)[r_limit_filename_stream.str().length()+2];
+  TString r_limit_filename_string = r_limit_string;
+
+  stringstream b_limit_stream;
+  b_limit_stream << fixed << setprecision(0) << b_min_limit;
+  string b_limit_string = b_limit_stream.str();
+
+  TString b_limit_filename_string = b_limit_string;
 
   string filename = "data/dipole_amplitude_with_IP_dependence.csv";
   load_dipole_amplitudes(table, filename);
 
   TMultiGraph* L_graphs = new TMultiGraph();
-  TString title = "Longitudinal inclusive cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+  TString title;
+  if (print_r_limit) {
+    title = "Longitudinal inclusive cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+  } else if (print_b_min_limit) {
+    title = "Longitudinal inclusive cross section with b limit: "+b_limit_string+" GeV^-1;x;cross section (mb)";
+  } else {
+    title = "Longitudinal inclusive cross section;x;cross section (mb)";
+  }
   L_graphs->SetTitle(title);
 
-  TString outfile_name = "data/J_L_inclusive_r_"+r_limit_filename_string+".txt";
+  TString outfile_name;
+  if (print_r_limit) {
+    outfile_name = "data/J_L_inclusive_r_"+r_limit_filename_string+".txt";
+  } else if (print_b_min_limit) {
+    outfile_name = "data/J_L_inclusive_b_"+b_limit_filename_string+".txt";
+  } else {
+    outfile_name = "data/J_L_inclusive.txt";
+  }
+
   ofstream L_output_file(outfile_name);
   L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
@@ -236,22 +261,45 @@ int main() {
   }
   L_output_file.close();
 
-  TCanvas* L_sigma_canvas = new TCanvas("J_L_inclusive_sigma_canvas", "", 1000, 600);
+  TCanvas* L_sigma_canvas = new TCanvas("J_L_inclusive_sigma_canvas", "", 1100, 600);
   L_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  outfile_name = "figures/J_L_inclusive_r_"+r_limit_filename_string+".pdf";
+
+  if (print_r_limit) {
+    outfile_name = "figures/J_L_inclusive_r_"+r_limit_filename_string+".pdf";
+  } else if (print_b_min_limit) {
+    outfile_name = "figures/J_L_inclusive_b_"+b_limit_filename_string+".pdf";
+  } else {
+    outfile_name = "figures/J_L_inclusive.pdf";
+  }
   L_sigma_canvas->Print(outfile_name);
  
+ 
+
+
 
   TMultiGraph* T_graphs = new TMultiGraph();
-  title = "Transverse inclusive cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+
+  if (print_r_limit) {
+    title = "Transverse inclusive cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+  } else if (print_b_min_limit) {
+    title = "Transverse inclusive cross section with b limit: "+b_limit_string+" GeV^-1;x;cross section (mb)";
+  } else {
+    title = "Transverse inclusive cross section;x;cross section (mb)";
+  }
   T_graphs->SetTitle(title);
 
-  outfile_name = "data/J_T_inclusive_r_"+r_limit_filename_string+".txt";
+  if (print_r_limit) {
+    outfile_name = "data/J_T_inclusive_r_"+r_limit_filename_string+".txt";
+  } else if (print_b_min_limit) {
+    outfile_name = "data/J_T_inclusive_b_"+b_limit_filename_string+".txt";
+  } else {
+    outfile_name = "data/J_T_inclusive.txt";
+  }
   ofstream T_output_file(outfile_name);
   T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
@@ -295,14 +343,20 @@ int main() {
   }
   T_output_file.close();
 
-  TCanvas* T_sigma_canvas = new TCanvas("J_T_inclusive_sigma_canvas", "", 1000, 600);
+  TCanvas* T_sigma_canvas = new TCanvas("J_T_inclusive_sigma_canvas", "", 1100, 600);
   T_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
 
   T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  outfile_name = "figures/J_T_inclusive_r_"+r_limit_filename_string+".pdf";
+  if (print_r_limit) {
+    outfile_name = "figures/J_T_inclusive_r_"+r_limit_filename_string+".pdf";
+  } else if (print_b_min_limit) {
+    outfile_name = "figures/J_T_inclusive_b_"+b_limit_filename_string+".pdf";
+  } else {
+    outfile_name = "figures/J_T_inclusive.pdf";
+  }
   T_sigma_canvas->Print(outfile_name);
 
   return 0;

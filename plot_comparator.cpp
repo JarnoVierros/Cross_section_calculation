@@ -11,33 +11,29 @@
 int main() {
 
     string filenames[] = {
-        "data/J_T_inclusive_r_34.txt",
-        "data/J_T_inclusive_r_30.txt",
-        "data/J_T_inclusive_r_20.txt",
-        "data/J_T_inclusive_r_10.txt",
-        "data/J_T_inclusive_r_5.txt",
-        "data/J_T_inclusive_r_4.txt",
-        "data/J_T_inclusive_r_3.txt",
-        "data/J_T_inclusive_r_2.txt",
-        "data/J_T_inclusive_r_1.txt",
-        "data/J_T_inclusive_r_0_50.txt"
+        "data/J_T_inclusive_b_17.txt",
+        "data/J_T_inclusive_b_15.txt",
+        "data/J_T_inclusive_b_12.txt",
+        "data/J_T_inclusive_b_10.txt",
+        "data/J_T_inclusive_b_9.txt",
+        "data/J_T_inclusive_b_8.txt",
+        "data/J_T_inclusive_b_7.txt",
+        "data/J_T_inclusive_b_6.txt"
     };
 
     string titles[] {
-        "r limit=34",
-        "r limit=30",
-        "r limit=20",
+        "r limit=17",
+        "r limit=15",
+        "r limit=12",
         "r limit=10",
-        "r limit=5",
-        "r limit=4",
-        "r limit=3",
-        "r limit=2",
-        "r limit=1",
-        "r limit=0.5"
+        "r limit=9",
+        "r limit=8",
+        "r limit=7",
+        "r limit=6"
     };
 
     TMultiGraph* multigraph = new TMultiGraph();
-    multigraph->SetTitle("Transverse cross sections with different dipole size integration limits at Q=2.5 GeV;x;sigma (mb)");
+    multigraph->SetTitle("Transverse cross sections with different b_min integration limits at Q=2.5 GeV;x;sigma (mb)");
 
     for (int i=0; i<size(filenames); i++) {
         vector<double> Q2, x, sigma, sigma_error;
@@ -62,5 +58,5 @@ int main() {
     gPad->SetLogx();
     multigraph->Draw("A PMC PLC");
     multigraph_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
-    multigraph_canvas->Print("figures/transverse_r_limit_comparison.pdf");
+    multigraph_canvas->Print("figures/transverse_b_limit_comparison.pdf");
 }
