@@ -16,6 +16,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make alternative_exclusive_ccbar_cross_section
 	make diffractive_inclusive_ratio
 	make dipole_amp_reader
+	make plot_comparator
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -87,6 +88,9 @@ dipole_amp_reader: dipole_amp_reader.cpp
 
 test: test.cpp
 	g++ test.cpp $$(root-config --glibs --cflags --libs) -o test.exe
+
+plot_comparator: plot_comparator.cpp
+	g++ plot_comparator.cpp $$(root-config --glibs --cflags --libs) -o plot_comparator.exe
 
 clean:
 	-rm *.exe

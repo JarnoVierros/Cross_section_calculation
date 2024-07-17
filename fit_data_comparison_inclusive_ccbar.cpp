@@ -109,22 +109,22 @@ int main() {
 
   const int warmup_calls = 100000;
   const int integration_calls = 1000000;
-  const int integration_iterations = 1;
+  //const int integration_iterations = 1;
 
   const string filename = "data/HERA_data.dat";
 
-  vector<double> Q2_values;
-  vector<double> x_values;
-  vector<double> y_values;
-  vector<double> measured_sigma_values;
-  vector<double> relative_measurement_errors;
+  double Q2_settings[] = {2.5, 5, 7, 12, 18, 32, 60, 120, 200, 350, 650, 2000};
 
-  ifstream data_file(filename);
-
-  double Q2_settings[3] = {};
-
-  for (int k=0; k<size(Q2_settings); k++) {
+  for (long unsigned int k=0; k<size(Q2_settings); k++) {
     cout << "Reading: " << filename << endl;
+
+    vector<double> Q2_values;
+    vector<double> x_values;
+    vector<double> y_values;
+    vector<double> measured_sigma_values;
+    vector<double> relative_measurement_errors;
+
+    ifstream data_file(filename);
     string line;
     while(getline (data_file, line)) {
       long unsigned int i = 0;
@@ -176,12 +176,11 @@ int main() {
       relative_measurement_errors.push_back(stod(value));
     }
     cout << "Finished reading file" << endl;
+    const int dim = 2;
+    double res, err;
 
-  const int dim = 2;
-  double res, err;
-
-  double xl[2] = {0, 0};
-  double xu[2] = {100, 1};
+    double xl[2] = {0, 0};
+    double xu[2] = {100, 1};
 
     struct parameters params = {1, 1};
 
@@ -279,7 +278,12 @@ int main() {
     TMultiGraph* comparison_graph = new TMultiGraph();
     stringstream stream;
     stream << fixed << setprecision(0) << Q2_settings[k];
-    TString title = "Reduced cross section fit for Q^{2}="+stream.str()+";x;#sigma_{r} (mb)";
+    TString title;
+    if (Q2_settings[k] == 2.5) {
+      title = "Reduced cross section fit for Q^{2}=2.5;x;#sigma_{r} (mb)";
+    } else {
+      title = "Reduced cross section fit for Q^{2}="+stream.str()+";x;#sigma_{r} (mb)";
+    }
     comparison_graph->SetTitle(title);
 
     TGraphErrors* measurement_data = new TGraphErrors(size(Q2_values), measured_x, measured_sigma, measured_x_error, measured_sigma_error);
@@ -289,9 +293,24 @@ int main() {
     TGraph* model_fit = new TGraph(size(Q2_values), measured_x, model_sigma);
     comparison_graph->Add(model_fit, "*");
 
+    comparison_graph->GetXaxis()->SetLimits(1e-5, 1e-1);
+
     comparison_graph->Draw("A");
 
-    TLegend* legend = new TLegend(0.65, 0.7, 0.9, 0.9);
+    float location[4];
+    if (Q2_settings[k] < 60) {
+      location[0] = 0.65;
+      location[1] = 0.7;
+      location[2] = 0.9;
+      location[3] = 0.9;
+    } else {
+      location[0] = 0.15;
+      location[1] = 0.7;
+      location[2] = 0.4;
+      location[3] = 0.9;
+    }
+
+    TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
     legend->AddEntry(measurement_data,"Measurement data");
     legend->AddEntry(model_fit,"Model fit", "P");
     legend->SetTextSize(0.04);
@@ -299,7 +318,12 @@ int main() {
 
     gPad->SetLogx();
 
-    TString outfile_name = "figures/fit_comparison_Q2_"+stream.str()+".pdf";
+    TString outfile_name;
+    if (Q2_settings[k] == 2.5) {
+      outfile_name = "figures/fit_comparison_Q2_2_5.pdf";
+    } else {
+      outfile_name = "figures/fit_comparison_Q2_"+stream.str()+".pdf";
+    }
     comparison_canvas->Print(outfile_name);
 
     gsl_rng_free(rng);

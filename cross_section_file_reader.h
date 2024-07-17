@@ -5,7 +5,7 @@
 #include <vector>
 using namespace std;
 
-void read_sigma_file(string filename, vector<double> Q2, vector<double>x, vector<double> sigma, vector<double>sigma_error) {
+void read_sigma_file(string filename, vector<double> &Q2, vector<double> &x, vector<double> &sigma, vector<double> &sigma_error) {
 
     ifstream data_file(filename);
     string line;
@@ -42,11 +42,10 @@ void read_sigma_file(string filename, vector<double> Q2, vector<double>x, vector
         double sigma_value = stod(sigma_value_string);
 
         string sigma_error_string = "";
-        while (line[i] != ';') {
+        while (i < line.size()) {
             sigma_error_string += line[i];
             i++;
         }
-        i++;
         double sigma_error_value = stod(sigma_error_string);
 
         Q2.push_back(Q2_value);

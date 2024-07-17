@@ -14,6 +14,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <ostream>
 #include <sstream>
 #include <thread>
@@ -27,6 +28,15 @@ const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
 const double normalization = 8/M_PI*alpha_em*N_c*e_f*e_f;
+
+//35, 34, 33, 32, 30, 25, 20, 15, 10, 5, 4, 3, 2, 1, 0.5
+
+const double r_limit = 0.5; // 34.64
+const double b_min_limit = 17.32;
+
+const int warmup_calls = 10000;
+const int integration_calls = 100000;
+const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
@@ -73,16 +83,8 @@ struct thread_par_struct
 
 void integrate_for_L_sigma(thread_par_struct par) {
 
-  //const double integration_radius = 100;
-  const int warmup_calls = 10000;
-  const int integration_calls = 100000;
-  const int integration_iterations = 1;
-
   const int dim = 4;
   double res, err;
-
-  const double r_limit = 34.64;
-  const double b_min_limit = 17.32;
 
   double xl[4] = {0, 0, 0, 0};
   double xu[4] = {r_limit, b_min_limit, M_PI, 1};
@@ -124,16 +126,12 @@ void integrate_for_L_sigma(thread_par_struct par) {
 
 void integrate_for_T_sigma(thread_par_struct par) {
 
-  //const double integration_radius = 100;
-  const int warmup_calls = 10000;
-  const int integration_calls = 100000;
-  const int integration_iterations = 1;
 
   const int dim = 4;
   double res, err;
 
   double xl[4] = {0, 0, 0, 0};
-  double xu[4] = {34.64, 17.32, M_PI, 1};
+  double xu[4] = {r_limit, b_min_limit, M_PI, 1};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
@@ -174,20 +172,31 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const int Q2_values[] = {1, 3, 5, 8, 10};
+  const double Q2_values[] = {2.5};
 
-  const int x_steps = 30;
+  const int x_steps = 50;
   const double x_start = 1e-5;
   const double x_stop = 0.01;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
+
+  stringstream r_limit_stream;
+  r_limit_stream << fixed << setprecision(1) << r_limit;
+  string r_limit_string = r_limit_stream.str();
+
+  stringstream r_limit_filename_stream;
+  r_limit_filename_stream << fixed << setprecision(0) << r_limit;
+  TString r_limit_filename_string = r_limit_filename_stream.str() + "_" +to_string(r_limit)[r_limit_filename_stream.str().length()+1]+to_string(r_limit)[r_limit_filename_stream.str().length()+2];
+  //TString r_limit_filename_string = r_limit_string;
 
   string filename = "data/dipole_amplitude_with_IP_dependence.csv";
   load_dipole_amplitudes(table, filename);
 
   TMultiGraph* L_graphs = new TMultiGraph();
-  L_graphs->SetTitle("Longitudinal cross section;x;cross section (mb)");
+  TString title = "Longitudinal inclusive cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+  L_graphs->SetTitle(title);
 
-  ofstream L_output_file("data/J_L_inclusive_sigma_x.txt");
+  TString outfile_name = "data/J_L_inclusive_r_"+r_limit_filename_string+".txt";
+  ofstream L_output_file(outfile_name);
   L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting L integration" << endl;
@@ -207,7 +216,10 @@ int main() {
       L_threads[j].join();
     }
     TGraphErrors* subgraph = new TGraphErrors(x_steps, L_x_values, L_sigma_values, L_x_errors, L_sigma_errors);
-    TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
+
+    stringstream stream;
+    stream << fixed << setprecision(1) << Q2_values[j];
+    TString subgraph_name = "Q^{2}=" + stream.str();
     subgraph->SetTitle(subgraph_name);
     L_graphs->Add(subgraph);
 
@@ -231,13 +243,16 @@ int main() {
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  L_sigma_canvas->Print("figures/J_L_inclusive_sigma_x_distribution.pdf");
+  outfile_name = "figures/J_L_inclusive_r_"+r_limit_filename_string+".pdf";
+  L_sigma_canvas->Print(outfile_name);
  
 
   TMultiGraph* T_graphs = new TMultiGraph();
-  T_graphs->SetTitle("Transverse cross section;x;cross section (mb)");
+  title = "Transverse inclusive cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+  T_graphs->SetTitle(title);
 
-  ofstream T_output_file("data/J_T_inclusive_sigma_x.txt");
+  outfile_name = "data/J_T_inclusive_r_"+r_limit_filename_string+".txt";
+  ofstream T_output_file(outfile_name);
   T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
@@ -260,7 +275,10 @@ int main() {
     }
 
     TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
-    TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
+    
+    stringstream stream;
+    stream << fixed << setprecision(1) << Q2_values[j];
+    TString subgraph_name = "Q^{2}=" + stream.str();
     subgraph->SetTitle(subgraph_name);
     T_graphs->Add(subgraph);
 
@@ -284,7 +302,8 @@ int main() {
 
   T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  T_sigma_canvas->Print("figures/J_T_inclusive_sigma_x_distribution.pdf");
+  outfile_name = "figures/J_T_inclusive_r_"+r_limit_filename_string+".pdf";
+  T_sigma_canvas->Print(outfile_name);
 
   return 0;
 }
