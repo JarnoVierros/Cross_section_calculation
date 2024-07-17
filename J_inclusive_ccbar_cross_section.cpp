@@ -81,8 +81,11 @@ void integrate_for_L_sigma(thread_par_struct par) {
   const int dim = 4;
   double res, err;
 
+  const double r_limit = 34.64;
+  const double b_min_limit = 17.32;
+
   double xl[4] = {0, 0, 0, 0};
-  double xu[4] = {34.64, 17.32, M_PI, 1};
+  double xu[4] = {r_limit, b_min_limit, M_PI, 1};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
