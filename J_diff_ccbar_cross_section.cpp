@@ -32,7 +32,7 @@ const double m_f = 1.27; //GeV 1.27
 const double normalization = 4/M_PI*alpha_em*N_c*e_f*e_f;
 
 const double r_limit = 34.64; // 34.64
-const double b_min_limit = 12; // 17.32
+const double b_min_limit = 17.32; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = true;
@@ -56,7 +56,7 @@ double dipole_amplitude(double r, double b_min, double phi, double x) {
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*gsl_pow_2(dipole_amplitude(r, b_min, phi, x));
+  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*gsl_pow_2(dipole_amplitude(r, b_min, phi, x));;
 }
 
 double T_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
@@ -180,6 +180,9 @@ int main() {
   const double x_start = 1e-5;
   const double x_stop = 0.01;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
+
+  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  load_dipole_amplitudes(table, filename);
 
   TMultiGraph* L_graphs = new TMultiGraph();
   L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (mb)");
