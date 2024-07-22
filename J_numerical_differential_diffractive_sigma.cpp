@@ -21,7 +21,10 @@
 #include <fstream>
 #include <ostream>
 #include <sstream>
+
 using namespace std;
+
+//#include <std:format>
 
 #include "direct_dipole_amp_reader.h"
 
@@ -42,17 +45,21 @@ const int warmup_calls = 10000;
 const int integration_calls = 100000;
 const int integration_iterations = 1;
 
+const int integration_limit = 10000;
+const double absolute_precision = 1e-16;
+
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
 void handle_status(int status) {
   if (status != 0) {
     if (status == 18) {
-      cout << "status 18" << endl;
+      //cout << "roundoff error" << endl;
     } else if (status == 22) {
-      cout << "warning: divergent qags integral" << endl;
+      //cout << "warning: divergent qags integral" << endl;
+    } else if (status == 21) {
+      //cout << "warning: apparent singularity" << endl;
     } else {
-      cout << "L_integrand: " << status << endl;
-      throw (status);
+      cout << "Error: " << status << endl;
     }
   }
 }
@@ -74,19 +81,39 @@ double calc_j(double b2, double r_bar, double phi_bar) {
 }
 
 double calc_A(double j, double h, double b1, double b2) {
-  return sqrt(j*j + h*(16*b1*b1-j*j/(b2*b2)));
+  return sqrt(j*j + h*(16*b1*b1-gsl_pow_2(j/(2*b2))));
 }
 
-double calc_theta_bar(double return_values[4], double r, double b_min, double phi, double theta, double r_bar, double phi_bar) {
+int calc_theta_bar(double return_values[4], double r, double b_min, double phi, double theta, double r_bar, double phi_bar) {
   double b1 = calc_b1(r, b_min, phi, theta);
   double b2 = calc_b2(r, b_min, phi, theta);
   double h = calc_h(r, b_min, phi);
+  if (r_bar*r_bar > (4*h*b1*b1)/(gsl_pow_2(sin(phi_bar))*(h-4*b2*b2))) {
+    //r_bar is too large
+    return 1;
+  }
   double j = calc_j(b2, r_bar, phi_bar);
   double A = calc_A(j, h, b1, b2);
+  if (gsl_isnan(b1)) {
+    cout << "b1 is nan!" << endl;
+  }
+  if (gsl_isnan(b2)) {
+    cout << "b2 is nan!" << endl;
+  }
+  if (gsl_isnan(h)) {
+    cout << "h is nan!" << endl;
+  }
+  if (gsl_isnan(j)) {
+    cout << "j is nan!" << endl;
+  }
+  if (gsl_isnan(A)) {
+    cout << "A is nan!" << endl;
+  }
   return_values[0] = acos((A+j)/(2*h));
   return_values[1] = acos((-A+j)/(2*h));
   return_values[2] = -acos((A+j)/(2*h));
   return_values[3] = -acos((-A+j)/(2*h));
+  return 0;
 }
 
 double calc_b_bar(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double theta_bar) {
@@ -106,134 +133,207 @@ double dipole_amplitude(double r, double b_min, double phi, double x) {
   return get_dipole_amplitude(table, r, b_min, phi, x);
 }
 
-struct integration_parameters {double r; double b_min; double phi; double theta; double r_bar; double phi_bar; double z; double Q2; double x_pom; double beta;};
+struct integration_parameters {double r; double b_min; double phi; double theta; double r_bar; double z; double Q2; double x_pom; double beta;};
 
-double phibar_integrand(double phibar, void* phibar_params) {
+double phibar_integrand(double phi_bar, void* phibar_params) {
   struct integration_parameters *par = (struct integration_parameters *)phibar_params;
 
   double total_integrand = 0;
   double theta_bar[4];
-  calc_theta_bar(theta_bar, par->r, par->b_min, par->phi, par->theta, par->r_bar, par->phi_bar);
+  int r_bar_too_large = calc_theta_bar(theta_bar, par->r, par->b_min, par->phi, par->theta, par->r_bar, phi_bar);
+  if (r_bar_too_large == 1) {
+    return 0;
+  }
+  //const int precision = 25;
+  /*
+  if (gsl_isnan(theta_bar[0])) {
+    cout << endl << "First theta_bar is nan" << endl;
+    cout << "r=" << setprecision(precision) << par->r << endl;
+    cout << "b_min=" << setprecision(precision) << par->b_min << endl;
+    cout << "phi=" << setprecision(precision) << par->phi << endl;
+    cout << "theta=" << setprecision(precision) << par->theta << endl;
+    cout << "r_bar=" << setprecision(precision) << par->r_bar << endl;
+    cout << "phi_bar=" << setprecision(precision) << phi_bar << endl;
+    cout << "z=" << setprecision(precision) << par->z << endl;
+    double result[4];
+    calc_theta_bar(result, par->r, par->b_min, par->phi, par->theta, par->r_bar, phi_bar);
+    cout << "double check: " << result[0] << endl;
+    cout << endl;
+  }
+  */
   for (int i=0; i<4; i++) {
-    double b_min_bar = calc_b_bar(par->r, par->b_min, par->phi, par->theta, par->r_bar, par->phi_bar, theta_bar[i]);
-    total_integrand += dipole_amplitude(par->r_bar, b_min_bar, par->phi_bar, par->beta*par->x_pom)
-    *gsl_sf_bessel_J0(sqrt(par->z*(1-par->z)*par->Q2*(1/par->beta-1)-m_f*m_f)*sqrt(gsl_pow_2(par->r*cos(par->phi+par->theta)-par->r_bar*cos(theta_bar[i]+par->phi_bar)) + gsl_pow_2(par->r*sin(par->phi+par->theta)-par->r_bar*sin(par->phi_bar+theta_bar[i]))))
+    double b_min_bar = calc_b_bar(par->r, par->b_min, par->phi, par->theta, par->r_bar, phi_bar, theta_bar[i]);
+    //if (gsl_isnan(b_min_bar)) {
+    //  cout << "b_min_bar is nan" << endl;
+    //}
+    /*
+    if (gsl_isnan(theta_bar[i])) {
+      cout << "theta_bar[" << i << "] is nan" << endl;
+      cout << "r=" << par->r << endl;
+      cout << "b_min=" << par->b_min << endl;
+      cout << "phi=" << par->phi << endl;
+      cout << "theta=" << par->theta << endl;
+      cout << "r_bar=" << par->r_bar << endl;
+      cout << "phi_bar=" << phi_bar << endl;
+      cout << "z=" << par->z << endl;
+    }
+    */
+    double integrand = dipole_amplitude(par->r_bar, b_min_bar, phi_bar, par->beta*par->x_pom)
+    *gsl_sf_bessel_J0(sqrt(par->z*(1-par->z)*par->Q2*(1/par->beta-1)-m_f*m_f)*sqrt(par->r*par->r + par->r_bar*par->r_bar -2*par->r*par->r_bar*cos(par->theta-theta_bar[i]+par->phi-phi_bar)))
     *4*par->Q2*par->z*par->z*gsl_pow_2(1-par->z)*gsl_sf_bessel_K0(epsilon(par->z, par->Q2)*par->r)*gsl_sf_bessel_K0(epsilon(par->z, par->Q2)*par->r_bar);
+    if (gsl_isnan(integrand)) {
+      //cout << "INTEGRAND NAN" << endl;
+      //cout << dipole_amplitude(par->r_bar, b_min_bar, phi_bar, par->beta*par->x_pom) << endl;
+      //if (gsl_isnan(sqrt(par->z*(1-par->z)*par->Q2*(1/par->beta-1)-m_f*m_f))) {
+      //  cout << "stepfunction not working" << endl;
+      //}
+      //cout << gsl_sf_bessel_J0(sqrt(par->z*(1-par->z)*par->Q2*(1/par->beta-1)-m_f*m_f)*sqrt(gsl_pow_2(par->r*cos(par->phi+par->theta)-par->r_bar*cos(theta_bar[i]+phi_bar)) + gsl_pow_2(par->r*sin(par->phi+par->theta)-par->r_bar*sin(phi_bar+theta_bar[i])))) << endl;
+      //cout << 4*par->Q2*par->z*par->z*gsl_pow_2(1-par->z)*gsl_sf_bessel_K0(epsilon(par->z, par->Q2)*par->r)*gsl_sf_bessel_K0(epsilon(par->z, par->Q2)*par->r_bar) << endl;
+      integrand = 0;
+    }
+    total_integrand += integrand;
   }
   return total_integrand;
 }
 
 double rbar_integrand(double rbar, void* rbar_params) {
   struct integration_parameters *par = (struct integration_parameters *)rbar_params;
-  gsl_integration_workspace * w_phibar = gsl_integration_workspace_alloc (1000);
+  gsl_integration_workspace * w_phibar = gsl_integration_workspace_alloc (integration_limit);
   double result, error;
-  struct integration_parameters phibar_params = {par->r, par->b_min, par->phi, par->theta, rbar, 0, par->z, par->Q2, par->x_pom, par->beta};
+  struct integration_parameters phibar_params = {par->r, par->b_min, par->phi, par->theta, rbar, par->z, par->Q2, par->x_pom, par->beta};
   gsl_function F_phibar;
   F_phibar.function = &phibar_integrand;
   F_phibar.params = &phibar_params;
 
-  int status = gsl_integration_qags (&F_phibar, 0, r_limit, 0, 0.01, 1000, w_phibar, &result, &error);
+  int status = gsl_integration_qags (&F_phibar, 0, M_PI, absolute_precision, 0.01, integration_limit, w_phibar, &result, &error);
   handle_status(status);
+  if (status == 21) {
+    cout << "rbar_integrand=" << result << endl;
+  }
 
   gsl_integration_workspace_free(w_phibar);
   return rbar*result;
 }
 
 double theta_integrand(double theta, void* theta_params) {
+  //cout << "theta " << theta << endl;
   struct integration_parameters *par = (struct integration_parameters *)theta_params;
-  gsl_integration_workspace * w_rbar = gsl_integration_workspace_alloc (1000);
+  gsl_integration_workspace * w_rbar = gsl_integration_workspace_alloc (integration_limit);
   double result, error;
-  struct integration_parameters rbar_params = {par->r, par->b_min, par->phi, theta, 0, 0, par->z, par->Q2, par->x_pom, par->beta};
+  struct integration_parameters rbar_params = {par->r, par->b_min, par->phi, theta, 0, par->z, par->Q2, par->x_pom, par->beta};
   gsl_function F_rbar;
   F_rbar.function = &rbar_integrand;
   F_rbar.params = &rbar_params;
 
-  int status = gsl_integration_qags (&F_rbar, 0, 2*M_PI, 0, 0.01, 1000, w_rbar, &result, &error);
+  int status = gsl_integration_qags (&F_rbar, 0, r_limit, absolute_precision, 0.01, integration_limit, w_rbar, &result, &error);
   handle_status(status);
+  if (status == 21) {
+    cout << "theta_integrand=" << result << endl;
+  }
 
   gsl_integration_workspace_free(w_rbar);
   return dipole_amplitude(par->r, par->b_min, par->phi, par->beta*par->x_pom)*result;
 }
 
 double phi_integrand(double phi, void* phi_params) {
+  cout << "phi " << phi << endl;
   struct integration_parameters *par = (struct integration_parameters *)phi_params;
-  gsl_integration_workspace * w_theta = gsl_integration_workspace_alloc (1000);
+  gsl_integration_workspace * w_theta = gsl_integration_workspace_alloc (integration_limit);
   double result, error;
-  struct integration_parameters theta_params = {par->r, par->b_min, phi, 0, 0, 0, par->z, par->Q2, par->x_pom, par->beta};
+  struct integration_parameters theta_params = {par->r, par->b_min, phi, 0, 0, par->z, par->Q2, par->x_pom, par->beta};
   gsl_function F_theta;
   F_theta.function = &theta_integrand;
   F_theta.params = &theta_params;
 
-  int status = gsl_integration_qags (&F_theta, 0, M_PI, 0, 0.01, 1000, w_theta, &result, &error);
+  int status = gsl_integration_qags (&F_theta, 0, 2*M_PI, absolute_precision, 0.01, integration_limit, w_theta, &result, &error);
   handle_status(status);
+  if (status == 21) {
+    cout << "phi_integrand=" << result << endl;
+  }
 
   gsl_integration_workspace_free(w_theta);
   return result;
 }
 
 double bmin_integrand(double bmin, void* bmin_params) {
+  cout << "bmin " << bmin << endl;
   struct integration_parameters *par = (struct integration_parameters *)bmin_params;
-  gsl_integration_workspace * w_phi = gsl_integration_workspace_alloc (1000);
+  gsl_integration_workspace * w_phi = gsl_integration_workspace_alloc (integration_limit);
   double result, error;
-  struct integration_parameters phi_params = {par->r, bmin, 0, 0, 0, 0, par->z, par->Q2, par->x_pom, par->beta};
+  struct integration_parameters phi_params = {par->r, bmin, 0, 0, 0, par->z, par->Q2, par->x_pom, par->beta};
   gsl_function F_phi;
   F_phi.function = &phi_integrand;
   F_phi.params = &phi_params;
 
-  int status = gsl_integration_qags (&F_phi, 0, M_PI, 0, 0.01, 1000, w_phi, &result, &error);
+  int status = gsl_integration_qags (&F_phi, 0, M_PI, absolute_precision, 0.01, integration_limit, w_phi, &result, &error);
   handle_status(status);
+  if (status == 21) {
+    cout << "bmin_integrand=" << result << endl;
+  }
 
   gsl_integration_workspace_free(w_phi);
   return bmin*result;
 }
 
 double r_integrand(double r, void* r_params) {
+  cout << "r " << r << endl;
   struct integration_parameters *par = (struct integration_parameters *)r_params;
-  gsl_integration_workspace * w_bmin = gsl_integration_workspace_alloc (1000);
+  gsl_integration_workspace * w_bmin = gsl_integration_workspace_alloc (integration_limit);
   double result, error;
-  struct integration_parameters bmin_params = {r, 0, 0, 0, 0, 0, par->z, par->Q2, par->x_pom, par->beta};
+  struct integration_parameters bmin_params = {r, 0, 0, 0, 0, par->z, par->Q2, par->x_pom, par->beta};
   gsl_function F_bmin;
   F_bmin.function = &bmin_integrand;
   F_bmin.params = &bmin_params;
 
-  int status = gsl_integration_qags (&F_bmin, 0, b_min_limit, 0, 0.01, 1000, w_bmin, &result, &error);
+  int status = gsl_integration_qags (&F_bmin, 0, b_min_limit, absolute_precision, 0.01, integration_limit, w_bmin, &result, &error);
   handle_status(status);
+  if (status == 21) {
+    cout << "r_integrand=" << result << endl;
+  }
 
   gsl_integration_workspace_free(w_bmin);
   return r*result;
 }
 
 double z_integrand(double z, void* z_params) {
+  cout << "z " << z << endl;
   struct integration_parameters *par = (struct integration_parameters *)z_params;
   
   if (z*(1-z)*par->Q2*(1/par->beta-1)-m_f*m_f < 0) {
     return 0;
   }
   
-  gsl_integration_workspace * w_r = gsl_integration_workspace_alloc (1000);
+  gsl_integration_workspace * w_r = gsl_integration_workspace_alloc (integration_limit);
   double result, error;
-  struct integration_parameters r_params = {0, 0, 0, 0, 0, 0, z, par->Q2, par->x_pom, par->beta};
+  struct integration_parameters r_params = {0, 0, 0, 0, 0, z, par->Q2, par->x_pom, par->beta};
   gsl_function F_r;
   F_r.function = &r_integrand;
   F_r.params = &r_params;
 
-  int status = gsl_integration_qags (&F_r, 0, r_limit, 0, 0.01, 1000, w_r, &result, &error);
+  int status = gsl_integration_qags (&F_r, 0, r_limit, absolute_precision, 0.01, integration_limit, w_r, &result, &error);
   handle_status(status);
+  if (status == 21) {
+    cout << "z_integrand=" << result << endl;
+  }
 
   gsl_integration_workspace_free(w_r);
   return z*(1-z)*result;
 }
 
 void L_integral(double &sigma, double &sigma_error, double Q2, double x_pom, double beta) {
-  gsl_integration_workspace * w_z = gsl_integration_workspace_alloc (1000);
+  cout << "L" << endl;
+  gsl_integration_workspace * w_z = gsl_integration_workspace_alloc (integration_limit);
   double result, error;
-  struct integration_parameters z_params = {0, 0, 0, 0, 0, 0, 0, Q2, x_pom, beta};
+  struct integration_parameters z_params = {0, 0, 0, 0, 0, 0, Q2, x_pom, beta};
   gsl_function F_z;
   F_z.function = &z_integrand;
   F_z.params = &z_params;
 
-  int status = gsl_integration_qags (&F_z, 0, 1, 0, 0.01, 1000, w_z, &result, &error);
+  int status = gsl_integration_qags (&F_z, 0, 1, absolute_precision, 0.01, integration_limit, w_z, &result, &error);
   handle_status(status);
+  if (status == 21) {
+    cout << "L_integral=" << result << endl;
+  }
 
   gsl_integration_workspace_free(w_z);
   
@@ -244,6 +344,25 @@ void L_integral(double &sigma, double &sigma_error, double Q2, double x_pom, dou
 int main() {
 
   gsl_set_error_handler_off();
+
+  /*
+  double theta_bar[4];
+  double r = 17.32;
+  double b_min = 8.66;
+  double phi = 1.570796326794896557998982;
+  double theta = 1.570796326794896557998982;
+  double r_bar = 17.32;
+  double phi_bar = 1.570796326794933195358794;
+  calc_theta_bar(theta_bar, r, b_min, phi, theta, r_bar, phi_bar);
+
+  cout << theta_bar[0] << endl;
+  cout << theta_bar[1] << endl;
+  cout << theta_bar[2] << endl;
+  cout << theta_bar[3] << endl;
+  */
+
+  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  load_dipole_amplitudes(table, filename);
 
   double sigma;
   double sigma_error;

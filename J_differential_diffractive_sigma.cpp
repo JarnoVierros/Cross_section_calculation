@@ -37,9 +37,9 @@ const double b_min_limit = 17.32; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
-const int integration_iterations = 1;
+const int warmup_calls = 100000;
+const int integration_calls = 100000000;
+const int integration_iterations = 3;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
@@ -60,19 +60,27 @@ double calc_j(double b2, double r_bar, double phi_bar) {
 }
 
 double calc_A(double j, double h, double b1, double b2) {
-  return sqrt(j*j + h*(16*b1*b1-j*j/(b2*b2)));
+  return sqrt(j*j + h*(16*b1*b1-gsl_pow_2(j/(2*b2))));
 }
 
-double calc_theta_bar(double return_values[4], double r, double b_min, double phi, double theta, double r_bar, double phi_bar) {
+int calc_theta_bar(double return_values[4], double r, double b_min, double phi, double theta, double r_bar, double phi_bar) {
   double b1 = calc_b1(r, b_min, phi, theta);
   double b2 = calc_b2(r, b_min, phi, theta);
   double h = calc_h(r, b_min, phi);
+  if (r_bar*r_bar > (4*h*b1*b1)/(gsl_pow_2(sin(phi_bar))*(h-4*b2*b2))) {
+    //r_bar is too large
+    return 1;
+  }
   double j = calc_j(b2, r_bar, phi_bar);
   double A = calc_A(j, h, b1, b2);
+  if (gsl_isnan(A)) {
+    cout << "A is nan!" << endl;
+  }
   return_values[0] = acos((A+j)/(2*h));
   return_values[1] = acos((-A+j)/(2*h));
   return_values[2] = -acos((A+j)/(2*h));
   return_values[3] = -acos((-A+j)/(2*h));
+  return 0;
 }
 
 double calc_b_bar(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double theta_bar) {
@@ -100,18 +108,29 @@ double dipole_amplitude(double r, double b_min, double phi, double x) {
 }
 
 double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
-  if (sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f) < 0) {
+  if (z*(1-z)*Q2*(1/beta-1)-m_f*m_f < 0) {
     return 0;
   }
   double total_integrand = 0;
   double theta_bar[4];
-  calc_theta_bar(theta_bar, r, b_min, phi, theta, r_bar, phi_bar);
+  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, theta, r_bar, phi_bar);
+  if (r_bar_too_large == 1) {
+    return 0;
+  }
   for (int i=0; i<4; i++) {
     double b_min_bar = calc_b_bar(r, b_min, phi, theta, r_bar, phi_bar, theta_bar[i]);
-    total_integrand += r*b_min*r_bar*gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r*cos(phi+theta)-r_bar*cos(theta_bar[i]+phi_bar)) + gsl_pow_2(r*sin(phi+theta)-r_bar*sin(phi_bar+theta_bar[i]))))
+    //cout << r*b_min*r_bar*gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r*cos(phi+theta)-r_bar*cos(theta_bar[i]+phi_bar)) + gsl_pow_2(r*sin(phi+theta)-r_bar*sin(phi_bar+theta_bar[i])))) << endl;
+    //cout << z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar) << endl;
+    //cout << get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom) << endl;
+    double sub_integrand = r*b_min*r_bar*gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r*cos(phi+theta)-r_bar*cos(theta_bar[i]+phi_bar)) + gsl_pow_2(r*sin(phi+theta)-r_bar*sin(phi_bar+theta_bar[i]))))
     *z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)
     *get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
+    //cout << "sub_integral: " << sub_integrand << endl;
+    total_integrand += sub_integrand;
   }
+  //cout << theta_bar[0] << ", " << theta_bar[1] << ", " << theta_bar[2] << ", " << theta_bar[3] << endl;
+  //cout << total_integrand << endl;
+  //cout << "integrand: " << total_integrand << endl;
   return total_integrand;
 }
 
@@ -174,6 +193,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
   for (int i=0; i<integration_iterations; i++) {
     status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
     if (status != 0) {cout << "integrate_for_L_sigma: " << status << endl; throw (status);}
+    cout << "iteration " << i << " result: " << res << ", err: " << err << endl;
   }
   if (gsl_isnan(res)) {
     res = 0;
@@ -235,9 +255,13 @@ int main() {
 
   gsl_set_error_handler_off();
 
+  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  load_dipole_amplitudes(table, filename);
+
   double sigma;
   double sigma_error;
-  thread_par_struct par(2.5, 0.01, 0.1, sigma, sigma_error);
+  thread_par_struct par(4.5, 0.00012, 0.04, sigma, sigma_error);
+  integrate_for_L_sigma(par);
   cout << "sigma: " << sigma << ", error: " << sigma_error << endl;
 
   /*
