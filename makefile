@@ -18,6 +18,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make dipole_amp_reader
 	make plot_comparator
 	make J_diff_ccbar_cross_section
+	make J_differential_diffractive_sigma
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -96,6 +97,10 @@ plot_comparator: plot_comparator.cpp
 J_diff_ccbar_cross_section: J_diff_ccbar_cross_section.cpp
 	g++ -Wall -c J_diff_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_diff_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_diff_ccbar_cross_section.exe
+
+J_differential_diffractive_sigma: J_differential_diffractive_sigma.cpp
+	g++ -Wall -c J_differential_diffractive_sigma.cpp $$(root-config --glibs --cflags --libs)
+	g++ J_differential_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_differential_diffractive_sigma.exe
 
 clean:
 	-rm *.exe
