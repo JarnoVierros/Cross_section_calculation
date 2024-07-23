@@ -41,6 +41,8 @@ const int warmup_calls = 10000;
 const int integration_calls = 1000000;//20000000
 const int integration_iterations = 10;
 
+const int debug_precision = 20;
+
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
 double calc_h(double r, double b_min, double phi) {
@@ -125,6 +127,21 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
     *z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)
     *get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
 
+    if (gsl_isnan(sub_integrand)) {
+      cout << "L sub_integrand " << i << " is nan" << endl;
+      cout << "r=" << setprecision(debug_precision) << r << endl;
+      cout << "b_min=" << setprecision(debug_precision) << b_min << endl;
+      cout << "phi=" << setprecision(debug_precision) << phi << endl;
+      cout << "r_bar=" << setprecision(debug_precision) << r_bar << endl;
+      cout << "phi_bar=" << setprecision(debug_precision) << phi_bar << endl;
+      cout << "z=" << setprecision(debug_precision) << z << endl;
+      cout << "Q2=" << setprecision(debug_precision) << Q2 << endl;
+      cout << "x_pom=" << setprecision(debug_precision) << x_pom << endl;
+      cout << "beta=" << setprecision(debug_precision) << beta << endl;
+      cout << "sub_integrand=" << setprecision(debug_precision) << sub_integrand << endl;
+      sub_integrand = 0;
+    }
+
     total_integrand += sub_integrand;
   }
   //static auto t2 = chrono::high_resolution_clock::now();
@@ -151,6 +168,21 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))
     *get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
+
+    if (gsl_isnan(sub_integrand)) {
+      cout << "T sub_integrand " << i << " is nan" << endl;
+      cout << "r=" << setprecision(debug_precision) << r << endl;
+      cout << "b_min=" << setprecision(debug_precision) << b_min << endl;
+      cout << "phi=" << setprecision(debug_precision) << phi << endl;
+      cout << "r_bar=" << setprecision(debug_precision) << r_bar << endl;
+      cout << "phi_bar=" << setprecision(debug_precision) << phi_bar << endl;
+      cout << "z=" << setprecision(debug_precision) << z << endl;
+      cout << "Q2=" << setprecision(debug_precision) << Q2 << endl;
+      cout << "x_pom=" << setprecision(debug_precision) << x_pom << endl;
+      cout << "beta=" << setprecision(debug_precision) << beta << endl;
+      cout << "sub_integrand=" << setprecision(debug_precision) << sub_integrand << endl;
+      sub_integrand = 0;
+    }
 
     total_integrand += sub_integrand;
   }
