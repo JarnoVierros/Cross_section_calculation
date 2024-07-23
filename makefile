@@ -20,6 +20,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make J_diff_ccbar_cross_section
 	make J_differential_diffractive_sigma
 	make J_numerical_differential_diffractive_sigma
+	make J_simplified_differential_diffractive_sigma
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -107,6 +108,11 @@ J_numerical_differential_diffractive_sigma: J_numerical_differential_diffractive
 	g++ -Wall -c J_numerical_differential_diffractive_sigma.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_numerical_differential_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_numerical_differential_diffractive_sigma.exe
 	
+J_simplified_numerical_differential_diffractive_sigma: J_simplified_numerical_differential_diffractive_sigma.cpp
+	g++ -Wall -c J_simplified_numerical_differential_diffractive_sigma.cpp $$(root-config --glibs --cflags --libs)
+	g++ J_simplified_numerical_differential_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_simplified_numerical_differential_diffractive_sigma.exe
+	
+
 clean:
 	-rm *.exe
 	-rm *.o
