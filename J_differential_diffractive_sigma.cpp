@@ -45,7 +45,7 @@ const int debug_precision = 10;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
-void read_data_file(string filename, vector<double> &Q2_values, vector<double> &beta_values, vector<double> &x_pom_values, vector<double> &x_pom_F2_values, vector<double> &delta_stat_values, vector<double> &delta_sys_values) {
+void read_data_file(string filename, vector<double> &Q2_values, vector<double> &beta_values, vector<double> &x_values, vector<double> &x_pom_F2_values, vector<double> &delta_stat_values, vector<double> &delta_sys_values) {
   ifstream data_file(filename);
 
   cout << "Reading: " << filename << endl;
@@ -74,7 +74,7 @@ void read_data_file(string filename, vector<double> &Q2_values, vector<double> &
       value += line[i];
       i++;
     }
-    x_pom_values.push_back(stod(value));
+    x_values.push_back(stod(value));
     i++;
 
     value = "";
@@ -169,7 +169,7 @@ double dipole_amplitude(double r, double b_min, double phi, double x) {
   return get_dipole_amplitude(table, r, b_min, phi, x);
 }
 
-double L_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
+double L_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta) {
   //static auto t1 = chrono::high_resolution_clock::now();
   if (z*(1-z)*Q2*(1/beta-1)-m_f*m_f < 0) {
     return 0;
@@ -185,7 +185,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))
     *z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)
-    *get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
+    *get_dipole_amplitude(table, r, b_min, phi, x)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, x);
 
     if (gsl_isnan(sub_integrand)) {
       cout << "L sub_integrand " << i << " is nan" << endl;
@@ -197,7 +197,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
       cout << "phi_bar=" << setprecision(debug_precision) << phi_bar << endl;
       cout << "z=" << setprecision(debug_precision) << z << endl;
       cout << "Q2=" << setprecision(debug_precision) << Q2 << endl;
-      cout << "x_pom=" << setprecision(debug_precision) << x_pom << endl;
+      cout << "x=" << setprecision(debug_precision) << x << endl;
       cout << "beta=" << setprecision(debug_precision) << beta << endl;
       cout << "sub_integrand=" << setprecision(debug_precision) << sub_integrand << endl;
       */
@@ -213,7 +213,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
   return total_integrand;
 }
 
-double T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
+double T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta) {
   //static auto t1 = chrono::high_resolution_clock::now();
   if (z*(1-z)*Q2*(1/beta-1)-m_f*m_f < 0) {
     return 0;
@@ -229,7 +229,7 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))
-    *get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
+    *get_dipole_amplitude(table, r, b_min, phi, x)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, x);
 
     if (gsl_isnan(sub_integrand)) {
       cout << "T sub_integrand " << i << " is nan" << endl;
@@ -241,7 +241,7 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
       cout << "phi_bar=" << setprecision(debug_precision) << phi_bar << endl;
       cout << "z=" << setprecision(debug_precision) << z << endl;
       cout << "Q2=" << setprecision(debug_precision) << Q2 << endl;
-      cout << "x_pom=" << setprecision(debug_precision) << x_pom << endl;
+      cout << "x=" << setprecision(debug_precision) << x << endl;
       cout << "beta=" << setprecision(debug_precision) << beta << endl;
       cout << "sub_integrand=" << setprecision(debug_precision) << sub_integrand << endl;
       */
@@ -257,27 +257,27 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
   return total_integrand;
 }
 
-struct parameters {double Q2; double x_pom; double beta;};
+struct parameters {double Q2; double x; double beta;};
 
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x_pom, par->beta);
+  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x, par->beta);
 }
 
 double T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x_pom, par->beta);
+  return normalization*T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x, par->beta);
 }
 
 struct thread_par_struct
 {
   double Q2;
-  double x_pom;
+  double x;
   double beta;
   double &sigma;
   double &sigma_error;
   double &sigma_fit;
-  thread_par_struct(double a1, double a2, double a3, double &a4, double &a5, double &a6) : Q2(a1), x_pom(a2), beta(a3), sigma(a4), sigma_error(a5), sigma_fit(a6) {}
+  thread_par_struct(double a1, double a2, double a3, double &a4, double &a5, double &a6) : Q2(a1), x(a2), beta(a3), sigma(a4), sigma_error(a5), sigma_fit(a6) {}
 };
 
 void integrate_for_L_sigma(thread_par_struct par) {
@@ -285,13 +285,13 @@ void integrate_for_L_sigma(thread_par_struct par) {
   const int dim = 6;
   double res, err;
 
-  //double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
+  //double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x, double beta) {
   double xl[6] = {0, 0, 0, 0, 0, 0};
   double xu[6] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1};
 
   struct parameters params = {1, 1, 1};
   params.Q2 = par.Q2;
-  params.x_pom = par.x_pom;
+  params.x = par.x;
   params.beta = par.beta;
   double &sigma = par.sigma;
   double &sigma_error = par.sigma_error;
@@ -322,12 +322,12 @@ void integrate_for_L_sigma(thread_par_struct par) {
   }
   if (gsl_isnan(res)) {
     res = 0;
-    cout << "nan found at x_pom=" << params.x_pom << endl;
+    cout << "nan found at x=" << params.x << endl;
   }
   sigma = res;
   sigma_error = err;
   sigma_fit = gsl_monte_vegas_chisq(L_s);
-  cout << "L, Q²=" << params.Q2 << ", x_pom=" << params.x_pom << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+  cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   gsl_monte_vegas_free(L_s);
 }
@@ -337,13 +337,13 @@ void integrate_for_T_sigma(thread_par_struct par) {
   const int dim = 6;
   double res, err;
 
-  //double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
+  //double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x, double beta) {
   double xl[6] = {0, 0, 0, 0, 0, 0};
   double xu[6] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1};
 
   struct parameters params = {1, 1, 1};
   params.Q2 = par.Q2;
-  params.x_pom = par.x_pom;
+  params.x = par.x;
   params.beta = par.beta;
   double &sigma = par.sigma;
   double &sigma_error = par.sigma_error;
@@ -374,81 +374,23 @@ void integrate_for_T_sigma(thread_par_struct par) {
   }
   if (gsl_isnan(res)) {
     res = 0;
-    cout << "nan found at x_pom=" << params.x_pom << endl;
-  }
-  sigma = res;
-  sigma_error = err;
-  sigma_fit = gsl_monte_vegas_chisq(T_s);
-  cout << "T, Q²=" << params.Q2 << ", x_pom=" << params.x_pom << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
-
-  gsl_monte_vegas_free(T_s);
-}
-
-/*
-  static auto t1 = chrono::high_resolution_clock::now();
-  int status = gsl_integration_qags (&F_phi, 0, M_PI, absolute_precision, 0.01, integration_limit, w_phi, &result, &error);
-  static auto t2 = chrono::high_resolution_clock::now();
-  handle_status(status);
-  auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
-
-  cout << "bmin= " << bmin << ", time=" << duration.count() << endl;
-  cout << "average phibar time: " << phibar_t_total/phibar_t_count << ", average rbar time: " << rbar_t_total/rbar_t_count << endl;
-  phi_t_total += duration.count();
-  phi_t_count++;
-*/
-
-/*
-void integrate_for_T_sigma(thread_par_struct par) {
-
-  const int dim = 4;
-  double res, err;
-
-  double xl[4] = {0, 0, 0, 0};
-  double xu[4] = {r_limit, b_min_limit, M_PI, 1};
-
-  struct parameters params = {1, 1};
-  params.Q2 = par.Q2;
-  params.x = par.x;
-  double &sigma = par.sigma;
-  double &sigma_error = par.sigma_error;
-
-  const gsl_rng_type *T;
-  gsl_rng *rng;
-
-  gsl_monte_function T_G = {&T_g, dim, &params};
-
-  gsl_rng_env_setup ();
-  int status = 0;
-
-  T = gsl_rng_default;
-  rng = gsl_rng_alloc(T);
-
-  gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
-  status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
-  if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
-  for (int i=0; i<integration_iterations; i++) {
-    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-    if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
-  }
-  if (gsl_isnan(res)) {
-    res = 0;
     cout << "nan found at x=" << params.x << endl;
   }
   sigma = res;
   sigma_error = err;
-  cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+  sigma_fit = gsl_monte_vegas_chisq(T_s);
+  cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
   gsl_monte_vegas_free(T_s);
 }
-*/
 
 int main() {
 
   gsl_set_error_handler_off();
 
-  vector<double> Q2_values, beta_values, x_pom_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
+  vector<double> Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
-  read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_pom_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
+  read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
 
   string filename = "data/dipole_amplitude_with_IP_dependence.csv";
   load_dipole_amplitudes(table, filename);
@@ -457,7 +399,7 @@ int main() {
   for (long unsigned int i=0; i<Q2_values.size(); i++) {
     cout << "Q2=" << Q2_values[i] << endl;
     cout << "beta=" << beta_values[i] << endl;
-    cout << "x_pom=" << x_pom_values[i] << endl;
+    cout << "x=" << x_values[i] << endl;
     cout << "x_pom_F2=" << x_pom_F2_values[i] << endl;
     cout << "delta_stat=" << delta_stat_values[i] << endl;
     cout << "delta_sys=" << delta_sys_values[i] << endl;
@@ -474,10 +416,10 @@ int main() {
 
   for (int i=0; i<data_inclusion_count; i++) {
 
-    thread_par_struct L_par(Q2_values[i], x_pom_values[i], beta_values[i], L_sigma[i], L_error[i], L_fit[i]);
+    thread_par_struct L_par(Q2_values[i], x_values[i], beta_values[i], L_sigma[i], L_error[i], L_fit[i]);
     L_integration_threads[i] = thread(integrate_for_L_sigma, L_par);
 
-    thread_par_struct T_par(Q2_values[i], x_pom_values[i], beta_values[i], T_sigma[i], T_error[i], T_fit[i]);
+    thread_par_struct T_par(Q2_values[i], x_values[i], beta_values[i], T_sigma[i], T_error[i], T_fit[i]);
     T_integration_threads[i] = thread(integrate_for_T_sigma, T_par);
 
   }
@@ -492,162 +434,44 @@ int main() {
   cout << "Calculation finished in " << duration.count() << " seconds" << endl;
 
   ofstream L_output_file("data/differential_diffractive_L_20mil.txt");
-  L_output_file << "Q2 (GeV);beta;x_pom;sigma (mb);sigma error (mb);fit" << endl;
+  L_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {
     ostringstream Q2;
     Q2 << Q2_values[i];
     ostringstream beta;
     beta << beta_values[i];
-    ostringstream x_pom;
-    x_pom << x_pom_values[i];
+    ostringstream x;
+    x << x_values[i];
     ostringstream sigma;
     sigma << L_sigma[i];
     ostringstream error;
     error << L_error[i];
     ostringstream fit;
     fit << L_fit[i];
-    string line = Q2.str() + ";" + beta.str() + ";" + x_pom.str() + ";" + sigma.str() + ";" + error.str() + ";" + fit.str();
+    string line = Q2.str() + ";" + beta.str() + ";" + x.str() + ";" + sigma.str() + ";" + error.str() + ";" + fit.str();
     L_output_file << line << endl;
   }
   L_output_file.close();
 
   ofstream T_output_file("data/differential_diffractive_T_20mil.txt");
-  T_output_file << "Q2 (GeV);beta;x_pom;sigma (mb);sigma error (mb);fit" << endl;
+  T_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {
     ostringstream Q2;
     Q2 << Q2_values[i];
     ostringstream beta;
     beta << beta_values[i];
-    ostringstream x_pom;
-    x_pom << x_pom_values[i];
+    ostringstream x;
+    x << x_values[i];
     ostringstream sigma;
     sigma << T_sigma[i];
     ostringstream error;
     error << T_error[i];
     ostringstream fit;
     fit << T_fit[i];
-    string line = Q2.str() + ";" + beta.str() + ";" + x_pom.str() + ";" + sigma.str() + ";" + error.str() + ";" + fit.str();
+    string line = Q2.str() + ";" + beta.str() + ";" + x.str() + ";" + sigma.str() + ";" + error.str() + ";" + fit.str();
     T_output_file << line << endl;
   }
   T_output_file.close();
-
-  /*
-
-  const int Q2_values[] = {1, 3, 5, 8, 10};
-
-  const int x_steps = 30;
-  const double x_start = 1e-5;
-  const double x_stop = 0.01;
-  const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
-
-  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
-  load_dipole_amplitudes(table, filename);
-
-  TMultiGraph* L_graphs = new TMultiGraph();
-  L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (mb)");
-
-  ofstream L_output_file("data/diff_L_sigma_x.txt");
-  L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
-
-  cout << "Starting L integration" << endl;
-  for (long unsigned int j=0; j<size(Q2_values); j++) {
-    double L_x_values[x_steps], L_sigma_values[x_steps], L_x_errors[x_steps], L_sigma_errors[x_steps];
-    thread L_threads[x_steps];
-
-    for (int i=0; i<x_steps; i++) {
-      double x = pow(10, log10(x_start) + i*x_step);
-      L_x_values[i] = x;
-      L_x_errors[i] = 0;
-      thread_par_struct par(Q2_values[j], x, L_sigma_values[i], L_sigma_errors[i]);
-      L_threads[i] = thread(integrate_for_L_sigma, par);
-    }
-
-    for (int j=0; j<x_steps; j++) {
-      L_threads[j].join();
-    }
-
-    TGraphErrors* subgraph = new TGraphErrors(x_steps, L_x_values, L_sigma_values, L_x_errors, L_sigma_errors);
-    TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
-    subgraph->SetTitle(subgraph_name);
-    L_graphs->Add(subgraph);
-
-    for (int i=0; i<x_steps; i++) {
-      ostringstream x;
-      x << L_x_values[i];
-      ostringstream sigma;
-      sigma << L_sigma_values[i];
-      ostringstream sigma_err;
-      sigma_err << L_sigma_errors[i];
-      string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str() + ";" + sigma_err.str();
-      L_output_file << line << endl;
-    }
-  }
-  L_output_file.close();
-
-  TCanvas* L_sigma_canvas = new TCanvas("diff_L_sigma_canvas", "", 1000, 600);
-  L_graphs->Draw("A PMC PLC");
-
-  gPad->SetLogx();
-
-  L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
-
-  L_sigma_canvas->Print("figures/diff_L_sigma_x_distribution.pdf");
- 
-
-  TMultiGraph* T_graphs = new TMultiGraph();
-  T_graphs->SetTitle("Diffractive transverse cross section;x;cross section (mb)");
-
-  ofstream T_output_file("data/diff_T_sigma_x.txt");
-  T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
-
-  cout << "Starting T integration" << endl;
-  
-  for (long unsigned int j=0; j<size(Q2_values); j++) {
-    double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps];
-    thread T_threads[x_steps];
-
-    for (int i=0; i<x_steps; i++) {
-      double x = pow(10, log10(x_start) + i*x_step);
-      T_x_values[i] = x;
-      T_x_errors[i] = 0;
-      thread_par_struct par(Q2_values[j], x, T_sigma_values[i], T_sigma_errors[i]);
-      T_threads[i] = thread(integrate_for_T_sigma, par);
-      //this_thread::sleep_for(30s);
-    }
-
-    for (int j=0; j<x_steps; j++) {
-      T_threads[j].join();
-    }
-
-    TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
-    TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
-    subgraph->SetTitle(subgraph_name);
-    T_graphs->Add(subgraph);
-
-    for (int i=0; i<x_steps; i++) {
-      ostringstream x;
-      x << T_x_values[i];
-      ostringstream sigma;
-      sigma << T_sigma_values[i];
-      ostringstream sigma_err;
-      sigma_err << T_sigma_errors[i];
-      string line = to_string(Q2_values[j]) + ";" + x.str() + ";" + sigma.str() + ";" + sigma_err.str();
-      T_output_file << line << endl;
-    }
-  }
-  T_output_file.close();
-
-  TCanvas* T_sigma_canvas = new TCanvas("diff_T_sigma_canvas", "", 1000, 600);
-  T_graphs->Draw("A PMC PLC");
-
-  gPad->SetLogx();
-
-  T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
-
-  T_sigma_canvas->Print("figures/diff_T_sigma_x_distribution.pdf");
-
-  return 0;
-  */
 }
