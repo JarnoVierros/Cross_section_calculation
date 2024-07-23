@@ -35,8 +35,8 @@ const double m_f = 1.27; //GeV 1.27
 
 const double normalization = 16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
-const double r_limit = 34.64; // 34.64
-const double b_min_limit = 17.32; // 17.32
+const double r_limit = 3; // 34.64
+const double b_min_limit = 10; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
@@ -216,7 +216,7 @@ double rbar_integrand(double rbar, void* rbar_params) {
 }
 
 double phi_integrand(double phi, void* phi_params) {
-  cout << "phi " << phi << endl;
+  //cout << "phi " << phi << endl;
   struct integration_parameters *par = (struct integration_parameters *)phi_params;
   gsl_integration_workspace * w_rbar = gsl_integration_workspace_alloc (integration_limit);
   double result, error;
@@ -234,9 +234,14 @@ double phi_integrand(double phi, void* phi_params) {
   gsl_integration_workspace_free(w_rbar);
   return dipole_amplitude(par->r, par->b_min, par->phi, par->beta*par->x_pom)*result;
 }
-
+static auto t1 = chrono::high_resolution_clock::now();
+static auto t2 = chrono::high_resolution_clock::now();
 double bmin_integrand(double bmin, void* bmin_params) {
-  cout << "bmin " << bmin << endl;
+  t2 = chrono::high_resolution_clock::now();
+  auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
+  cout << "bmin " << bmin << ", time=" << duration.count() << endl;
+  t1 = t2;
+
   struct integration_parameters *par = (struct integration_parameters *)bmin_params;
   gsl_integration_workspace * w_phi = gsl_integration_workspace_alloc (integration_limit);
   double result, error;
