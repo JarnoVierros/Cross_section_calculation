@@ -35,8 +35,8 @@ const double m_f = 1.27; //GeV 1.27
 
 const double normalization = 16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
-const double r_limit = 3; // 34.64
-const double b_min_limit = 10; // 17.32
+const double r_limit = 34.64; // 34.64, 3
+const double b_min_limit = 17.32; // 17.32, 10
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
@@ -46,18 +46,18 @@ const int integration_calls = 100000;
 const int integration_iterations = 1;
 
 const int integration_limit = 10000;
-const double absolute_precision = 1e-16;
+const double absolute_precision = 1e-20;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
 void handle_status(int status) {
   if (status != 0) {
     if (status == 18) {
-      //cout << "roundoff error" << endl;
+      cout << "roundoff error" << endl;
     } else if (status == 22) {
-      //cout << "warning: divergent qags integral" << endl;
+      cout << "warning: divergent qags integral" << endl;
     } else if (status == 21) {
-      //cout << "warning: apparent singularity" << endl;
+      cout << "warning: apparent singularity" << endl;
     } else {
       cout << "Error: " << status << endl;
     }
@@ -198,7 +198,11 @@ double rbar_integrand(double r_bar, void* rbar_params) {
 }
 
 double r_bar_max(double r, double b_min, double phi, double phi_bar) {
-  return (4*b_min*b_min+4*b_min*r*cos(phi)+r*r)*gsl_pow_2(2*b_min+r*cos(phi))/(gsl_pow_2(sin(phi_bar))*(4*b_min*b_min+4*b_min*r*cos(phi)+r*r-gsl_pow_2(r*sin(phi))));
+  double h = calc_h(r, b_min, phi);
+  double b1 = calc_b1(r, b_min, phi);
+  double b2 = calc_b2(r, b_min, phi);
+  return sqrt((4*h*b1*b1)/(gsl_pow_2(phi_bar)*(h-4*b2*b2)));
+  //return (4*b_min*b_min+4*b_min*r*cos(phi)+r*r)*gsl_pow_2(2*b_min+r*cos(phi))/(gsl_pow_2(sin(phi_bar))*(4*b_min*b_min+4*b_min*r*cos(phi)+r*r-gsl_pow_2(r*sin(phi))));
 }
 
 static double rbar_t_total = 0;
