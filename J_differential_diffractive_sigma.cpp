@@ -29,7 +29,7 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV 1.27
 
-const double normalization = 16/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f;
+const double normalization = 16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
 const double r_limit = 34.64; // 34.64
 const double b_min_limit = 17.32; // 17.32
@@ -37,8 +37,8 @@ const double b_min_limit = 17.32; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 100000;
-const int integration_calls = 100000000;
+const int warmup_calls = 10000;
+const int integration_calls = 100000;//100 000 000
 const int integration_iterations = 3;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
@@ -47,12 +47,12 @@ double calc_h(double r, double b_min, double phi) {
   return 4*b_min*b_min + 4*b_min*r*cos(phi) + r*r;
 }
 
-double calc_b1(double r, double b_min, double phi, double theta) {
-  return b_min*cos(theta) + r/2*cos(theta+phi);
+double calc_b1(double r, double b_min, double phi) {
+  return b_min + r/2*cos(phi);
 }
 
-double calc_b2(double r, double b_min, double phi, double theta) {
-  return b_min*sin(theta) + r/2*sin(theta+phi);
+double calc_b2(double r, double b_min, double phi) {
+  return r/2*sin(phi);
 }
 
 double calc_j(double b2, double r_bar, double phi_bar) {
@@ -63,9 +63,9 @@ double calc_A(double j, double h, double b1, double b2) {
   return sqrt(j*j + h*(16*b1*b1-gsl_pow_2(j/(2*b2))));
 }
 
-int calc_theta_bar(double return_values[4], double r, double b_min, double phi, double theta, double r_bar, double phi_bar) {
-  double b1 = calc_b1(r, b_min, phi, theta);
-  double b2 = calc_b2(r, b_min, phi, theta);
+int calc_theta_bar(double return_values[4], double r, double b_min, double phi, double r_bar, double phi_bar) {
+  double b1 = calc_b1(r, b_min, phi);
+  double b2 = calc_b2(r, b_min, phi);
   double h = calc_h(r, b_min, phi);
   if (r_bar*r_bar > (4*h*b1*b1)/(gsl_pow_2(sin(phi_bar))*(h-4*b2*b2))) {
     //r_bar is too large
@@ -83,8 +83,8 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
   return 0;
 }
 
-double calc_b_bar(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double theta_bar) {
-  return 1/cos(theta_bar)*(b_min*cos(theta) + r/2*cos(theta+phi) - r_bar/2*cos(theta_bar+phi_bar));
+double calc_b_bar(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar) {
+  return 1/cos(theta_bar)*(b_min + r/2*cos(phi) - r_bar/2*cos(theta_bar+phi_bar));
 }
 
 double step(double argument) {
@@ -107,22 +107,23 @@ double dipole_amplitude(double r, double b_min, double phi, double x) {
   return get_dipole_amplitude(table, r, b_min, phi, x);
 }
 
-double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
+double L_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
   if (z*(1-z)*Q2*(1/beta-1)-m_f*m_f < 0) {
     return 0;
   }
   double total_integrand = 0;
   double theta_bar[4];
-  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, theta, r_bar, phi_bar);
+  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, r_bar, phi_bar);
   if (r_bar_too_large == 1) {
     return 0;
   }
   for (int i=0; i<4; i++) {
-    double b_min_bar = calc_b_bar(r, b_min, phi, theta, r_bar, phi_bar, theta_bar[i]);
+    double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
     //cout << r*b_min*r_bar*gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r*cos(phi+theta)-r_bar*cos(theta_bar[i]+phi_bar)) + gsl_pow_2(r*sin(phi+theta)-r_bar*sin(phi_bar+theta_bar[i])))) << endl;
     //cout << z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar) << endl;
     //cout << get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom) << endl;
-    double sub_integrand = r*b_min*r_bar*gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r*cos(phi+theta)-r_bar*cos(theta_bar[i]+phi_bar)) + gsl_pow_2(r*sin(phi+theta)-r_bar*sin(phi_bar+theta_bar[i]))))
+    double sub_integrand = r*b_min*r_bar
+    *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))
     *z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)
     *get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
     //cout << "sub_integral: " << sub_integrand << endl;
@@ -142,7 +143,7 @@ struct parameters {double Q2; double x_pom; double beta;};
 
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], k[5], k[6], par->Q2, par->x_pom, par->beta);
+  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x_pom, par->beta);
 }
 /*
 double T_g(double *k, size_t dim, void * params) {
@@ -162,12 +163,12 @@ struct thread_par_struct
 
 void integrate_for_L_sigma(thread_par_struct par) {
 
-  const int dim = 7;
+  const int dim = 6;
   double res, err;
 
-//double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
-  double xl[7] = {0, 0, 0, 0, 0, 0, 0};
-  double xu[7] = {r_limit, b_min_limit, M_PI, 2*M_PI, r_limit, M_PI, 1};
+  //double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
+  double xl[6] = {0, 0, 0, 0, 0, 0};
+  double xu[6] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1};
 
   struct parameters params = {1, 1, 1};
   params.Q2 = par.Q2;
