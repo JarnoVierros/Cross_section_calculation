@@ -38,19 +38,20 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 10000;
-const int integration_calls = 10000000;//20 000 000
-const int integration_iterations = 10;
+const int integration_calls = 20000000;//20 000 000
+const int integration_iterations = 1;
 
-const int debug_precision = 20;
+const int debug_precision = 10;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
-void read_data_file(string filename, vector<double> Q2_values, vector<double> beta_values, vector<double> x_pom_values, vector<double> x_pom_F2_values, vector<double> delta_stat_values, vector<double> delta_sys_values) {
+void read_data_file(string filename, vector<double> &Q2_values, vector<double> &beta_values, vector<double> &x_pom_values, vector<double> &x_pom_F2_values, vector<double> &delta_stat_values, vector<double> &delta_sys_values) {
   ifstream data_file(filename);
 
   cout << "Reading: " << filename << endl;
   string line;
   while(getline (data_file, line)) {
+
     long unsigned int i = 0;
     string value = "";
     while(line[i] != ' ') {
@@ -93,7 +94,7 @@ void read_data_file(string filename, vector<double> Q2_values, vector<double> be
     i++;
 
     value = "";
-    while(line[i] < line.size()) {
+    while(i < line.size()) {
       value += line[i];
       i++;
     }
@@ -275,7 +276,8 @@ struct thread_par_struct
   double beta;
   double &sigma;
   double &sigma_error;
-  thread_par_struct(double a1, double a2, double a3, double &a4, double &a5) : Q2(a1), x_pom(a2), beta(a3), sigma(a4), sigma_error(a5) {}
+  double &sigma_fit;
+  thread_par_struct(double a1, double a2, double a3, double &a4, double &a5, double &a6) : Q2(a1), x_pom(a2), beta(a3), sigma(a4), sigma_error(a5), sigma_fit(a6) {}
 };
 
 void integrate_for_L_sigma(thread_par_struct par) {
@@ -293,6 +295,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
   params.beta = par.beta;
   double &sigma = par.sigma;
   double &sigma_error = par.sigma_error;
+  double &sigma_fit = par.sigma_fit;
 
   const gsl_rng_type *T;
   gsl_rng *rng;
@@ -304,6 +307,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
 
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
+  gsl_rng_set(rng, 1);
 
   gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
   status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
@@ -314,7 +318,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
     if (status != 0) {cout << "integrate_for_L_sigma: " << status << endl; throw (status);}
     static auto t2 = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
-    cout << "L iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(L_s) << ", duration: " << duration.count() << endl;
+    //cout << "L iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(L_s) << ", duration: " << duration.count() << endl;
   }
   if (gsl_isnan(res)) {
     res = 0;
@@ -322,6 +326,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
   }
   sigma = res;
   sigma_error = err;
+  sigma_fit = gsl_monte_vegas_chisq(L_s);
   cout << "L, Q²=" << params.Q2 << ", x_pom=" << params.x_pom << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   gsl_monte_vegas_free(L_s);
@@ -342,6 +347,7 @@ void integrate_for_T_sigma(thread_par_struct par) {
   params.beta = par.beta;
   double &sigma = par.sigma;
   double &sigma_error = par.sigma_error;
+  double &sigma_fit = par.sigma_fit;
 
   const gsl_rng_type *T;
   gsl_rng *rng;
@@ -353,6 +359,7 @@ void integrate_for_T_sigma(thread_par_struct par) {
 
   T = gsl_rng_default;
   rng = gsl_rng_alloc(T);
+  gsl_rng_set(rng, 1);
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
   status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
@@ -363,7 +370,7 @@ void integrate_for_T_sigma(thread_par_struct par) {
     if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
     static auto t2 = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
-    cout << "T iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(T_s) << ", duration: " << duration.count() << endl;
+    //cout << "T iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(T_s) << ", duration: " << duration.count() << endl;
   }
   if (gsl_isnan(res)) {
     res = 0;
@@ -371,6 +378,7 @@ void integrate_for_T_sigma(thread_par_struct par) {
   }
   sigma = res;
   sigma_error = err;
+  sigma_fit = gsl_monte_vegas_chisq(T_s);
   cout << "T, Q²=" << params.Q2 << ", x_pom=" << params.x_pom << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
   gsl_monte_vegas_free(T_s);
@@ -438,14 +446,15 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
-  load_dipole_amplitudes(table, filename);
-
   vector<double> Q2_values, beta_values, x_pom_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
   read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_pom_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
 
-  for (int i=0; i<Q2_values.size(); i++) {
+  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  load_dipole_amplitudes(table, filename);
+  
+  /*
+  for (long unsigned int i=0; i<Q2_values.size(); i++) {
     cout << "Q2=" << Q2_values[i] << endl;
     cout << "beta=" << beta_values[i] << endl;
     cout << "x_pom=" << x_pom_values[i] << endl;
@@ -453,6 +462,7 @@ int main() {
     cout << "delta_stat=" << delta_stat_values[i] << endl;
     cout << "delta_sys=" << delta_sys_values[i] << endl;
   }
+  */
 
   int data_inclusion_count = 5;
 
@@ -460,12 +470,14 @@ int main() {
   double L_sigma[data_inclusion_count], L_error[data_inclusion_count], L_fit[data_inclusion_count];
   double T_sigma[data_inclusion_count], T_error[data_inclusion_count], T_fit[data_inclusion_count];
 
+  static auto t1 = chrono::high_resolution_clock::now();
+
   for (int i=0; i<data_inclusion_count; i++) {
 
-    thread_par_struct L_par(Q2_values[i], x_pom_values[i], beta_values[i], L_sigma[i], L_error[i]);
+    thread_par_struct L_par(Q2_values[i], x_pom_values[i], beta_values[i], L_sigma[i], L_error[i], L_fit[i]);
     L_integration_threads[i] = thread(integrate_for_L_sigma, L_par);
 
-    thread_par_struct T_par(Q2_values[i], x_pom_values[i], beta_values[i], T_sigma[i], T_error[i]);
+    thread_par_struct T_par(Q2_values[i], x_pom_values[i], beta_values[i], T_sigma[i], T_error[i], T_fit[i]);
     T_integration_threads[i] = thread(integrate_for_T_sigma, T_par);
 
   }
@@ -475,7 +487,11 @@ int main() {
     T_integration_threads[i].join();
   }
 
-  ofstream L_output_file("data/differential_diffractive_L.txt");
+  static auto t2 = chrono::high_resolution_clock::now();
+  auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
+  cout << "Calculation finished in " << duration.count() << " seconds" << endl;
+
+  ofstream L_output_file("data/differential_diffractive_L_20mil.txt");
   L_output_file << "Q2 (GeV);beta;x_pom;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {
@@ -496,7 +512,7 @@ int main() {
   }
   L_output_file.close();
 
-  ofstream T_output_file("data/differential_diffractive_T.txt");
+  ofstream T_output_file("data/differential_diffractive_T_20mil.txt");
   T_output_file << "Q2 (GeV);beta;x_pom;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {
