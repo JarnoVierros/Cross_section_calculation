@@ -45,6 +45,65 @@ const int debug_precision = 20;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
+void read_data_file(string filename, vector<double> Q2_values, vector<double> beta_values, vector<double> x_pom_values, vector<double> x_pom_F2_values, vector<double> delta_stat_values, vector<double> delta_sys_values) {
+  ifstream data_file(filename);
+
+  cout << "Reading: " << filename << endl;
+  string line;
+  while(getline (data_file, line)) {
+    long unsigned int i = 0;
+    string value = "";
+    while(line[i] != ' ') {
+      value += line[i];
+      i++;
+    }
+    Q2_values.push_back(stod(value));
+    i++;
+
+    value = "";
+    while(line[i] != ' ') {
+      value += line[i];
+      i++;
+    }
+    beta_values.push_back(stod(value));
+    i++;
+
+    value = "";
+    while(line[i] != ' ') {
+      value += line[i];
+      i++;
+    }
+    x_pom_values.push_back(stod(value));
+    i++;
+
+    value = "";
+    while(line[i] != ' ') {
+      value += line[i];
+      i++;
+    }
+    x_pom_F2_values.push_back(stod(value));
+    i++;
+
+    value = "";
+    while(line[i] != ' ') {
+      value += line[i];
+      i++;
+    }
+    delta_stat_values.push_back(stod(value));
+    i++;
+
+    value = "";
+    while(line[i] < line.size()) {
+      value += line[i];
+      i++;
+    }
+    delta_sys_values.push_back(stod(value));
+    i++;
+
+  }
+  cout << "Finished reading file" << endl;
+}
+
 double calc_h(double r, double b_min, double phi) {
   return 4*b_min*b_min + 4*b_min*r*cos(phi) + r*r;
 }
@@ -129,6 +188,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
 
     if (gsl_isnan(sub_integrand)) {
       cout << "L sub_integrand " << i << " is nan" << endl;
+      /*
       cout << "r=" << setprecision(debug_precision) << r << endl;
       cout << "b_min=" << setprecision(debug_precision) << b_min << endl;
       cout << "phi=" << setprecision(debug_precision) << phi << endl;
@@ -139,6 +199,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
       cout << "x_pom=" << setprecision(debug_precision) << x_pom << endl;
       cout << "beta=" << setprecision(debug_precision) << beta << endl;
       cout << "sub_integrand=" << setprecision(debug_precision) << sub_integrand << endl;
+      */
       sub_integrand = 0;
     }
 
@@ -171,6 +232,7 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
 
     if (gsl_isnan(sub_integrand)) {
       cout << "T sub_integrand " << i << " is nan" << endl;
+      /*
       cout << "r=" << setprecision(debug_precision) << r << endl;
       cout << "b_min=" << setprecision(debug_precision) << b_min << endl;
       cout << "phi=" << setprecision(debug_precision) << phi << endl;
@@ -181,6 +243,7 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
       cout << "x_pom=" << setprecision(debug_precision) << x_pom << endl;
       cout << "beta=" << setprecision(debug_precision) << beta << endl;
       cout << "sub_integrand=" << setprecision(debug_precision) << sub_integrand << endl;
+      */
       sub_integrand = 0;
     }
 
@@ -378,21 +441,81 @@ int main() {
   string filename = "data/dipole_amplitude_with_IP_dependence.csv";
   load_dipole_amplitudes(table, filename);
 
-  double L_sigma;
-  double L_sigma_error;
-  thread_par_struct L_par(4.5, 0.00012, 0.04, L_sigma, L_sigma_error);
-  thread L_integration = thread(integrate_for_L_sigma, L_par);
+  vector<double> Q2_values, beta_values, x_pom_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
-  double T_sigma;
-  double T_sigma_error;
-  thread_par_struct T_par(4.5, 0.00012, 0.04, T_sigma, T_sigma_error);
-  thread T_integration = thread(integrate_for_T_sigma, T_par);
+  read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_pom_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
 
-  L_integration.join();
-  T_integration.join();
+  for (int i=0; i<Q2_values.size(); i++) {
+    cout << "Q2=" << Q2_values[i] << endl;
+    cout << "beta=" << beta_values[i] << endl;
+    cout << "x_pom=" << x_pom_values[i] << endl;
+    cout << "x_pom_F2=" << x_pom_F2_values[i] << endl;
+    cout << "delta_stat=" << delta_stat_values[i] << endl;
+    cout << "delta_sys=" << delta_sys_values[i] << endl;
+  }
 
-  cout << "L sigma: " << L_sigma << ", error: " << L_sigma_error << endl;
-  cout << "T sigma: " << T_sigma << ", error: " << T_sigma_error << endl;
+  int data_inclusion_count = 5;
+
+  thread L_integration_threads[data_inclusion_count], T_integration_threads[data_inclusion_count];
+  double L_sigma[data_inclusion_count], L_error[data_inclusion_count], L_fit[data_inclusion_count];
+  double T_sigma[data_inclusion_count], T_error[data_inclusion_count], T_fit[data_inclusion_count];
+
+  for (int i=0; i<data_inclusion_count; i++) {
+
+    thread_par_struct L_par(Q2_values[i], x_pom_values[i], beta_values[i], L_sigma[i], L_error[i]);
+    L_integration_threads[i] = thread(integrate_for_L_sigma, L_par);
+
+    thread_par_struct T_par(Q2_values[i], x_pom_values[i], beta_values[i], T_sigma[i], T_error[i]);
+    T_integration_threads[i] = thread(integrate_for_T_sigma, T_par);
+
+  }
+
+  for (int i=0; i<data_inclusion_count; i++) {
+    L_integration_threads[i].join();
+    T_integration_threads[i].join();
+  }
+
+  ofstream L_output_file("data/differential_diffractive_L.txt");
+  L_output_file << "Q2 (GeV);beta;x_pom;sigma (mb);sigma error (mb);fit" << endl;
+
+  for (int i=0; i<data_inclusion_count; i++) {
+    ostringstream Q2;
+    Q2 << Q2_values[i];
+    ostringstream beta;
+    beta << beta_values[i];
+    ostringstream x_pom;
+    x_pom << x_pom_values[i];
+    ostringstream sigma;
+    sigma << L_sigma[i];
+    ostringstream error;
+    error << L_error[i];
+    ostringstream fit;
+    fit << L_fit[i];
+    string line = Q2.str() + ";" + beta.str() + ";" + x_pom.str() + ";" + sigma.str() + ";" + error.str() + ";" + fit.str();
+    L_output_file << line << endl;
+  }
+  L_output_file.close();
+
+  ofstream T_output_file("data/differential_diffractive_T.txt");
+  T_output_file << "Q2 (GeV);beta;x_pom;sigma (mb);sigma error (mb);fit" << endl;
+
+  for (int i=0; i<data_inclusion_count; i++) {
+    ostringstream Q2;
+    Q2 << Q2_values[i];
+    ostringstream beta;
+    beta << beta_values[i];
+    ostringstream x_pom;
+    x_pom << x_pom_values[i];
+    ostringstream sigma;
+    sigma << T_sigma[i];
+    ostringstream error;
+    error << T_error[i];
+    ostringstream fit;
+    fit << T_fit[i];
+    string line = Q2.str() + ";" + beta.str() + ";" + x_pom.str() + ";" + sigma.str() + ";" + error.str() + ";" + fit.str();
+    T_output_file << line << endl;
+  }
+  T_output_file.close();
 
   /*
 
