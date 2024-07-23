@@ -31,7 +31,7 @@ const double m_f = 1.27; //GeV 1.27
 
 const double normalization = 16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
-const double r_limit = 3; // 34.64
+const double r_limit = 4; // 34.64
 const double b_min_limit = 10; // 17.32
 
 const bool print_r_limit = false;
@@ -118,26 +118,15 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
   if (r_bar_too_large == 1) {
     return 0;
   }
-  //double part_1 = r*b_min*r_bar;
-  //double part_2 = sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f);
-  //double part_3 = z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)*get_dipole_amplitude(table, r, b_min, phi, beta*x_pom);
   for (int i=0; i<4; i++) {
     double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
-    //cout << gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar))) << endl;
-    //cout << z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar) << endl;
-    //cout << get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom) << endl;
-    //double sub_integrand = part_1*gsl_sf_bessel_J0(part_2*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*part_3*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))
     *z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)
     *get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
-    //cout << "sub_integrand: " << sub_integrand << endl;
+
     total_integrand += sub_integrand;
   }
-  //cout << theta_bar[0] << ", " << theta_bar[1] << ", " << theta_bar[2] << ", " << theta_bar[3] << endl;
-  //cout << total_integrand << endl;
-  //cout << "integrand: " << total_integrand << endl << endl;
-
   static auto t2 = chrono::high_resolution_clock::now();
   auto duration = chrono::duration_cast<chrono::nanoseconds>(t2-t1);
   cout << duration.count() << endl;
@@ -145,8 +134,33 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
   return total_integrand;
 }
 
-double T_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*gsl_pow_2(dipole_amplitude(r, b_min, phi, x));
+double T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
+  static auto t1 = chrono::high_resolution_clock::now();
+  if (z*(1-z)*Q2*(1/beta-1)-m_f*m_f < 0) {
+    return 0;
+  }
+  double total_integrand = 0;
+  double theta_bar[4];
+  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, r_bar, phi_bar);
+  if (r_bar_too_large == 1) {
+    return 0;
+  }
+  for (int i=0; i<4; i++) {
+    double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
+    double sub_integrand = r*b_min*r_bar
+    *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))
+    *z*(1-z)*(
+      m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar) 
+      +epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar)
+    )*get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
+
+    total_integrand += sub_integrand;
+  }
+  static auto t2 = chrono::high_resolution_clock::now();
+  auto duration = chrono::duration_cast<chrono::nanoseconds>(t2-t1);
+  cout << duration.count() << endl;
+
+  return total_integrand;
 }
 
 struct parameters {double Q2; double x_pom; double beta;};
@@ -155,12 +169,12 @@ double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
   return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x_pom, par->beta);
 }
-/*
+
 double T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*T_integrand(k[0], k[1], k[2], k[3], par->Q2, par->x);
+  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x_pom, par->beta);
 }
-*/
+
 struct thread_par_struct
 {
   double Q2;
@@ -207,7 +221,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
     if (status != 0) {cout << "integrate_for_L_sigma: " << status << endl; throw (status);}
     static auto t2 = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
-    cout << "iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(L_s) << ", duration: " << duration.count() << endl;
+    cout << "L iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(L_s) << ", duration: " << duration.count() << endl;
   }
   if (gsl_isnan(res)) {
     res = 0;
@@ -218,6 +232,55 @@ void integrate_for_L_sigma(thread_par_struct par) {
   cout << "L, Q²=" << params.Q2 << ", x_pom=" << params.x_pom << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   gsl_monte_vegas_free(L_s);
+}
+
+void integrate_for_T_sigma(thread_par_struct par) {
+
+  const int dim = 6;
+  double res, err;
+
+  //double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
+  double xl[6] = {0, 0, 0, 0, 0, 0};
+  double xu[6] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1};
+
+  struct parameters params = {1, 1, 1};
+  params.Q2 = par.Q2;
+  params.x_pom = par.x_pom;
+  params.beta = par.beta;
+  double &sigma = par.sigma;
+  double &sigma_error = par.sigma_error;
+
+  const gsl_rng_type *T;
+  gsl_rng *rng;
+
+  gsl_monte_function T_G = {&T_g, dim, &params};
+
+  gsl_rng_env_setup ();
+  int status = 0;
+
+  T = gsl_rng_default;
+  rng = gsl_rng_alloc(T);
+
+  gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
+  for (int i=0; i<integration_iterations; i++) {
+    static auto t1 = chrono::high_resolution_clock::now();
+    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+    if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
+    static auto t2 = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
+    cout << "T iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(T_s) << ", duration: " << duration.count() << endl;
+  }
+  if (gsl_isnan(res)) {
+    res = 0;
+    cout << "nan found at x_pom=" << params.x_pom << endl;
+  }
+  sigma = res;
+  sigma_error = err;
+  cout << "T, Q²=" << params.Q2 << ", x_pom=" << params.x_pom << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+
+  gsl_monte_vegas_free(T_s);
 }
 
 /*
@@ -285,11 +348,21 @@ int main() {
   string filename = "data/dipole_amplitude_with_IP_dependence.csv";
   load_dipole_amplitudes(table, filename);
 
-  double sigma;
-  double sigma_error;
-  thread_par_struct par(4.5, 0.00012, 0.04, sigma, sigma_error);
-  integrate_for_L_sigma(par);
-  cout << "sigma: " << sigma << ", error: " << sigma_error << endl;
+  double L_sigma;
+  double L_sigma_error;
+  thread_par_struct L_par(4.5, 0.00012, 0.04, L_sigma, L_sigma_error);
+  thread L_integration = thread(integrate_for_L_sigma, L_par);
+
+  double T_sigma;
+  double T_sigma_error;
+  thread_par_struct T_par(4.5, 0.00012, 0.04, T_sigma, T_sigma_error);
+  thread T_integration = thread(integrate_for_L_sigma, T_par);
+
+  L_integration.join();
+  T_integration.join();
+
+  cout << "L sigma: " << L_sigma << ", error: " << L_sigma_error << endl;
+  cout << "T sigma: " << T_sigma << ", error: " << T_sigma_error << endl;
 
   /*
 
