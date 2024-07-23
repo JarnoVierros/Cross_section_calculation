@@ -37,9 +37,9 @@ const double b_min_limit = 10; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 100000;
-const int integration_calls = 10000000;//100 000 000
-const int integration_iterations = 3;
+const int warmup_calls = 10000;
+const int integration_calls = 1000000;//20000000
+const int integration_iterations = 10;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
@@ -108,7 +108,7 @@ double dipole_amplitude(double r, double b_min, double phi, double x) {
 }
 
 double L_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
-  static auto t1 = chrono::high_resolution_clock::now();
+  //static auto t1 = chrono::high_resolution_clock::now();
   if (z*(1-z)*Q2*(1/beta-1)-m_f*m_f < 0) {
     return 0;
   }
@@ -127,15 +127,15 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
 
     total_integrand += sub_integrand;
   }
-  static auto t2 = chrono::high_resolution_clock::now();
-  auto duration = chrono::duration_cast<chrono::nanoseconds>(t2-t1);
-  cout << duration.count() << endl;
+  //static auto t2 = chrono::high_resolution_clock::now();
+  //auto duration = chrono::duration_cast<chrono::nanoseconds>(t2-t1);
+  //cout << duration.count() << endl;
 
   return total_integrand;
 }
 
 double T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x_pom, double beta) {
-  static auto t1 = chrono::high_resolution_clock::now();
+  //static auto t1 = chrono::high_resolution_clock::now();
   if (z*(1-z)*Q2*(1/beta-1)-m_f*m_f < 0) {
     return 0;
   }
@@ -148,17 +148,15 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
   for (int i=0; i<4; i++) {
     double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
     double sub_integrand = r*b_min*r_bar
-    *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))
-    *z*(1-z)*(
-      m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar) 
-      +epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar)
-    )*get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
+    *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
+    *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))
+    *get_dipole_amplitude(table, r, b_min, phi, beta*x_pom)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, beta*x_pom);
 
     total_integrand += sub_integrand;
   }
-  static auto t2 = chrono::high_resolution_clock::now();
-  auto duration = chrono::duration_cast<chrono::nanoseconds>(t2-t1);
-  cout << duration.count() << endl;
+  //static auto t2 = chrono::high_resolution_clock::now();
+  //auto duration = chrono::duration_cast<chrono::nanoseconds>(t2-t1);
+  //cout << duration.count() << endl;
 
   return total_integrand;
 }
@@ -172,7 +170,7 @@ double L_g(double *k, size_t dim, void * params) {
 
 double T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x_pom, par->beta);
+  return normalization*T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x_pom, par->beta);
 }
 
 struct thread_par_struct
@@ -356,7 +354,7 @@ int main() {
   double T_sigma;
   double T_sigma_error;
   thread_par_struct T_par(4.5, 0.00012, 0.04, T_sigma, T_sigma_error);
-  thread T_integration = thread(integrate_for_L_sigma, T_par);
+  thread T_integration = thread(integrate_for_T_sigma, T_par);
 
   L_integration.join();
   T_integration.join();
