@@ -38,7 +38,7 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 10000;
-const int integration_calls = 1000000;//20000000
+const int integration_calls = 10000000;//20 000 000
 const int integration_iterations = 10;
 
 const int debug_precision = 20;
