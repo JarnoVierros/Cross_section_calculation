@@ -41,7 +41,7 @@ const int warmup_calls = 100000;
 const int integration_calls = 20000000;//20 000 000
 const int integration_iterations = 1;
 
-const string filename_end = "_20mil_5-9";
+const string filename_end = "_20mil_10-14";
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
@@ -437,7 +437,7 @@ int main() {
   */
 
   int data_inclusion_count = 5;
-  int i_start = 5; // number of data points to skip
+  int i_start = 10; // number of data points to skip
 
   thread L_integration_threads[data_inclusion_count], T_integration_threads[data_inclusion_count];
   double L_sigma[data_inclusion_count], L_error[data_inclusion_count], L_fit[data_inclusion_count];
@@ -456,7 +456,6 @@ int main() {
   }
 
   for (int i=0; i<data_inclusion_count; i++) {
-    cout << "joining" << endl;
     L_integration_threads[i].join();
     T_integration_threads[i].join();
   }

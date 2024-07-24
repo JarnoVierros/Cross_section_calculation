@@ -77,7 +77,6 @@ void read_differential_sigma_file(string filename, vector<double> &Q2, vector<do
         double Q2_value = stod(Q2_string);
 
         string beta_string = "";
-        int i = 0;
         while (line[i] != ';') {
             beta_string += line[i];
             i++;

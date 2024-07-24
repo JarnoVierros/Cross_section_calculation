@@ -88,6 +88,10 @@ int main() {
     read_differential_sigma_file(L_prediction_filenames[i], L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit);
   }
 
+  for (int i=0; i<L_prediction_Q2.size(); i++) {
+    cout << L_prediction_beta[i] << endl;
+  }
+
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
   string T_prediction_filenames[] = {"data/differential_diffractive_L_20mil_0-4.txt"};
 
