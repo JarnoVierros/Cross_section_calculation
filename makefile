@@ -111,7 +111,9 @@ J_numerical_differential_diffractive_sigma: J_numerical_differential_diffractive
 J_simplified_numerical_differential_diffractive_sigma: J_simplified_numerical_differential_diffractive_sigma.cpp
 	g++ -Wall -c J_simplified_numerical_differential_diffractive_sigma.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_simplified_numerical_differential_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_simplified_numerical_differential_diffractive_sigma.exe
-	
+
+J_data_comparison_differential_diffractive: J_data_comparison_differential_diffractive.cpp
+	g++ J_data_comparison_differential_diffractive.cpp $$(root-config --glibs --cflags --libs) -o J_data_comparison_differential_diffractive.exe
 
 clean:
 	-rm *.exe
