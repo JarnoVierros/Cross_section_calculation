@@ -41,8 +41,10 @@ const int warmup_calls = 10000;
 const int integration_calls = 100000;//20 000 000
 const int integration_iterations = 1;
 
+const string filename_end = "_20mil";
+
 const int debug_precision = 10;
-const double max_theta_root_excess = 0.000001;
+const double max_theta_root_excess = 1e-6;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
@@ -128,7 +130,6 @@ double calc_A(double j, double h, double b1, double b2) {
 
 bool theta_root_invalid(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar) {
   double excess = abs(tan(theta_bar)*(b_min+r/2*cos(phi)-r_bar/2*cos(phi_bar+theta_bar)) + r_bar/2*sin(phi_bar+theta_bar) - r/2*sin(phi));
-  cout << excess << endl;
   if (excess > max_theta_root_excess) {
     return 1;
   } else {
@@ -436,6 +437,7 @@ int main() {
   */
 
   int data_inclusion_count = 5;
+  int i_start = 5; // number of data points to skip
 
   thread L_integration_threads[data_inclusion_count], T_integration_threads[data_inclusion_count];
   double L_sigma[data_inclusion_count], L_error[data_inclusion_count], L_fit[data_inclusion_count];
@@ -445,15 +447,16 @@ int main() {
 
   for (int i=0; i<data_inclusion_count; i++) {
 
-    thread_par_struct L_par(Q2_values[i], x_values[i], beta_values[i], L_sigma[i], L_error[i], L_fit[i]);
+    thread_par_struct L_par(Q2_values[i+i_start], x_values[i+i_start], beta_values[i+i_start], L_sigma[i], L_error[i], L_fit[i]);
     L_integration_threads[i] = thread(integrate_for_L_sigma, L_par);
 
-    thread_par_struct T_par(Q2_values[i], x_values[i], beta_values[i], T_sigma[i], T_error[i], T_fit[i]);
+    thread_par_struct T_par(Q2_values[i+i_start], x_values[i+i_start], beta_values[i+i_start], T_sigma[i], T_error[i], T_fit[i]);
     T_integration_threads[i] = thread(integrate_for_T_sigma, T_par);
 
   }
 
   for (int i=0; i<data_inclusion_count; i++) {
+    cout << "joining" << endl;
     L_integration_threads[i].join();
     T_integration_threads[i].join();
   }
@@ -462,16 +465,16 @@ int main() {
   auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
   cout << "Calculation finished in " << duration.count() << " seconds" << endl;
 
-  ofstream L_output_file("data/differential_diffractive_L.txt");
+  ofstream L_output_file("data/differential_diffractive_L"+filename_end+".txt");
   L_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {
     ostringstream Q2;
-    Q2 << Q2_values[i];
+    Q2 << Q2_values[i+i_start];
     ostringstream beta;
-    beta << beta_values[i];
+    beta << beta_values[i+i_start];
     ostringstream x;
-    x << x_values[i];
+    x << x_values[i+i_start];
     ostringstream sigma;
     sigma << L_sigma[i];
     ostringstream error;
@@ -483,16 +486,16 @@ int main() {
   }
   L_output_file.close();
 
-  ofstream T_output_file("data/differential_diffractive_T.txt");
+  ofstream T_output_file("data/differential_diffractive_T"+filename_end+".txt");
   T_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {
     ostringstream Q2;
-    Q2 << Q2_values[i];
+    Q2 << Q2_values[i+i_start];
     ostringstream beta;
-    beta << beta_values[i];
+    beta << beta_values[i+i_start];
     ostringstream x;
-    x << x_values[i];
+    x << x_values[i+i_start];
     ostringstream sigma;
     sigma << T_sigma[i];
     ostringstream error;
