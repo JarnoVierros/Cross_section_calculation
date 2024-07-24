@@ -26,13 +26,13 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-const double e_f = sqrt(2.0/3*2.0/3+1/3*1/3+1/3*1/3); //2.0/3
+const double e_f = sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3); //2.0/3, sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3)
 const double m_f = 0; //GeV 1.27
 
 const double normalization = 16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
-const double r_limit = 4; // 34.64
-const double b_min_limit = 10; // 17.32
+const double r_limit = 34.64; // 34.64
+const double b_min_limit = 17.32; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
@@ -188,7 +188,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
     *get_dipole_amplitude(table, r, b_min, phi, x)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, x);
 
     if (gsl_isnan(sub_integrand)) {
-      //cout << "L sub_integrand " << i << " is nan" << endl;
+      cout << "L sub_integrand " << i << " is nan" << endl;
       /*
       cout << "r=" << setprecision(debug_precision) << r << endl;
       cout << "b_min=" << setprecision(debug_precision) << b_min << endl;
