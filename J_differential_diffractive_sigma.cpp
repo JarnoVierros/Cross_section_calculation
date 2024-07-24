@@ -42,6 +42,7 @@ const int integration_calls = 100000;//20 000 000
 const int integration_iterations = 1;
 
 const int debug_precision = 10;
+const double max_theta_root_excess = 0.000001;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
@@ -125,6 +126,16 @@ double calc_A(double j, double h, double b1, double b2) {
   return sqrt(j*j + h*(16*b1*b1-gsl_pow_2(j/(2*b2))));
 }
 
+bool theta_root_invalid(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar) {
+  double excess = abs(tan(theta_bar)*(b_min+r/2*cos(phi)-r_bar/2*cos(phi_bar+theta_bar)) + r_bar/2*sin(phi_bar+theta_bar) - r/2*sin(phi));
+  cout << excess << endl;
+  if (excess > max_theta_root_excess) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 int calc_theta_bar(double return_values[4], double r, double b_min, double phi, double r_bar, double phi_bar) {
   double b1 = calc_b1(r, b_min, phi);
   double b2 = calc_b2(r, b_min, phi);
@@ -139,9 +150,21 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
     cout << "A is nan!" << endl;
   }
   return_values[0] = acos((A+j)/(2*h));
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[0])) {
+    return_values[0] = 10; // 10 means that the theta_bar value is invalid and should be skipped
+  }
   return_values[1] = acos((-A+j)/(2*h));
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[1])) {
+    return_values[1] = 10;
+  }
   return_values[2] = -acos((A+j)/(2*h));
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[2])) {
+    return_values[2] = 10;
+  }
   return_values[3] = -acos((-A+j)/(2*h));
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[3])) {
+    return_values[3] = 10;
+  }
   return 0;
 }
 
@@ -181,6 +204,9 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
     return 0;
   }
   for (int i=0; i<4; i++) {
+    if (theta_bar[i] == 10) {
+      continue;
+    }
     double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))
@@ -225,6 +251,9 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
     return 0;
   }
   for (int i=0; i<4; i++) {
+    if (theta_bar[i] == 10) {
+      continue;
+    }
     double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
