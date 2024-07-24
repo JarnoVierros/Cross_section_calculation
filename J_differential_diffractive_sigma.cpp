@@ -37,11 +37,11 @@ const double b_min_limit = 17.32; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;//20 000 000
+const int warmup_calls = 100000;
+const int integration_calls = 20000000;//20 000 000
 const int integration_iterations = 1;
 
-const string filename_end = "_20mil";
+const string filename_end = "_20mil_5-9";
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
