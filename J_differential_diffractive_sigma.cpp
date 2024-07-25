@@ -41,7 +41,10 @@ const int warmup_calls = 100000;
 const int integration_calls = 20000000;//20 000 000
 const int integration_iterations = 1;
 
-const string filename_end = "_20mil_10-14";
+const int i_start = 40; // number of data points to skip
+const int data_inclusion_count = 11;
+
+const string filename_end = "_20mil_40-50";
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
@@ -435,9 +438,6 @@ int main() {
     cout << "delta_sys=" << delta_sys_values[i] << endl;
   }
   */
-
-  int data_inclusion_count = 5;
-  int i_start = 10; // number of data points to skip
 
   thread L_integration_threads[data_inclusion_count], T_integration_threads[data_inclusion_count];
   double L_sigma[data_inclusion_count], L_error[data_inclusion_count], L_fit[data_inclusion_count];
