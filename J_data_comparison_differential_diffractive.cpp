@@ -5,6 +5,7 @@
 #include "TAxis.h"
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
+#include "TText.h"
 
 #include <string>
 #include <iostream>
@@ -82,14 +83,25 @@ struct plot {
   TGraphErrors* prediction;
   TGraph* FL_prediction;
   TGraph* FT_prediction;
+  double Q2;
+  double beta;
 };
+
+const double x_limits[2] = {1e-4, 0.1};
+const double y_limits[2] = {0.0, 0.1};
 
 int main() {
 
   vector<plot> plots;
 
   vector<double> L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit;
-  string L_prediction_filenames[] = {"data/differential_diffractive_L_20mil_0-4.txt", "data/differential_diffractive_L_20mil_5-19.txt", "data/differential_diffractive_L_20mil_20-39.txt"};
+  string L_prediction_filenames[] = {
+      "data/differential_diffractive_L_20mil_0-4.txt",
+      "data/differential_diffractive_L_20mil_5-19.txt",
+      "data/differential_diffractive_L_20mil_20-39.txt",
+      "data/differential_diffractive_L_20mil_40-50.txt",
+      "data/differential_diffractive_L_20mil_51-84.txt"
+    };
 
   for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
     read_differential_sigma_file(L_prediction_filenames[i], L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit);
@@ -102,7 +114,13 @@ int main() {
   */
 
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
-  string T_prediction_filenames[] = {"data/differential_diffractive_T_20mil_0-4.txt", "data/differential_diffractive_T_20mil_5-19.txt", "data/differential_diffractive_T_20mil_20-39.txt"};
+  string T_prediction_filenames[] = {
+    "data/differential_diffractive_T_20mil_0-4.txt",
+    "data/differential_diffractive_T_20mil_5-19.txt",
+    "data/differential_diffractive_T_20mil_20-39.txt",
+    "data/differential_diffractive_T_20mil_40-50.txt",
+    "data/differential_diffractive_T_20mil_51-84.txt"
+  };
 
   for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
     read_differential_sigma_file(T_prediction_filenames[i], T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit);
@@ -115,8 +133,9 @@ int main() {
   read_data_file(measurement_filename, measurement_Q2, measurement_beta, measurement_x, measurement_xpomF2, measurement_delta_stat, measurement_delta_sys);
 
 
-  double Q2_selections[] = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 7.5, 7.5, 7.5, 7.5};
-  double beta_selections[] = {0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 0.04, 0.1, 0.2, 0.4};
+  double Q2_selections[] = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 9, 9, 9, 9, 9, 9};
+  double beta_selections[] = {0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 0.04, 0.1, 0.2, 0.4, 0.65, 0.9};
+
 
 
 
@@ -205,12 +224,20 @@ struct plot {
     double* chosen_delta_arr = &chosen_delta[0];
 
     TMultiGraph* comparison_graph = new TMultiGraph();
+    comparison_graph->GetXaxis()->SetLimits(x_limits[0], x_limits[1]);
+    comparison_graph->GetYaxis()->SetRangeUser(y_limits[0], y_limits[1]);
+    
+    comparison_graph->GetXaxis()->SetLabelSize(0.05);
+    comparison_graph->GetYaxis()->SetLabelSize(0.05);
+
+    /*
     stringstream Q2_stream;
     Q2_stream << fixed << setprecision(1) << Q2_selections[k];
     stringstream beta_stream;
     beta_stream << fixed << setprecision(2) << beta_selections[k];
     TString title = "x_{pom}F_{2}^{D(3)} measurement prediction comparison at Q^{2}="+Q2_stream.str()+", #beta="+beta_stream.str()+";x;x_{pom}F_{2}^{D(3)}";
     comparison_graph->SetTitle(title);
+    */
 
     TGraphErrors* measurement_data = new TGraphErrors(x_selection.size(), x_selection_arr, chosen_measurement_xpomF2_arr, zeroes, chosen_delta_arr);
     measurement_data->SetTitle("Measurement data");
@@ -238,35 +265,61 @@ struct plot {
     FT_prediction->SetLineColor(4);
     comparison_graph->Add(FT_prediction, "C");
 
-    TString title = "x_{pom}F_{2}^{D(3)} measurement prediction comparison at Q^{2}="+Q2_stream.str()+", #beta="+beta_stream.str()+";x;x_{pom}F_{2}^{D(3)}";
-    plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction};
+    plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction, Q2_selections[k], beta_selections[k]};
     plots.push_back(new_plot);
 
   }
-
-  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 900, 700);
-  multicanvas->Divide(6, 8);
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 6*10000, 3*10000);
+  multicanvas->Divide(6, 3, 0, 0);
 
   for (int i=0; i<plots.size(); i++) {
-    multicanvas->cd(i);
+    //gPad->SetTopMargin(0.1);
+    multicanvas->cd(i+1);
+    //gPad->SetTickx(2);
+
     plots[i].comparison_graph->Draw("A");
 
+    gPad->SetLogx();
+
+    stringstream Q2_stream;
+    Q2_stream << setprecision(2) << plots[i].Q2;
+    TString Q2_string = "Q2=" + Q2_stream.str();
+    TText* Q2_text = new TText(1e-2, 0.09, Q2_string);
+    Q2_text->Draw("Same");
+
+    stringstream beta_stream;
+    beta_stream << setprecision(2) << plots[i].beta;
+    TString beta_string = "beta=" + beta_stream.str();
+    TText* beta_text = new TText(1e-2, 0.08, beta_string);
+    beta_text->Draw("Same");
+
+    /*
     float location[4];
     location[0] = 0.5;
     location[1] = 0.7;
     location[2] = 0.75;
     location[3] = 0.9;
-
+    
     TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
     legend->AddEntry(plots[i].measurement_data,"Measurement data");
     legend->AddEntry(plots[i].prediction,"Prediction");
     legend->AddEntry(plots[i].FL_prediction,"F_{L}");
     legend->AddEntry(plots[i].FT_prediction,"F_{T}");
-    legend->SetTextSize(0.04);
+    //legend->SetTextSize(0.04);
     legend->Draw();
+    */
   }
+  multicanvas->cd(0);
 
-  TString figure_filename = "figures/F2D_data_comparison_Q2.pdf";
+  
+
+  //TText* title = new TText(0.48, 0.9, "Title");
+  //title->Draw("Same");
+
+  //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
+  //top_pad->Draw();
+
+  TString figure_filename = "figures/F2D_data_comparison.pdf";
   multicanvas->Print(figure_filename);
 
   return 0;
