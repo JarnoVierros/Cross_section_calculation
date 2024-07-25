@@ -76,7 +76,17 @@ void read_data_file(string filename, vector<double> &Q2_values, vector<double> &
   cout << "Finished reading file" << endl;
 }
 
+struct plot {
+  TMultiGraph* comparison_graph;
+  TGraphErrors* measurement_data;
+  TGraphErrors* prediction;
+  TGraph* FL_prediction;
+  TGraph* FT_prediction;
+};
+
 int main() {
+
+  vector<plot> plots;
 
   vector<double> L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit;
   string L_prediction_filenames[] = {"data/differential_diffractive_L_20mil_0-4.txt", "data/differential_diffractive_L_20mil_5-19.txt", "data/differential_diffractive_L_20mil_20-39.txt"};
@@ -107,6 +117,8 @@ int main() {
 
   double Q2_selections[] = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 7.5, 7.5, 7.5, 7.5};
   double beta_selections[] = {0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 0.04, 0.1, 0.2, 0.4};
+
+
 
   for (int k=0; k<size(Q2_selections); k++) {
 
@@ -174,9 +186,15 @@ int main() {
       chosen_prediction_xpomFT.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
       chosen_prediction_error.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error));
     }
-    
-
-    TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
+/*
+struct plot {
+  TString title;
+  TGraphErrors* measurement_data;
+  TGraphErrors* prediction;
+  TGraph* FL_prediction;
+  TGraph* FT_prediction;
+};
+*/
 
     double zeroes[x_selection.size()];
     for (int i=0; i<x_selection.size(); i++) {
@@ -200,13 +218,6 @@ int main() {
 
     double* chosen_prediction_xpomF2_arr = &chosen_prediction_xpomF2[0];
     double* chosen_prediction_error_arr = &chosen_prediction_error[0];
-    /*
-    double shifted_x[x_selection.size()];
-    for (int i=0; i<x_selection.size(); i++) {
-      shifted_x[i] = 1.01*x_selection[i];
-      cout << chosen_prediction_error_arr[i] << endl;
-    }
-    */
 
     TGraphErrors* prediction = new TGraphErrors(x_selection.size(), x_selection_arr, chosen_prediction_xpomF2_arr, zeroes, chosen_prediction_error_arr);
     prediction->SetTitle("Prediction");
@@ -227,29 +238,36 @@ int main() {
     FT_prediction->SetLineColor(4);
     comparison_graph->Add(FT_prediction, "C");
 
-    comparison_graph->Draw("A");
+    TString title = "x_{pom}F_{2}^{D(3)} measurement prediction comparison at Q^{2}="+Q2_stream.str()+", #beta="+beta_stream.str()+";x;x_{pom}F_{2}^{D(3)}";
+    plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction};
+    plots.push_back(new_plot);
 
-    //gPad->SetLogy();
+  }
+
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 900, 700);
+  multicanvas->Divide(6, 8);
+
+  for (int i=0; i<plots.size(); i++) {
+    multicanvas->cd(i);
+    plots[i].comparison_graph->Draw("A");
 
     float location[4];
-
     location[0] = 0.5;
     location[1] = 0.7;
     location[2] = 0.75;
     location[3] = 0.9;
 
     TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
-    legend->AddEntry(measurement_data,"Measurement data");
-    legend->AddEntry(prediction,"Prediction");
-    legend->AddEntry(FL_prediction,"F_{L}");
-    legend->AddEntry(FT_prediction,"F_{T}");
+    legend->AddEntry(plots[i].measurement_data,"Measurement data");
+    legend->AddEntry(plots[i].prediction,"Prediction");
+    legend->AddEntry(plots[i].FL_prediction,"F_{L}");
+    legend->AddEntry(plots[i].FT_prediction,"F_{T}");
     legend->SetTextSize(0.04);
     legend->Draw();
-
-    TString figure_filename = "figures/F2D_data_comparison_Q2="+Q2_stream.str()+"_beta="+beta_stream.str()+".pdf";
-    comparison_canvas->Print(figure_filename);
-
   }
+
+  TString figure_filename = "figures/F2D_data_comparison_Q2.pdf";
+  multicanvas->Print(figure_filename);
 
   return 0;
 }
