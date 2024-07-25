@@ -78,22 +78,21 @@ void read_data_file(string filename, vector<double> &Q2_values, vector<double> &
 
 int main() {
 
-  double Q2_selection = 4.5;
-  double beta_selection = 0.04;
-
   vector<double> L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit;
-  string L_prediction_filenames[] = {"data/differential_diffractive_L_20mil_0-4.txt"};
+  string L_prediction_filenames[] = {"data/differential_diffractive_L_20mil_0-4.txt", "data/differential_diffractive_L_20mil_5-19.txt", "data/differential_diffractive_L_20mil_20-39.txt"};
 
   for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
     read_differential_sigma_file(L_prediction_filenames[i], L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit);
   }
 
+  /*
   for (int i=0; i<L_prediction_Q2.size(); i++) {
-    cout << L_prediction_beta[i] << endl;
+    cout << L_prediction_x[i] << endl;
   }
+  */
 
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
-  string T_prediction_filenames[] = {"data/differential_diffractive_L_20mil_0-4.txt"};
+  string T_prediction_filenames[] = {"data/differential_diffractive_T_20mil_0-4.txt", "data/differential_diffractive_T_20mil_5-19.txt", "data/differential_diffractive_T_20mil_20-39.txt"};
 
   for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
     read_differential_sigma_file(T_prediction_filenames[i], T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit);
@@ -105,99 +104,152 @@ int main() {
 
   read_data_file(measurement_filename, measurement_Q2, measurement_beta, measurement_x, measurement_xpomF2, measurement_delta_stat, measurement_delta_sys);
 
-  vector<double> x_selection, chosen_measurement_xpomF2, chosen_delta;
 
-  for (int i=0; i<measurement_Q2.size(); i++) {
-    if (measurement_Q2[i] != Q2_selection) {
-      continue;
+  double Q2_selections[] = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 7.5, 7.5, 7.5, 7.5};
+  double beta_selections[] = {0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 0.04, 0.1, 0.2, 0.4};
+
+  for (int k=0; k<size(Q2_selections); k++) {
+
+    vector<double> x_selection, chosen_measurement_xpomF2, chosen_delta;
+
+    for (int i=0; i<measurement_Q2.size(); i++) {
+      if (measurement_Q2[i] != Q2_selections[k]) {
+        continue;
+      }
+      if (measurement_beta[i] != beta_selections[k]) {
+        continue;
+      }
+      x_selection.push_back(measurement_x[i]);
+      chosen_measurement_xpomF2.push_back(measurement_xpomF2[i]);
+      chosen_delta.push_back(measurement_delta_stat[i]+measurement_delta_sys[i]);
     }
-    if (measurement_beta[i] != beta_selection) {
-      continue;
+
+
+    vector<double> chosen_prediction_xpomF2, chosen_prediction_xpomFL, chosen_prediction_xpomFT, chosen_prediction_error;
+
+    for (int i=0; i<x_selection.size(); i++) {
+      double L_sigma, L_error, T_sigma, T_error;
+      double L_found = false, T_found = false;
+      for (int j=0; j<L_prediction_Q2.size(); j++) {
+
+        if (L_prediction_Q2[j] != Q2_selections[k]) {
+          continue;
+        }
+        if (L_prediction_beta[j] != beta_selections[k]) {
+          continue;
+        }
+        if (L_prediction_x[j] != x_selection[i]) {
+          continue;
+        }
+        L_sigma = L_prediction_sigma[j];
+        L_error = L_prediction_sigma_error[j];
+        L_found = true;
+        break;
+      }
+      for (int j=0; j<T_prediction_Q2.size(); j++) {
+        if (T_prediction_Q2[j] != Q2_selections[k]) {
+          continue;
+        }
+        if (T_prediction_beta[j] != beta_selections[k]) {
+          continue;
+        }
+        if (T_prediction_x[j] != x_selection[i]) {
+          continue;
+        }
+        T_sigma = T_prediction_sigma[j];
+        T_error = T_prediction_sigma_error[j];
+        T_found = true;
+        break;
+      }
+      if (!L_found) {
+        cout << "Warning: L prediction not found" << endl;
+        L_sigma = 0;
+      }
+      if (!T_found) {
+        cout << "Warning: T prediction not found" << endl;
+        T_sigma = 0;
+      }
+      chosen_prediction_xpomF2.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma));
+      chosen_prediction_xpomFL.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
+      chosen_prediction_xpomFT.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
+      chosen_prediction_error.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error));
     }
-    x_selection.push_back(measurement_x[i]);
-    chosen_measurement_xpomF2.push_back(measurement_xpomF2[i]);
-    chosen_delta.push_back(measurement_delta_stat[i]+measurement_delta_sys[i]);
+    
+
+    TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
+
+    double zeroes[x_selection.size()];
+    for (int i=0; i<x_selection.size(); i++) {
+      zeroes[i] = 0;
+    }
+    double* x_selection_arr = &x_selection[0];
+    double* chosen_measurement_xpomF2_arr = &chosen_measurement_xpomF2[0];
+    double* chosen_delta_arr = &chosen_delta[0];
+
+    TMultiGraph* comparison_graph = new TMultiGraph();
+    stringstream Q2_stream;
+    Q2_stream << fixed << setprecision(1) << Q2_selections[k];
+    stringstream beta_stream;
+    beta_stream << fixed << setprecision(2) << beta_selections[k];
+    TString title = "x_{pom}F_{2}^{D(3)} measurement prediction comparison at Q^{2}="+Q2_stream.str()+", #beta="+beta_stream.str()+";x;x_{pom}F_{2}^{D(3)}";
+    comparison_graph->SetTitle(title);
+
+    TGraphErrors* measurement_data = new TGraphErrors(x_selection.size(), x_selection_arr, chosen_measurement_xpomF2_arr, zeroes, chosen_delta_arr);
+    measurement_data->SetTitle("Measurement data");
+    comparison_graph->Add(measurement_data, "P");
+
+    double* chosen_prediction_xpomF2_arr = &chosen_prediction_xpomF2[0];
+    double* chosen_prediction_error_arr = &chosen_prediction_error[0];
+    /*
+    double shifted_x[x_selection.size()];
+    for (int i=0; i<x_selection.size(); i++) {
+      shifted_x[i] = 1.01*x_selection[i];
+      cout << chosen_prediction_error_arr[i] << endl;
+    }
+    */
+
+    TGraphErrors* prediction = new TGraphErrors(x_selection.size(), x_selection_arr, chosen_prediction_xpomF2_arr, zeroes, chosen_prediction_error_arr);
+    prediction->SetTitle("Prediction");
+    prediction->SetMarkerStyle(8);
+    prediction->SetMarkerColor(2);
+    prediction->SetLineColor(2);
+    comparison_graph->Add(prediction, "C");
+
+    double* chosen_prediction_xpomFL_arr = &chosen_prediction_xpomFL[0];
+
+    TGraph* FL_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_prediction_xpomFL_arr);
+    FL_prediction->SetLineColor(3);
+    comparison_graph->Add(FL_prediction, "C");
+
+    double* chosen_prediction_xpomFT_arr = &chosen_prediction_xpomFT[0];
+
+    TGraph* FT_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_prediction_xpomFT_arr);
+    FT_prediction->SetLineColor(4);
+    comparison_graph->Add(FT_prediction, "C");
+
+    comparison_graph->Draw("A");
+
+    //gPad->SetLogy();
+
+    float location[4];
+
+    location[0] = 0.5;
+    location[1] = 0.7;
+    location[2] = 0.75;
+    location[3] = 0.9;
+
+    TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
+    legend->AddEntry(measurement_data,"Measurement data");
+    legend->AddEntry(prediction,"Prediction");
+    legend->AddEntry(FL_prediction,"F_{L}");
+    legend->AddEntry(FT_prediction,"F_{T}");
+    legend->SetTextSize(0.04);
+    legend->Draw();
+
+    TString figure_filename = "figures/F2D_data_comparison_Q2="+Q2_stream.str()+"_beta="+beta_stream.str()+".pdf";
+    comparison_canvas->Print(figure_filename);
+
   }
-
-  vector<double> chosen_prediction_xpomF2, chosen_prediction_error;
-
-  for (int i=0; i<x_selection.size(); i++) {
-    double L_sigma, L_error, T_sigma, T_error;
-    double L_found = false, T_found = false;
-    for (int j=0; j<L_prediction_Q2.size(); j++) {
-      if (L_prediction_Q2[i] != Q2_selection) {
-        continue;
-      }
-      if (L_prediction_beta[i] != beta_selection) {
-        continue;
-      }
-      if (L_prediction_x[i] != x_selection[j]) {
-        continue;
-      }
-      L_sigma = L_prediction_sigma[i];
-      L_error = L_prediction_sigma_error[i];
-      L_found = true;
-      break;
-    }
-    for (int j=0; j<T_prediction_Q2.size(); j++) {
-      if (T_prediction_Q2[i] != Q2_selection) {
-        continue;
-      }
-      if (T_prediction_beta[i] != beta_selection) {
-        continue;
-      }
-      if (T_prediction_x[i] != x_selection[j]) {
-        continue;
-      }
-      T_sigma = T_prediction_sigma[i];
-      T_error = T_prediction_sigma_error[i];
-      T_found = true;
-      break;
-    }
-    if (!L_found) {
-      cout << "Warning: L prediction not found" << endl;
-      L_sigma = 0;
-    }
-    if (!T_found) {
-      cout << "Warning: T prediction not found" << endl;
-      T_sigma = 0;
-    }
-    chosen_prediction_xpomF2[i] = Q2_selection*Q2_selection/(pow(2*M_PI, 2)*alpha_em*beta_selection)*(L_sigma + T_sigma);
-    chosen_prediction_error[i] = Q2_selection*Q2_selection/(pow(2*M_PI, 2)*beta_selection*alpha_em)*sqrt(L_error*L_error + T_error*T_error);
-  }
-
-  TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
-
-  double zeroes[x_selection.size()];
-  for (int i=0; i<x_selection.size(); i++) {
-    zeroes[i] = 0;
-  }
-  double* x_selection_arr = &x_selection[0];
-  double* chosen_measurement_xpomF2_arr = &chosen_measurement_xpomF2[0];
-  double* chosen_delta_arr = &chosen_delta[0];
-
-  TGraphErrors* measurement_data = new TGraphErrors(x_selection.size(), x_selection_arr, chosen_measurement_xpomF2_arr, zeroes, chosen_delta_arr);
-  measurement_data->SetTitle("x_pom*F_2^D(3) data prediction comparison;x;x_pom*F_2^D(3)");
-
-  double* chosen_prediction_xpomF2_arr = &chosen_prediction_xpomF2[0];
-  double* chosen_prediction_error_arr = &chosen_prediction_error[0];
-
-  TGraphErrors* prediction = new TGraphErrors(x_selection.size(), x_selection_arr, chosen_prediction_xpomF2_arr, zeroes, chosen_prediction_error_arr);
-  prediction->SetLineColor(2);
-
-  float location[4];
-  location[0] = 0.65;
-  location[1] = 0.7;
-  location[2] = 0.9;
-  location[3] = 0.9;
-
-  TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
-  legend->AddEntry(measurement_data,"Measurement data");
-  legend->AddEntry(prediction,"Prediction");
-  legend->SetTextSize(0.04);
-  legend->Draw();
-
-  comparison_canvas->Print("figures/F2D_data_comparison.pdf");
 
   return 0;
 }
