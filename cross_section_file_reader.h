@@ -124,7 +124,7 @@ void read_differential_sigma_file(string filename, vector<double> &Q2, vector<do
     }
 }
 
-void split_by_Q2(vector<double> new_Q2, vector<vector<double>> &new_x, vector<vector<double>> &new_sigma, vector<vector<double>> &new_sigma_error, vector<double> &Q2, vector<double> &x, vector<double> &sigma, vector<double> &sigma_error) {
+void split_by_Q2(vector<double> &new_Q2, vector<vector<double>> &new_x, vector<vector<double>> &new_sigma, vector<vector<double>> &new_sigma_error, vector<double> &Q2, vector<double> &x, vector<double> &sigma, vector<double> &sigma_error) {
     vector<double> current_x, current_sigma, current_sigma_error;
     double current_Q2 = Q2[0];
     for (int i=0; i<size(Q2); i++) {

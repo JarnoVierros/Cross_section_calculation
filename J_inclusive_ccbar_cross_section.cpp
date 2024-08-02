@@ -37,7 +37,7 @@ const double b_min_limit = 17.32; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
-const string dipole_amp_type = "bfkl";
+const string dipole_amp_type = "bk";
 
 const int warmup_calls = 10000;
 const int integration_calls = 100000;

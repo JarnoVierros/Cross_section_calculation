@@ -21,6 +21,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make J_differential_diffractive_sigma
 	make J_numerical_differential_diffractive_sigma
 	make J_simplified_differential_diffractive_sigma
+	make multiplotter
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -114,6 +115,9 @@ J_simplified_numerical_differential_diffractive_sigma: J_simplified_numerical_di
 
 J_data_comparison_differential_diffractive: J_data_comparison_differential_diffractive.cpp
 	g++ J_data_comparison_differential_diffractive.cpp $$(root-config --glibs --cflags --libs) -o J_data_comparison_differential_diffractive.exe
+
+multiplotter: multiplotter.cpp
+	g++ multiplotter.cpp $$(root-config --glibs --cflags --libs) -o multiplotter.exe
 
 clean:
 	-rm *.exe
