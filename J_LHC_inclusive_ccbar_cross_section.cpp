@@ -218,11 +218,11 @@ int main() {
 
   TString outfile_name;
   if (print_r_limit) {
-    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".txt";
+    outfile_name = "data/J_LHC_L_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".txt";
   } else if (print_b_min_limit) {
-    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".txt";
+    outfile_name = "data/J_LHC_L_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".txt";
   } else {
-    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+".txt";
+    outfile_name = "data/J_LHC_L_inclusive_"+dipole_amp_type+".txt";
   }
 
   ofstream L_output_file(outfile_name);
@@ -259,20 +259,20 @@ int main() {
   
   L_output_file.close();
 
-  TCanvas* L_sigma_canvas = new TCanvas("J_L_inclusive_sigma_canvas", "", 1100, 600);
+  TCanvas* L_sigma_canvas = new TCanvas("J_LHC_L_inclusive_sigma_canvas", "", 1100, 600);
   L_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
 
-  L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  //L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
 
   if (print_r_limit) {
-    outfile_name = "figures/J_L_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".pdf";
+    outfile_name = "figures/J_LHC_L_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".pdf";
   } else if (print_b_min_limit) {
-    outfile_name = "figures/J_L_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".pdf";
+    outfile_name = "figures/J_LHC_L_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".pdf";
   } else {
-    outfile_name = "figures/J_L_inclusive_"+dipole_amp_type+".pdf";
+    outfile_name = "figures/J_LHC_L_inclusive_"+dipole_amp_type+".pdf";
   }
   L_sigma_canvas->Print(outfile_name);
  
@@ -292,11 +292,11 @@ int main() {
   T_graphs->SetTitle(title);
 
   if (print_r_limit) {
-    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".txt";
+    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".txt";
   } else if (print_b_min_limit) {
-    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".txt";
+    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".txt";
   } else {
-    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+".txt";
+    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+".txt";
   }
   ofstream T_output_file(outfile_name);
   T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
@@ -319,7 +319,7 @@ int main() {
     T_threads[j].join();
   }
 
-  TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
+  subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
   T_graphs->Add(subgraph);
 
   for (int i=0; i<x_steps; i++) {
@@ -335,19 +335,19 @@ int main() {
   
   T_output_file.close();
 
-  TCanvas* T_sigma_canvas = new TCanvas("J_T_inclusive_sigma_canvas", "", 1100, 600);
+  TCanvas* T_sigma_canvas = new TCanvas("J_LHC_T_inclusive_sigma_canvas", "", 1100, 600);
   T_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
 
-  T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  //T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
   if (print_r_limit) {
-    outfile_name = "figures/J_T_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".pdf";
+    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".pdf";
   } else if (print_b_min_limit) {
-    outfile_name = "figures/J_T_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".pdf";
+    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".pdf";
   } else {
-    outfile_name = "figures/J_T_inclusive_"+dipole_amp_type+".pdf";
+    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+".pdf";
   }
   T_sigma_canvas->Print(outfile_name);
 
