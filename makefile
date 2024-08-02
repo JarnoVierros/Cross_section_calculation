@@ -22,6 +22,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make J_numerical_differential_diffractive_sigma
 	make J_simplified_differential_diffractive_sigma
 	make multiplotter
+	make J_LHC_inclusive_ccbar_cross_section
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -79,6 +80,10 @@ J_data_comparison_inclusive_ccbar: J_data_comparison_inclusive_ccbar.cpp
 	g++ -Wall -c J_data_comparison_inclusive_ccbar.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_data_comparison_inclusive_ccbar.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_data_comparison_inclusive_ccbar.exe
 
+J_LHC_inclusive_ccbar_cross_section: J_LHC_inclusive_ccbar_cross_section.cpp
+	g++ -Wall -c J_LHC_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
+	g++ J_LHC_inclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_LHC_inclusive_ccbar_cross_section.exe
+ 
 
 fit_data_comparison_inclusive_ccbar: fit_data_comparison_inclusive_ccbar.cpp
 	g++ -Wall -c fit_data_comparison_inclusive_ccbar.cpp $$(root-config --glibs --cflags --libs)
