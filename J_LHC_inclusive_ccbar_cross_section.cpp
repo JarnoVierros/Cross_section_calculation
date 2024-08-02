@@ -57,32 +57,32 @@ double dipole_amplitude(double r, double b_min, double phi, double x) {
   return get_dipole_amplitude(table, r, b_min, phi, x);
 }
 
-double L_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b_min, phi, x);
+double L_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
+  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b_min, phi, Q2/(W*W+Q2));
 }
 
-double T_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b_min, phi, x);
+double T_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
+  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b_min, phi, Q2/(W*W+Q2));
 }
 
-struct parameters {double x;};
+struct parameters {double W;};
 
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], par->x);
+  return normalization*L_integrand(k[0], k[1], k[2], k[3], k[4], par->W);
 }
 
 double T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*T_integrand(k[0], k[1], k[2], k[3], k[4], par->x);
+  return normalization*T_integrand(k[0], k[1], k[2], k[3], k[4], par->W);
 }
 
 struct thread_par_struct
 {
-  double x;
+  double W;
   double &sigma;
   double &sigma_error;
-  thread_par_struct(double a1, double &a2, double &a3) : x(a1), sigma(a2), sigma_error(a3) {}
+  thread_par_struct(double a1, double &a2, double &a3) : W(a1), sigma(a2), sigma_error(a3) {}
 };
 
 void integrate_for_L_sigma(thread_par_struct par) {
@@ -94,7 +94,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
   double xu[5] = {r_limit, b_min_limit, M_PI, 1, 100};
 
   struct parameters params = {1};
-  params.x = par.x;
+  params.W = par.W;
   double &sigma = par.sigma;
   double &sigma_error = par.sigma_error;
 
@@ -118,11 +118,11 @@ void integrate_for_L_sigma(thread_par_struct par) {
   }
   if (gsl_isnan(res)) {
     res = 0;
-    cout << "nan found at x=" << params.x << endl;
+    cout << "nan found at W=" << params.W << endl;
   }
   sigma = res;
   sigma_error = err;
-  cout << "L, x=" << params.x << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+  cout << "L, W=" << params.W << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
   gsl_monte_vegas_free(L_s);
 }
@@ -137,7 +137,7 @@ void integrate_for_T_sigma(thread_par_struct par) {
   double xu[5] = {r_limit, b_min_limit, M_PI, 1, 100};
 
   struct parameters params = {1};
-  params.x = par.x;
+  params.W = par.W;
   double &sigma = par.sigma;
   double &sigma_error = par.sigma_error;
 
@@ -161,11 +161,11 @@ void integrate_for_T_sigma(thread_par_struct par) {
   }
   if (gsl_isnan(res)) {
     res = 0;
-    cout << "nan found at x=" << params.x << endl;
+    cout << "nan found at W=" << params.W << endl;
   }
   sigma = res;
   sigma_error = err;
-  cout << "T, x=" << params.x << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+  cout << "T, W=" << params.W << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
   gsl_monte_vegas_free(T_s);
 }
@@ -174,10 +174,10 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const int x_steps = 50;
-  const double x_start = 1e-5;
-  const double x_stop = 0.01;
-  const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
+  const int W_steps = 50;
+  const double W_start = 1;
+  const double W_stop = 1000;
+  const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
 
   stringstream r_limit_stream;
   r_limit_stream << fixed << setprecision(0) << r_limit;
@@ -208,11 +208,11 @@ int main() {
   TMultiGraph* L_graphs = new TMultiGraph();
   TString title;
   if (print_r_limit) {
-    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with r limit: "+r_limit_string+" GeV^-1;W;cross section (mb)";
   } else if (print_b_min_limit) {
-    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with b limit: "+b_limit_string+" GeV^-1;x;cross section (mb)";
+    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with b limit: "+b_limit_string+" GeV^-1;W;cross section (mb)";
   } else {
-    title = "Longitudinal "+dipole_amp_type+" inclusive cross section;x;cross section (mb)";
+    title = "Longitudinal "+dipole_amp_type+" inclusive cross section;W;cross section (mb)";
   }
   L_graphs->SetTitle(title);
 
@@ -226,34 +226,34 @@ int main() {
   }
 
   ofstream L_output_file(outfile_name);
-  L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
+  L_output_file << "Q2 (GeV);W;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting L integration" << endl;
-  double L_x_values[x_steps], L_sigma_values[x_steps], L_x_errors[x_steps], L_sigma_errors[x_steps];
-  thread L_threads[x_steps];
+  double L_W_values[W_steps], L_sigma_values[W_steps], L_W_errors[W_steps], L_sigma_errors[W_steps];
+  thread L_threads[W_steps];
 
-  for (int i=0; i<x_steps; i++) {
-    double x = pow(10, log10(x_start) + i*x_step);
-    L_x_values[i] = x;
-    L_x_errors[i] = 0;
-    thread_par_struct par(x, L_sigma_values[i], L_sigma_errors[i]);
+  for (int i=0; i<W_steps; i++) {
+    double W = pow(10, log10(W_start) + i*W_step);
+    L_W_values[i] = W;
+    L_W_errors[i] = 0;
+    thread_par_struct par(W, L_sigma_values[i], L_sigma_errors[i]);
     L_threads[i] = thread(integrate_for_L_sigma, par);
   }
 
-  for (int j=0; j<x_steps; j++) {
+  for (int j=0; j<W_steps; j++) {
     L_threads[j].join();
   }
-  TGraphErrors* subgraph = new TGraphErrors(x_steps, L_x_values, L_sigma_values, L_x_errors, L_sigma_errors);
+  TGraphErrors* subgraph = new TGraphErrors(W_steps, L_W_values, L_sigma_values, L_W_errors, L_sigma_errors);
   L_graphs->Add(subgraph);
 
-  for (int i=0; i<x_steps; i++) {
-    ostringstream x;
-    x << L_x_values[i];
+  for (int i=0; i<W_steps; i++) {
+    ostringstream W;
+    W << L_W_values[i];
     ostringstream sigma;
     sigma << L_sigma_values[i];
     ostringstream sigma_err;
     sigma_err << L_sigma_errors[i];
-    string line = ";" + x.str() + ";" + sigma.str() + ";" + sigma_err.str();
+    string line = ";" + W.str() + ";" + sigma.str() + ";" + sigma_err.str();
     L_output_file << line << endl;
   }
   
@@ -283,11 +283,11 @@ int main() {
   TMultiGraph* T_graphs = new TMultiGraph();
 
   if (print_r_limit) {
-    title = "Transverse inclusive "+dipole_amp_type+" cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" cross section with r limit: "+r_limit_string+" GeV^-1;W;cross section (mb)";
   } else if (print_b_min_limit) {
-    title = "Transverse inclusive "+dipole_amp_type+" cross section with b limit: "+b_limit_string+" GeV^-1;x;cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" cross section with b limit: "+b_limit_string+" GeV^-1;W;cross section (mb)";
   } else {
-    title = "Transverse inclusive "+dipole_amp_type+" cross section;x;cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" cross section;W;cross section (mb)";
   }
   T_graphs->SetTitle(title);
 
@@ -299,37 +299,37 @@ int main() {
     outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+".txt";
   }
   ofstream T_output_file(outfile_name);
-  T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
+  T_output_file << "Q2 (GeV);W;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
   
-  double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps];
-  thread T_threads[x_steps];
+  double T_W_values[W_steps], T_sigma_values[W_steps], T_W_errors[W_steps], T_sigma_errors[W_steps];
+  thread T_threads[W_steps];
 
-  for (int i=0; i<x_steps; i++) {
-    double x = pow(10, log10(x_start) + i*x_step);
-    T_x_values[i] = x;
-    T_x_errors[i] = 0;
-    thread_par_struct par(x, T_sigma_values[i], T_sigma_errors[i]);
+  for (int i=0; i<W_steps; i++) {
+    double W = pow(10, log10(W_start) + i*W_step);
+    T_W_values[i] = W;
+    T_W_errors[i] = 0;
+    thread_par_struct par(W, T_sigma_values[i], T_sigma_errors[i]);
     T_threads[i] = thread(integrate_for_T_sigma, par);
     //this_thread::sleep_for(30s);
   }
 
-  for (int j=0; j<x_steps; j++) {
+  for (int j=0; j<W_steps; j++) {
     T_threads[j].join();
   }
 
-  subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
+  subgraph = new TGraphErrors(W_steps, T_W_values, T_sigma_values, T_W_errors, T_sigma_errors);
   T_graphs->Add(subgraph);
 
-  for (int i=0; i<x_steps; i++) {
-    ostringstream x;
-    x << T_x_values[i];
+  for (int i=0; i<W_steps; i++) {
+    ostringstream W;
+    W << T_W_values[i];
     ostringstream sigma;
     sigma << T_sigma_values[i];
     ostringstream sigma_err;
     sigma_err << T_sigma_errors[i];
-    string line = ";" + x.str() + ";" + sigma.str() + ";" + sigma_err.str();
+    string line = ";" + W.str() + ";" + sigma.str() + ";" + sigma_err.str();
     T_output_file << line << endl;
   }
   
