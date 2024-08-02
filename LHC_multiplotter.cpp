@@ -31,14 +31,17 @@ void zero_array(double array[], int size) {
 int main() {
 
   string filenames[] = {
-    "data/J_L_inclusive_bk.txt",
-    "data/J_L_inclusive_bfkl.txt"
+    "data/J_LHC_T_inclusive_bk.txt",
+    "data/J_LHC_L_inclusive_bk.txt",
+    "data/J_LHC_T_inclusive_bfkl.txt",
+    "data/J_LHC_L_inclusive_bfkl.txt"
   };
   int filecount = size(filenames);
 
   vector<double> x[filecount], sigma[filecount], sigma_error[filecount];
 
   for (int i=0; i<size(filenames); i++) {
+    cout << "reading " << filenames[i] << endl;
     read_LHC_sigma_file(filenames[i], x[i], sigma[i], sigma_error[i]);
   }
 
@@ -52,29 +55,31 @@ int main() {
   TMultiGraph* comparison_graph = new TMultiGraph();
   comparison_graph->SetTitle("Total inclusive cross section comparison between BK and BFKL");
 
-  double* BK_x_arr;
+  double BK_x_arr[x[0].size()];
   vector_to_array(BK_x_arr, x[0]);
 
   TGraph* BK_graph = new TGraph(x[0].size(), BK_x_arr, BK_sigma_tot);
   BK_graph->SetTitle("BK");
+  BK_graph->SetLineColor(1);
   comparison_graph->Add(BK_graph);
 
-  double* BFKL_x_arr;
-  vector_to_array(BFKL_x_arr, x[0]);
+  double BFKL_x_arr[x[2].size()];
+  vector_to_array(BFKL_x_arr, x[2]);
 
-  TGraph* BFKL_graph = new TGraph(x[0].size(), BFKL_x_arr, BFKL_sigma_tot);
+  TGraph* BFKL_graph = new TGraph(x[2].size(), BFKL_x_arr, BFKL_sigma_tot);
   BFKL_graph->SetTitle("BFKL");
+  BFKL_graph->SetLineColor(2);
   comparison_graph->Add(BFKL_graph);
 
   TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
-  comparison_graph->Draw("A PMC PLC");
+  comparison_graph->Draw("A");
 
   gPad->SetLogx();
   gPad->SetLogy();
   comparison_graph->GetXaxis()->SetTitle("W (GeV)");
   comparison_graph->GetYaxis()->SetTitle("#sigma_{tot} (GeV^-2)");
 
-  if (true) {
+  if (false) {
     comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
   } else {
     comparison_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);

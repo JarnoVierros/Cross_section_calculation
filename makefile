@@ -23,6 +23,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make J_simplified_differential_diffractive_sigma
 	make multiplotter
 	make J_LHC_inclusive_ccbar_cross_section
+	make 	make J_LHC_inclusive_ccbar_cross_section
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -123,6 +124,9 @@ J_data_comparison_differential_diffractive: J_data_comparison_differential_diffr
 
 multiplotter: multiplotter.cpp
 	g++ multiplotter.cpp $$(root-config --glibs --cflags --libs) -o multiplotter.exe
+
+LHC_multiplotter: LHC_multiplotter.cpp
+	g++ LHC_multiplotter.cpp $$(root-config --glibs --cflags --libs) -o LHC_multiplotter.exe
 
 clean:
 	-rm *.exe
