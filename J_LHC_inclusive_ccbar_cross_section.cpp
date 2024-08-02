@@ -175,8 +175,8 @@ int main() {
   gsl_set_error_handler_off();
 
   const int W_steps = 50;
-  const double W_start = 1;
-  const double W_stop = 1000;
+  const double W_start = 2e1;
+  const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
 
   stringstream r_limit_stream;
@@ -208,11 +208,11 @@ int main() {
   TMultiGraph* L_graphs = new TMultiGraph();
   TString title;
   if (print_r_limit) {
-    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with r limit: "+r_limit_string+" GeV^-1;W;cross section (mb)";
+    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with r limit: "+r_limit_string+" GeV^-1;W (GeV);cross section (mb)";
   } else if (print_b_min_limit) {
-    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with b limit: "+b_limit_string+" GeV^-1;W;cross section (mb)";
+    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with b limit: "+b_limit_string+" GeV^-1;W (GeV);cross section (mb)";
   } else {
-    title = "Longitudinal "+dipole_amp_type+" inclusive cross section;W;cross section (mb)";
+    title = "Longitudinal "+dipole_amp_type+" inclusive cross section;W (GeV);cross section (mb)";
   }
   L_graphs->SetTitle(title);
 
@@ -226,7 +226,7 @@ int main() {
   }
 
   ofstream L_output_file(outfile_name);
-  L_output_file << "Q2 (GeV);W;sigma (mb);sigma error (mb)" << endl;
+  L_output_file << "W;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting L integration" << endl;
   double L_W_values[W_steps], L_sigma_values[W_steps], L_W_errors[W_steps], L_sigma_errors[W_steps];
@@ -253,7 +253,7 @@ int main() {
     sigma << L_sigma_values[i];
     ostringstream sigma_err;
     sigma_err << L_sigma_errors[i];
-    string line = ";" + W.str() + ";" + sigma.str() + ";" + sigma_err.str();
+    string line = W.str() + ";" + sigma.str() + ";" + sigma_err.str();
     L_output_file << line << endl;
   }
   
@@ -263,6 +263,7 @@ int main() {
   L_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
+  gPad->SetLogy();
 
   //L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
@@ -283,11 +284,11 @@ int main() {
   TMultiGraph* T_graphs = new TMultiGraph();
 
   if (print_r_limit) {
-    title = "Transverse inclusive "+dipole_amp_type+" cross section with r limit: "+r_limit_string+" GeV^-1;W;cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" cross section with r limit: "+r_limit_string+" GeV^-1;W (GeV);cross section (mb)";
   } else if (print_b_min_limit) {
-    title = "Transverse inclusive "+dipole_amp_type+" cross section with b limit: "+b_limit_string+" GeV^-1;W;cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" cross section with b limit: "+b_limit_string+" GeV^-1;W (GeV);cross section (mb)";
   } else {
-    title = "Transverse inclusive "+dipole_amp_type+" cross section;W;cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" cross section;W (GeV);cross section (mb)";
   }
   T_graphs->SetTitle(title);
 
@@ -299,7 +300,7 @@ int main() {
     outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+".txt";
   }
   ofstream T_output_file(outfile_name);
-  T_output_file << "Q2 (GeV);W;sigma (mb);sigma error (mb)" << endl;
+  T_output_file << "W;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
   
@@ -329,7 +330,7 @@ int main() {
     sigma << T_sigma_values[i];
     ostringstream sigma_err;
     sigma_err << T_sigma_errors[i];
-    string line = ";" + W.str() + ";" + sigma.str() + ";" + sigma_err.str();
+    string line = W.str() + ";" + sigma.str() + ";" + sigma_err.str();
     T_output_file << line << endl;
   }
   
@@ -339,6 +340,7 @@ int main() {
   T_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
+  gPad->SetLogy();
 
   //T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
