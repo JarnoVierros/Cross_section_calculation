@@ -255,10 +255,11 @@ int main() {
 
     TGraphErrors* measurement_data = new TGraphErrors(size(Q2_values), measured_x, measured_sigma, measured_x_error, measured_sigma_error);
     measurement_data->SetTitle("Reduced cross section fit");
+    measurement_data->SetMarkerStyle(7);
     comparison_graph->Add(measurement_data, "P");
 
     TGraph* model_fit = new TGraph(size(Q2_values), measured_x, model_sigma);
-    comparison_graph->Add(model_fit, "*");
+    comparison_graph->Add(model_fit, "PC");
 
     comparison_graph->GetXaxis()->SetLimits(1e-5, 1e-1);
 
