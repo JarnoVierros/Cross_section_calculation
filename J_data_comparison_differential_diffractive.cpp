@@ -96,11 +96,12 @@ int main() {
 
   vector<double> L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit;
   string L_prediction_filenames[] = {
-      "data/differential_diffractive_L_20mil_0-4.txt",
-      "data/differential_diffractive_L_20mil_5-19.txt",
-      "data/differential_diffractive_L_20mil_20-39.txt",
-      "data/differential_diffractive_L_20mil_40-50.txt",
-      "data/differential_diffractive_L_20mil_51-84.txt"
+      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_0-4.txt",
+      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_5-19.txt",
+      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_20-39.txt",
+      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_40-50.txt",
+      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_51-84.txt",
+      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_85-225.txt"
     };
 
   for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -115,11 +116,12 @@ int main() {
 
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
   string T_prediction_filenames[] = {
-    "data/differential_diffractive_T_20mil_0-4.txt",
-    "data/differential_diffractive_T_20mil_5-19.txt",
-    "data/differential_diffractive_T_20mil_20-39.txt",
-    "data/differential_diffractive_T_20mil_40-50.txt",
-    "data/differential_diffractive_T_20mil_51-84.txt"
+    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_0-4.txt",
+    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_5-19.txt",
+    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_20-39.txt",
+    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_40-50.txt",
+    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_51-84.txt",
+    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_85-225.txt"
   };
 
   for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -133,10 +135,32 @@ int main() {
   read_data_file(measurement_filename, measurement_Q2, measurement_beta, measurement_x, measurement_xpomF2, measurement_delta_stat, measurement_delta_sys);
 
 
-  double Q2_selections[] = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 9, 9, 9, 9, 9, 9};
-  double beta_selections[] = {0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 0.04, 0.1, 0.2, 0.4, 0.65, 0.9};
+  double Q2_selections[] = {
+    4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 
+    7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 
+    9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 
+    12, 12, 12, 12, 12, 12, 
+    18, 18, 18, 18, 18, 18, 
+    28, 28, 28, 28, 28, 28, 
+    45, 45, 45, 45, 45, 45, 
+        75, 75, 75, 75, 75
+    };
 
+  double beta_selections[] = {
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9,
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+          0.1, 0.2, 0.4, 0.65, 0.9
+    };
 
+  if (size(Q2_selections) != size(beta_selections)) {
+    cout << "Selections not the same size" << endl;
+    throw 1;
+  }
 
 
   for (int k=0; k<size(Q2_selections); k++) {
@@ -175,6 +199,9 @@ int main() {
         L_sigma = L_prediction_sigma[j];
         L_error = L_prediction_sigma_error[j];
         L_found = true;
+        if (L_sigma < 0) {
+          L_sigma = 0;
+        }
         break;
       }
       for (int j=0; j<T_prediction_Q2.size(); j++) {
@@ -190,6 +217,9 @@ int main() {
         T_sigma = T_prediction_sigma[j];
         T_error = T_prediction_sigma_error[j];
         T_found = true;
+        if (T_sigma < 0) {
+          T_sigma = 0;
+        }
         break;
       }
       if (!L_found) {
@@ -230,6 +260,9 @@ struct plot {
     comparison_graph->GetXaxis()->SetLabelSize(0.05);
     comparison_graph->GetYaxis()->SetLabelSize(0.05);
 
+    comparison_graph->GetXaxis()->SetTitle("x");
+    comparison_graph->GetYaxis()->SetTitle("x_{pom}F_{2}^{D(3)}");
+
     /*
     stringstream Q2_stream;
     Q2_stream << fixed << setprecision(1) << Q2_selections[k];
@@ -240,6 +273,7 @@ struct plot {
     */
 
     TGraphErrors* measurement_data = new TGraphErrors(x_selection.size(), x_selection_arr, chosen_measurement_xpomF2_arr, zeroes, chosen_delta_arr);
+    measurement_data->SetMarkerStyle(7);
     measurement_data->SetTitle("Measurement data");
     comparison_graph->Add(measurement_data, "P");
 
@@ -257,24 +291,31 @@ struct plot {
 
     TGraph* FL_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_prediction_xpomFL_arr);
     FL_prediction->SetLineColor(3);
+    FL_prediction->SetLineStyle(3);
     comparison_graph->Add(FL_prediction, "C");
 
     double* chosen_prediction_xpomFT_arr = &chosen_prediction_xpomFT[0];
 
     TGraph* FT_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_prediction_xpomFT_arr);
     FT_prediction->SetLineColor(4);
+    FT_prediction->SetLineStyle(2);
     comparison_graph->Add(FT_prediction, "C");
 
     plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction, Q2_selections[k], beta_selections[k]};
     plots.push_back(new_plot);
 
   }
-  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 6*10000, 3*10000);
-  multicanvas->Divide(6, 3, 0, 0);
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 6*10000, 8*10000);
+  multicanvas->Divide(6, 8, 0, 0);
 
+  int offset = 0;
   for (int i=0; i<plots.size(); i++) {
+
+    if (i == 42) {
+      offset = 1;
+    }
     //gPad->SetTopMargin(0.1);
-    multicanvas->cd(i+1);
+    multicanvas->cd(i+1+offset);
     //gPad->SetTickx(2);
 
     plots[i].comparison_graph->Draw("A");

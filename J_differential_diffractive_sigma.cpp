@@ -41,10 +41,10 @@ const int warmup_calls = 100000;
 const int integration_calls = 20000000;//20 000 000
 const int integration_iterations = 1;
 
-const int i_start = 51; // number of data points to skip
-const int data_inclusion_count = 33;
+const int i_start = 85; // number of data points to skip
+const int data_inclusion_count = 141;
 
-const string filename_end = "_20mil_51-84";
+const string filename_end = "_20mil_85-225";//
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
