@@ -41,9 +41,18 @@ val3 (lambda_star): 0.367773, err3: 0.319797
 chi2: 209.004, ndf: 49, chi2/ndf: 4.26538
 
 
+inclusive bk normalization fit:
+value: 7.30351e-01
+error: 1.01533e-02
 
-35551ns
-25010
-45972
+Q2=35, x_pom=0.004, beta=0.25
+L res=-2.46088e-09, err=4.38143e-11, fit=0.546
+T res=3.39197e-07, err=1.2164e-10, fir=1.32725
 
+Q2=35, x_pom=0.010, beta=0.10
+L res=8.47749e-11, err=3.90643e-11, fit=0.741475
+T res=5.51048e-08, err=1.00454e-10, fit=1.76443
 
+Q2=35, x_pom=0.018, beta=0.04
+L res=-9.82836e-11, err=4.04501e-11, fit=0.765819
+T res=8.94867e-09, err=3.64239e-11, fit=0.649966
