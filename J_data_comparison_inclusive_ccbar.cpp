@@ -170,17 +170,19 @@ int main() {
       relative_measurement_errors.push_back(stod(value));
     }
 
-    Q2_values.push_back(2000);
-    x_values.push_back(0.04000);
-    y_values.push_back(0.395);
-    measured_sigma_values.push_back(-1);
-    relative_measurement_errors.push_back(0);
+    if (n == 11) {
+      Q2_values.push_back(2000);
+      x_values.push_back(0.04000);
+      y_values.push_back(0.395);
+      measured_sigma_values.push_back(-1);
+      relative_measurement_errors.push_back(0);
 
-    Q2_values.push_back(2000);
-    x_values.push_back(0.07000);
-    y_values.push_back(0.395);
-    measured_sigma_values.push_back(-1);
-    relative_measurement_errors.push_back(0);
+      Q2_values.push_back(2000);
+      x_values.push_back(0.07000);
+      y_values.push_back(0.395);
+      measured_sigma_values.push_back(-1);
+      relative_measurement_errors.push_back(0);
+    }
 
     cout << "Finished reading file" << endl;
 
@@ -365,8 +367,7 @@ int main() {
   TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 4*10000, 3*10000);
   multicanvas->Divide(4, 3, 0, 0);
 
-  int offset = 0;
-  for (int i=0; i<size(Q2_selections); i++) {
+  for (long unsigned int i=0; i<size(Q2_selections); i++) {
 
     multicanvas->cd(i+1);
 
