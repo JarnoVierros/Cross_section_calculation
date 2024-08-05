@@ -168,6 +168,19 @@ int main() {
       }
       relative_measurement_errors.push_back(stod(value));
     }
+
+    Q2_values.push_back(2000);
+    x_values.push_back(0.04000);
+    y_values.push_back(0.395);
+    measured_sigma_values.push_back(-1);
+    relative_measurement_errors.push_back(0);
+
+    Q2_values.push_back(2000);
+    x_values.push_back(0.07000);
+    y_values.push_back(0.395);
+    measured_sigma_values.push_back(-1);
+    relative_measurement_errors.push_back(0);
+
     cout << "Finished reading file" << endl;
 
     const int dim = 4;
@@ -275,7 +288,7 @@ int main() {
     comparison_graphs[n]->Add(model_fits[n], "PC");
 
     comparison_graphs[n]->GetXaxis()->SetLimits(1e-5, 1e-1);
-    comparison_graphs[n]->GetYaxis()->SetRangeUser(0, 1);
+    comparison_graphs[n]->GetYaxis()->SetRangeUser(0, 0.7);
 
     stringstream Q2_stream;
     int precision = 0;
@@ -317,7 +330,7 @@ int main() {
     }
     Q2_stream << fixed << setprecision(precision) << Q2_selections[i];
     TString Q2_string = "Q2=" + Q2_stream.str();
-    TText* Q2_text = new TText(2e-5, 0.06, Q2_string);
+    TText* Q2_text = new TText(2e-5, 0.6, Q2_string);
     Q2_text->Draw("Same");
 
     /*
