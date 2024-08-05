@@ -32,8 +32,6 @@ const double r_limit = 34.64; // 34.64
 const double b_min_limit = 17.32; // 17.32
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> current_table;
-static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bk_table;
-static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bfkl_table;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -91,23 +89,10 @@ void fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
 
   const string data_filename = "data/HERA_data.dat";
 
-  string bk_dipamp_filename = "data/dipole_amplitude_with_IP_dependence.csv";
-  load_dipole_amplitudes(bk_table, bk_dipamp_filename);
-
-  string bfkl_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bfkl.csv";
-  load_dipole_amplitudes(bfkl_table, bfkl_dipamp_filename);
-
-  current_table = bk_table;
-
   double chisq = 0;
   int ndf = 0;
 
   double Q2_selections[12] = {2.5, 5, 7, 12, 18, 32, 60, 120, 200, 350, 650, 2000};
-  
-  TMultiGraph* comparison_graphs[size(Q2_selections)];
-  TGraphErrors* measurement_datas[size(Q2_selections)];
-  TGraph* bk_model_fits[size(Q2_selections)];
-  TGraph* bfkl_model_fits[size(Q2_selections)];
   
   for (int n=0; n<12; n++) {
 
@@ -209,7 +194,7 @@ void fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
     T = gsl_rng_default;
     rng = gsl_rng_alloc(T);
 
-    double measured_x[size(Q2_values)], measured_sigma[size(Q2_values)], measured_x_error[size(Q2_values)], measured_sigma_error[size(Q2_values)], bk_model_sigma[size(Q2_values)], bfkl_model_sigma[size(Q2_values)];
+    double measured_x[size(Q2_values)], measured_sigma[size(Q2_values)], measured_sigma_error[size(Q2_values)], bk_model_sigma[size(Q2_values)];
 
     for (long unsigned int j=0; j<size(Q2_values); j++) {
       /*
@@ -242,13 +227,10 @@ void fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
       }
       */
       measured_x[j] = x_values[j];
-      measured_x_error[j] = 0;
       measured_sigma[j] = measured_sigma_values[j];
       measured_sigma_error[j] = relative_measurement_errors[j]/100*measured_sigma_values[j];
 
       ///BK model
-
-      current_table = bk_table;
 
       gsl_monte_vegas_state *bk_L_s = gsl_monte_vegas_alloc(dim);
 
@@ -305,6 +287,9 @@ void fit(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
 
 
 int main() {
+
+  string bk_dipamp_filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  load_dipole_amplitudes(current_table, bk_dipamp_filename);
 
   Double_t amin,edm,errdef;
   Int_t nvpar,nparx,icstat;
