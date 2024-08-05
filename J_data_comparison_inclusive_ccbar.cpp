@@ -87,11 +87,11 @@ int main() {
 
   const string data_filename = "data/HERA_data.dat";
 
-  string dipamp_filename = "data/dipole_amplitude_with_IP_dependence.csv";
-  load_dipole_amplitudes(bk_table, dipamp_filename);
+  string bk_dipamp_filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  load_dipole_amplitudes(bk_table, bk_dipamp_filename);
 
-  string dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bfkl.csv";
-  load_dipole_amplitudes(bfkl_table, dipamp_filename);
+  string bfkl_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bfkl.csv";
+  load_dipole_amplitudes(bfkl_table, bfkl_dipamp_filename);
 
   current_table = bk_table;
 
