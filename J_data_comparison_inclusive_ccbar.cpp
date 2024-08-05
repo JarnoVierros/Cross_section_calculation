@@ -30,6 +30,8 @@ const double normalization = 16*alpha_em*N_c*e_f*e_f/(2*M_PI);
 const double r_limit = 34.64; // 34.64
 const double b_min_limit = 17.32; // 17.32
 
+const double correction = 0.730351;
+
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> current_table;
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bk_table;
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bfkl_table;
@@ -275,8 +277,8 @@ int main() {
 
       gsl_monte_vegas_free(bk_T_s);
 
-      double F_L = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_L;
-      double F_T = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_T;
+      double F_L = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_L*correction;
+      double F_T = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_T*correction;
       double F_2 = F_L + F_T;
       double sigma_r = F_2 - y_values[j]*y_values[j]/(1+gsl_pow_2(1-y_values[j]))*F_L;
 
@@ -315,8 +317,8 @@ int main() {
 
       gsl_monte_vegas_free(bfkl_T_s);
 
-      F_L = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_L;
-      F_T = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_T;
+      F_L = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_L*correction;
+      F_T = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_T*correction;
       F_2 = F_L + F_T;
       sigma_r = F_2 - y_values[j]*y_values[j]/(1+gsl_pow_2(1-y_values[j]))*F_L;
 
