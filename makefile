@@ -23,7 +23,8 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make J_simplified_differential_diffractive_sigma
 	make multiplotter
 	make J_LHC_inclusive_ccbar_cross_section
-	make 	make J_LHC_inclusive_ccbar_cross_section
+	make J_LHC_inclusive_ccbar_cross_section
+	make J_improvised_inclusive_data_fit
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -127,6 +128,13 @@ multiplotter: multiplotter.cpp
 
 LHC_multiplotter: LHC_multiplotter.cpp
 	g++ LHC_multiplotter.cpp $$(root-config --glibs --cflags --libs) -o LHC_multiplotter.exe
+
+J_improvised_inclusive_data_fit: J_improvised_inclusive_data_fit.cpp
+	g++ -Wall -c J_improvised_inclusive_data_fit.cpp $$(root-config --glibs --cflags --libs)
+	g++ J_improvised_inclusive_data_fit.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_improvised_inclusive_data_fit.exe
+
+custom_plot: custom_plot.cpp
+	g++ custom_plot.cpp $$(root-config --glibs --cflags --libs) -o custom_plot.exe
 
 clean:
 	-rm *.exe
