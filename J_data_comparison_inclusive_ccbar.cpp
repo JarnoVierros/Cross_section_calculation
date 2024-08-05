@@ -103,7 +103,8 @@ int main() {
   
   TMultiGraph* comparison_graphs[size(Q2_selections)];
   TGraphErrors* measurement_datas[size(Q2_selections)];
-  TGraph* model_fits[size(Q2_selections)];
+  TGraph* bk_model_fits[size(Q2_selections)];
+  TGraph* bfkl_model_fits[size(Q2_selections)];
   
   for (int n=0; n<12; n++) {
 
@@ -203,7 +204,7 @@ int main() {
     T = gsl_rng_default;
     rng = gsl_rng_alloc(T);
 
-    double measured_x[size(Q2_values)], measured_sigma[size(Q2_values)], measured_x_error[size(Q2_values)], measured_sigma_error[size(Q2_values)], model_sigma[size(Q2_values)];
+    double measured_x[size(Q2_values)], measured_sigma[size(Q2_values)], measured_x_error[size(Q2_values)], measured_sigma_error[size(Q2_values)], bk_model_sigma[size(Q2_values)], bfkl_model_sigma[size(Q2_values)];
 
     for (long unsigned int j=0; j<size(Q2_values); j++) {
       /*
@@ -240,40 +241,84 @@ int main() {
       measured_sigma[j] = measured_sigma_values[j];
       measured_sigma_error[j] = relative_measurement_errors[j]/100*measured_sigma_values[j];
 
-      gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
+      ///BK model
 
-      status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
+      current_table = bk_table;
+
+      gsl_monte_vegas_state *bk_L_s = gsl_monte_vegas_alloc(dim);
+
+      status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, bk_L_s, &res, &err);
       if (status != 0) {throw "gsl error";}
 
       for (int i=0; i<integration_iterations; i++) {
-        status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
+        status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, bk_L_s, &res, &err);
         if (status != 0) {throw "gsl error";}
       }
       
       double sigma_L = res;
 
-      gsl_monte_vegas_free(L_s);
+      gsl_monte_vegas_free(bk_L_s);
 
-      gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+      gsl_monte_vegas_state *bk_T_s = gsl_monte_vegas_alloc(dim);
 
-      status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+      status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, bk_T_s, &res, &err);
       if (status != 0) {throw "gsl error";}
 
       for (int i=0; i<integration_iterations; i++) {
-        status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+        status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, bk_T_s, &res, &err);
         if (status != 0) {throw "gsl error";}
       }
 
       double sigma_T = res;
 
-      gsl_monte_vegas_free(T_s);
+      gsl_monte_vegas_free(bk_T_s);
 
       double F_L = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_L;
       double F_T = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_T;
       double F_2 = F_L + F_T;
       double sigma_r = F_2 - y_values[j]*y_values[j]/(1+gsl_pow_2(1-y_values[j]))*F_L;
 
-      model_sigma[j] = sigma_r;
+      bk_model_sigma[j] = sigma_r;
+
+
+      //BFKL model
+
+      current_table = bfkl_table;
+
+      gsl_monte_vegas_state *bfkl_L_s = gsl_monte_vegas_alloc(dim);
+
+      status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, bfkl_L_s, &res, &err);
+      if (status != 0) {throw "gsl error";}
+
+      for (int i=0; i<integration_iterations; i++) {
+        status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, bfkl_L_s, &res, &err);
+        if (status != 0) {throw "gsl error";}
+      }
+      
+      sigma_L = res;
+
+      gsl_monte_vegas_free(bfkl_L_s);
+
+      gsl_monte_vegas_state *bfkl_T_s = gsl_monte_vegas_alloc(dim);
+
+      status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, bfkl_T_s, &res, &err);
+      if (status != 0) {throw "gsl error";}
+
+      for (int i=0; i<integration_iterations; i++) {
+        status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, bfkl_T_s, &res, &err);
+        if (status != 0) {throw "gsl error";}
+      }
+
+      sigma_T = res;
+
+      gsl_monte_vegas_free(bfkl_T_s);
+
+      F_L = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_L;
+      F_T = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_T;
+      F_2 = F_L + F_T;
+      sigma_r = F_2 - y_values[j]*y_values[j]/(1+gsl_pow_2(1-y_values[j]))*F_L;
+
+      bfkl_model_sigma[j] = sigma_r;
 
     }
     cout << "Measurement points: " << size(Q2_values) << endl;
@@ -284,8 +329,12 @@ int main() {
     measurement_datas[n]->SetMarkerStyle(7);
     comparison_graphs[n]->Add(measurement_datas[n], "P");
 
-    model_fits[n] = new TGraph(size(Q2_values), measured_x, model_sigma);
-    comparison_graphs[n]->Add(model_fits[n], "PC");
+    bk_model_fits[n] = new TGraph(size(Q2_values), measured_x, bk_model_sigma);
+    comparison_graphs[n]->Add(bk_model_fits[n], "PC");
+
+    bfkl_model_fits[n] = new TGraph(size(Q2_values), measured_x, bfkl_model_sigma);
+    bfkl_model_fits[n]->SetLineStyle(2);
+    comparison_graphs[n]->Add(bfkl_model_fits[n], "PC");
 
     comparison_graphs[n]->GetXaxis()->SetLimits(1e-5, 1e-1);
     comparison_graphs[n]->GetYaxis()->SetRangeUser(0, 0.7);
@@ -305,9 +354,11 @@ int main() {
       //if (x_values[j] > 1e-3) {
       //  continue;
       //}
-      double delta = (model_sigma[j] - measured_sigma[j])/(measured_sigma_error[j]);
-      chisq += delta*delta;
-      ndf++;
+      if (measured_x[j] < 1e-2) {
+        double delta = (bk_model_sigma[j] - measured_sigma[j])/(measured_sigma_error[j]);
+        chisq += delta*delta;
+        ndf++;
+      }
     }
   }
 
