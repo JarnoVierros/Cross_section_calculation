@@ -17,16 +17,21 @@
 #include <iomanip>
 using namespace std;
 
-#include "new_dipole_amp_reader.h"
+#include "direct_dipole_amp_reader.h"
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
-const double normalization = 4*alpha_em*N_c*e_f*e_f/(2*M_PI*2*M_PI);
+const double normalization = 16*alpha_em*N_c*e_f*e_f/(2*M_PI);
 
-static array<array<array<array<double, 4>, 81>, 30>, 30> table;
+const double r_limit = 34.64; // 34.64
+const double b_min_limit = 17.32; // 17.32
+
+static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> current_table;
+static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bk_table;
+static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bfkl_table;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -36,30 +41,30 @@ double epsilon(double z, double Q2) {
   return sqrt(m_f*m_f + z*(1-z)*Q2);
 }
 
-double dipole_amplitude(double r, double b, double x) {
-  return 2*M_PI*b*get_dipole_amplitude(table, r, b, x, false);
+double dipole_amplitude(double r, double b, double phi, double x) {
+  return get_dipole_amplitude(current_table, r, b, phi, x);
 }
 
-double L_integrand(double r, double z, double b, double Q2, double x) {
-  return 2*M_PI*r*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b, x);
+double L_integrand(double r, double b, double phi, double z, double Q2, double x) {
+  return r*b*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b, phi, x);
 }
 
-double T_integrand(double r, double z, double b, double Q2, double x) {
-  return 2*M_PI*r*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b, x);
+double T_integrand(double r, double b, double phi, double z, double Q2, double x) {
+  return r*b*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b, phi, x);
 }
 
 struct parameters {double Q2; double x;};
 
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*L_integrand(k[0], k[1], k[2], par->Q2, par->x);
+  return normalization*L_integrand(k[0], k[1], k[2], k[3], par->Q2, par->x);
 }
 
 double T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*T_integrand(k[0], k[1], k[2], par->Q2, par->x);
+  return normalization*T_integrand(k[0], k[1], k[2], k[3], par->Q2, par->x);
 }
-
+/*
 bool array_contains_similar(int attay_size, double array[], double element) {
   for (int i=0; i<attay_size; i++) {
     if (0.97 < abs(array[i]/element) && abs(array[i]/element) < 1.03) {
@@ -68,7 +73,7 @@ bool array_contains_similar(int attay_size, double array[], double element) {
   }
   return false;
 }
-
+*/
 int main() {
 
   gsl_set_error_handler_off();
@@ -83,12 +88,20 @@ int main() {
   const string data_filename = "data/HERA_data.dat";
 
   string dipamp_filename = "data/dipole_amplitude_with_IP_dependence.csv";
-  load_dipole_amplitudes(table, dipamp_filename);
+  load_dipole_amplitudes(bk_table, dipamp_filename);
+
+  string dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bfkl.csv";
+  load_dipole_amplitudes(bfkl_table, dipamp_filename);
+
+  current_table = bk_table;
 
   double chisq = 0;
   int ndf = 0;
 
   double Q2_selections[12] = {2.5, 5, 7, 12, 18, 32, 60, 120, 200, 350, 650, 2000};
+  
+  TMultiGraph* comparison_graphs[size(Q2_selections)];
+  
   for (int n=0; n<12; n++) {
 
     double Q2_selection = Q2_selections[n];
@@ -154,11 +167,11 @@ int main() {
     }
     cout << "Finished reading file" << endl;
 
-    const int dim = 3;
+    const int dim = 4;
     double res, err;
 
-    double xl[3] = {0, 0, 0};
-    double xu[3] = {34, 1, 20};
+    double xl[4] = {0, 0, 0, 0};
+    double xu[4] = {r_limit, b_min_limit, M_PI, 1};
 
     struct parameters params = {1, 1};
 
@@ -191,10 +204,12 @@ int main() {
 
       params.Q2 = Q2_values[j];
       params.x = x_values[j];
+      /*
       int depth = 0;
 
       double temp_measured_x = x_values[j];
       double multiplier = 1;
+      
       while (array_contains_similar(size(Q2_values), measured_x, temp_measured_x)) {
         cout << "x=" << temp_measured_x << " already occupied" << endl;
         multiplier += 0.1;
@@ -203,7 +218,8 @@ int main() {
         depth++;
         if (depth>100) {return 1;}
       }
-      measured_x[j] = temp_measured_x;
+      */
+      measured_x[j] = x_values[j];
       measured_x_error[j] = 0;
       measured_sigma[j] = measured_sigma_values[j];
       measured_sigma_error[j] = relative_measurement_errors[j]/100*measured_sigma_values[j];
