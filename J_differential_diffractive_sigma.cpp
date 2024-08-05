@@ -29,7 +29,7 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27;
 
-const double normalization = 16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f;
+const double normalization = 16.0/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
 const double r_limit = 34.64; // 34.64
 const double b_min_limit = 17.32; // 17.32
@@ -38,10 +38,10 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 100000;
-const int integration_calls = 20000000;//20 000 000
+const int integration_calls = 100000000;//20 000 000
 const int integration_iterations = 1;
 
-const string filename_end = "_20mil_85-225";//
+//const string filename_end = "_20mil_85-225";//
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
@@ -212,8 +212,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))
     *z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)
-    *get_dipole_amplitude(table, r, b_min, phi, x)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, x);
-
+    *dipole_amplitude(r, b_min, phi, x)*dipole_amplitude(r_bar, b_min_bar, phi_bar, x);
     if (gsl_isnan(sub_integrand)) {
       cout << "L sub_integrand " << i << " is nan" << endl;
       /*
@@ -418,9 +417,12 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  double Q2 = 1;
-  double x = 1;
-  double beta = 1;
+  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  load_dipole_amplitudes(table, filename);
+
+  double Q2 = 35;
+  double beta = 0.04;
+  double x = 0.018*beta;
   double sigma;
   double sigma_error;
   double sigma_fit;
@@ -430,7 +432,7 @@ int main() {
   cout << "beta=" << beta << endl;
 
   thread_par_struct parameters(Q2, x, beta, sigma, sigma_error, sigma_fit);
-  integrate_for_L_sigma(parameters);
+  integrate_for_T_sigma(parameters);
 
   cout << "Q2=" << Q2 << endl;
   cout << "x=" << x << endl;
@@ -438,7 +440,7 @@ int main() {
 
   cout << endl;
 
-  cout << "L sigma=" << sigma << endl;
-  cout << "L sigma_error=" << sigma_error << endl;
-  cout << "L sigma_fit=" << sigma_fit << endl;
+  cout << "T sigma=" << sigma << endl;
+  cout << "T sigma_error=" << sigma_error << endl;
+  cout << "T sigma_fit=" << sigma_fit << endl;
 }
