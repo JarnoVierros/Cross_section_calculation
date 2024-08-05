@@ -10,6 +10,7 @@
 #include "TAxis.h"
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
+#include "TText.h"
 
 #include <string>
 #include <iostream>
@@ -101,6 +102,8 @@ int main() {
   double Q2_selections[12] = {2.5, 5, 7, 12, 18, 32, 60, 120, 200, 350, 650, 2000};
   
   TMultiGraph* comparison_graphs[size(Q2_selections)];
+  TGraphErrors* measurement_datas[size(Q2_selections)];
+  TGraph* model_fits[size(Q2_selections)];
   
   for (int n=0; n<12; n++) {
 
@@ -261,26 +264,63 @@ int main() {
 
     }
     cout << "Measurement points: " << size(Q2_values) << endl;
-    TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
 
-    TMultiGraph* comparison_graph = new TMultiGraph();
-    stringstream stream;
-    stream << fixed << setprecision(0) << Q2_selection;
-    TString title = "Reduced cross section fit for Q^{2}="+stream.str()+";x;#sigma_{r} (mb)";
-    comparison_graph->SetTitle(title);
+    comparison_graphs[n] = new TMultiGraph();
 
-    TGraphErrors* measurement_data = new TGraphErrors(size(Q2_values), measured_x, measured_sigma, measured_x_error, measured_sigma_error);
-    measurement_data->SetTitle("Reduced cross section fit");
-    measurement_data->SetMarkerStyle(7);
-    comparison_graph->Add(measurement_data, "P");
+    measurement_datas[n] = new TGraphErrors(size(Q2_values), measured_x, measured_sigma, measured_x_error, measured_sigma_error);
+    measurement_datas[n]->SetMarkerStyle(7);
+    comparison_graphs[n]->Add(measurement_datas[n], "P");
 
-    TGraph* model_fit = new TGraph(size(Q2_values), measured_x, model_sigma);
-    comparison_graph->Add(model_fit, "PC");
+    model_fits[n] = new TGraph(size(Q2_values), measured_x, model_sigma);
+    comparison_graphs[n]->Add(model_fits[n], "PC");
 
-    comparison_graph->GetXaxis()->SetLimits(1e-5, 1e-1);
+    comparison_graphs[n]->GetXaxis()->SetLimits(1e-5, 1e-1);
+    comparison_graphs[n]->GetYaxis()->SetRangeUser(0, 1);
 
-    comparison_graph->Draw("A");
-    
+    stringstream Q2_stream;
+    int precision = 0;
+    if (Q2_selection == 2.5) {
+      precision = 2;
+    }
+    Q2_stream << fixed << setprecision(precision) << Q2_selection;
+
+    TString outfile_name = "figures/J_data_comparison_Q2_"+Q2_stream.str()+".pdf";
+
+    gsl_rng_free(rng);
+
+    for (long unsigned int j=0; j<size(Q2_values); j++) {
+      //if (x_values[j] > 1e-3) {
+      //  continue;
+      //}
+      double delta = (model_sigma[j] - measured_sigma[j])/(measured_sigma_error[j]);
+      chisq += delta*delta;
+      ndf++;
+    }
+  }
+
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 4*10000, 3*10000);
+  multicanvas->Divide(4, 3, 0, 0);
+
+  int offset = 0;
+  for (int i=0; i<size(Q2_selections); i++) {
+
+    multicanvas->cd(i+1);
+
+    comparison_graphs[i]->Draw("A");
+
+    gPad->SetLogx();
+
+    stringstream Q2_stream;
+    int precision = 0;
+    if (Q2_selections[i] == 2.5) {
+      precision = 2;
+    }
+    Q2_stream << fixed << setprecision(precision) << Q2_selections[i];
+    TString Q2_string = "Q2=" + Q2_stream.str();
+    TText* Q2_text = new TText(2e-5, 0.06, Q2_string);
+    Q2_text->Draw("Same");
+
+    /*
     float location[4];
     if (Q2_selection < 60) {
       location[0] = 0.65;
@@ -298,23 +338,20 @@ int main() {
     legend->AddEntry(model_fit,"Model fit", "P");
     legend->SetTextSize(0.04);
     legend->Draw();
-
-    gPad->SetLogx();
-
-    TString outfile_name = "figures/J_data_comparison_Q2_"+stream.str()+".pdf";
-    comparison_canvas->Print(outfile_name);
-
-    gsl_rng_free(rng);
-
-    for (long unsigned int j=0; j<size(Q2_values); j++) {
-      //if (x_values[j] > 1e-3) {
-      //  continue;
-      //}
-      double delta = (model_sigma[j] - measured_sigma[j])/(measured_sigma_error[j]);
-      chisq += delta*delta;
-      ndf++;
-    }
+    */
   }
+  multicanvas->cd(0);
+
+  
+
+  //TText* title = new TText(0.48, 0.9, "Title");
+  //title->Draw("Same");
+
+  //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
+  //top_pad->Draw();
+
+  TString figure_filename = "figures/J_inclusive_sigma_r_data_comparison.pdf";
+  multicanvas->Print(figure_filename);
 
   cout << "chisq=" << chisq << ", ndf=" << ndf << ", chisq/ndf=" << chisq/ndf << endl;
   
