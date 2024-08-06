@@ -37,7 +37,9 @@ const double b_min_limit = 17.32; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
-const string dipole_amp_type = "bk";
+const string dipole_amp_type = "bfkl";
+const string nucleus_type = "Pb";
+const string filename_end = "_Q2=0";
 
 const int warmup_calls = 10000;
 const int integration_calls = 100000;
@@ -53,16 +55,21 @@ double epsilon(double z, double Q2) {
   return sqrt(epsilon2(z, Q2));
 }
 
+double shifted_x(double x, double Q2) {
+  return x;
+  //return x*(1+(4*m_f*m_f)/Q2);
+}
+
 double dipole_amplitude(double r, double b_min, double phi, double x) {
   return get_dipole_amplitude(table, r, b_min, phi, x);
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b_min, phi, x);
+  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b_min, phi, shifted_x(x, Q2));
 }
 
 double T_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b_min, phi, x);
+  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b_min, phi, shifted_x(x, Q2));
 }
 
 struct parameters {double Q2; double x;};
@@ -177,7 +184,7 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const double Q2_values[] = {1, 3, 5, 8, 10};
+  const double Q2_values[] = {0};
 
   const int x_steps = 50;
   const double x_start = 1e-5;
@@ -199,35 +206,28 @@ int main() {
 
   TString b_limit_filename_string = b_limit_string;
 
-  string filename;
-  if (dipole_amp_type == "bfkl") {
-    filename = "data/dipole_amplitude_with_IP_dependence_bfkl.csv";
-  } else if (dipole_amp_type == "bk") {
-    filename = "data/dipole_amplitude_with_IP_dependence.csv";
-  } else {
-    cout << "Invalid dipole amplitude type" << endl;
-    throw 1;
-  }
+  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+
   load_dipole_amplitudes(table, filename);
 
   TMultiGraph* L_graphs = new TMultiGraph();
   TString title;
   if (print_r_limit) {
-    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+    title = "Longitudinal "+dipole_amp_type+" "+nucleus_type+" inclusive cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
   } else if (print_b_min_limit) {
-    title = "Longitudinal "+dipole_amp_type+" inclusive cross section with b limit: "+b_limit_string+" GeV^-1;x;cross section (mb)";
+    title = "Longitudinal "+dipole_amp_type+" "+nucleus_type+" inclusive cross section with b limit: "+b_limit_string+" GeV^-1;x;cross section (mb)";
   } else {
-    title = "Longitudinal "+dipole_amp_type+" inclusive cross section;x;cross section (mb)";
+    title = "Longitudinal "+dipole_amp_type+" "+nucleus_type+" inclusive cross section;x;cross section (mb)";
   }
   L_graphs->SetTitle(title);
 
   TString outfile_name;
   if (print_r_limit) {
-    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".txt";
+    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".txt";
   } else if (print_b_min_limit) {
-    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".txt";
+    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".txt";
   } else {
-    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+".txt";
+    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
   }
 
   ofstream L_output_file(outfile_name);
@@ -279,11 +279,11 @@ int main() {
 
 
   if (print_r_limit) {
-    outfile_name = "figures/J_L_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".pdf";
+    outfile_name = "figures/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".pdf";
   } else if (print_b_min_limit) {
-    outfile_name = "figures/J_L_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".pdf";
+    outfile_name = "figures/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".pdf";
   } else {
-    outfile_name = "figures/J_L_inclusive_"+dipole_amp_type+".pdf";
+    outfile_name = "figures/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".pdf";
   }
   L_sigma_canvas->Print(outfile_name);
  
@@ -294,20 +294,20 @@ int main() {
   TMultiGraph* T_graphs = new TMultiGraph();
 
   if (print_r_limit) {
-    title = "Transverse inclusive "+dipole_amp_type+" cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+" cross section with r limit: "+r_limit_string+" GeV^-1;x;cross section (mb)";
   } else if (print_b_min_limit) {
-    title = "Transverse inclusive "+dipole_amp_type+" cross section with b limit: "+b_limit_string+" GeV^-1;x;cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+" cross section with b limit: "+b_limit_string+" GeV^-1;x;cross section (mb)";
   } else {
-    title = "Transverse inclusive "+dipole_amp_type+" cross section;x;cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+" cross section;x;cross section (mb)";
   }
   T_graphs->SetTitle(title);
 
   if (print_r_limit) {
-    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".txt";
+    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".txt";
   } else if (print_b_min_limit) {
-    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".txt";
+    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".txt";
   } else {
-    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+".txt";
+    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
   }
   ofstream T_output_file(outfile_name);
   T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
@@ -360,11 +360,11 @@ int main() {
   T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
   if (print_r_limit) {
-    outfile_name = "figures/J_T_inclusive_"+dipole_amp_type+"_r_"+r_limit_filename_string+".pdf";
+    outfile_name = "figures/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".pdf";
   } else if (print_b_min_limit) {
-    outfile_name = "figures/J_T_inclusive_"+dipole_amp_type+"_b_"+b_limit_filename_string+".pdf";
+    outfile_name = "figures/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".pdf";
   } else {
-    outfile_name = "figures/J_T_inclusive_"+dipole_amp_type+".pdf";
+    outfile_name = "figures/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".pdf";
   }
   T_sigma_canvas->Print(outfile_name);
 

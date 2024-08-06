@@ -41,10 +41,10 @@ const int warmup_calls = 100000;
 const int integration_calls = 20000000;//20 000 000
 const int integration_iterations = 1;
 
-const int i_start = 85; // number of data points to skip
-const int data_inclusion_count = 141;
+const int i_start = 20; // number of data points to skip
+const int data_inclusion_count = 40;
 
-const string filename_end = "_20mil_85-225";//
+const string filename_end = "_20mil_20-59_xpom";//
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
@@ -215,7 +215,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))
     *z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)
-    *get_dipole_amplitude(table, r, b_min, phi, x)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, x);
+    *dipole_amplitude(r, b_min, phi, x/beta)*dipole_amplitude(r_bar, b_min_bar, phi_bar, x/beta);
 
     if (gsl_isnan(sub_integrand)) {
       cout << "L sub_integrand " << i << " is nan" << endl;
@@ -262,7 +262,7 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))
-    *get_dipole_amplitude(table, r, b_min, phi, x)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, x);
+    *dipole_amplitude(r, b_min, phi, x/beta)*dipole_amplitude(r_bar, b_min_bar, phi_bar, x/beta);
 
     if (gsl_isnan(sub_integrand)) {
       cout << "T sub_integrand " << i << " is nan" << endl;
@@ -425,7 +425,7 @@ int main() {
 
   read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
 
-  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  string filename = "data/dipole_amplitude_with_IP_dependence_bk_p.csv";
   load_dipole_amplitudes(table, filename);
   
   /*

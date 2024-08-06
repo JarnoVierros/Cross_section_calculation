@@ -31,8 +31,12 @@ void zero_array(double array[], int size) {
 int main() {
 
   string filenames[] = {
-    "data/J_L_inclusive_bk.txt",
-    "data/J_L_inclusive_bfkl.txt"
+    "data/J_T_inclusive_bk_p.txt",
+    "data/J_T_inclusive_bk_p_xpom.txt",
+    "data/J_T_inclusive_bk_p_Q2=0.txt",
+    "data/J_T_inclusive_bfkl_p.txt",
+    "data/J_T_inclusive_bfkl_p_xpom.txt",
+    "data/J_T_inclusive_bfkl_p_Q2=0.txt"
   };
   int filecount = size(filenames);
 
@@ -47,7 +51,7 @@ int main() {
   }
 
   TMultiGraph* comparison_graphs = new TMultiGraph();
-  comparison_graphs->SetTitle("Longitudinal inclusive cross section comparison between BK and BFKL");
+  comparison_graphs->SetTitle("Longitudinal inclusive proton BK cross section comparison between old and shifted x methods");
 
   for (int i=0; i<filecount; i++) {
     for (int j=0; j<Q2[i].size(); j++) {
@@ -70,9 +74,9 @@ int main() {
       TString subgraph_name;
 
       if (i == 0) {
-        subgraph_name = "BK, Q^{2}=" + Q2_stream.str();
+        subgraph_name = "x_{Bj}, Q^{2}=" + Q2_stream.str();
       } else if(i == 1) {
-        subgraph_name = "BFKL, Q^{2}=" + Q2_stream.str();
+        subgraph_name = "x_{shif}, Q^{2}=" + Q2_stream.str();
         subgraph->SetLineStyle(2);
       }
       
@@ -94,7 +98,7 @@ int main() {
     comparison_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
   }
 
-  comparison_canvas->Print("figures/L_BFKL_BK_comp.pdf");
+  comparison_canvas->Print("figures/T_x_shift_comp.pdf");
   
   return 0;
 }

@@ -30,7 +30,7 @@ const double normalization = 16*alpha_em*N_c*e_f*e_f/(2*M_PI);
 const double r_limit = 34.64; // 34.64
 const double b_min_limit = 17.32; // 17.32
 
-const double correction = 0.730351;
+const double correction = 1; //0.730351
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> current_table;
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bk_table;
@@ -48,12 +48,17 @@ double dipole_amplitude(double r, double b, double phi, double x) {
   return get_dipole_amplitude(current_table, r, b, phi, x);
 }
 
+double shifted_x(double x, double Q2) {
+  //return x;
+  return x*(1+(4*m_f*m_f)/Q2);
+}
+
 double L_integrand(double r, double b, double phi, double z, double Q2, double x) {
-  return r*b*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b, phi, x);
+  return r*b*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b, phi, shifted_x(x, Q2));
 }
 
 double T_integrand(double r, double b, double phi, double z, double Q2, double x) {
-  return r*b*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b, phi, x);
+  return r*b*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b, phi, shifted_x(x, Q2));
 }
 
 struct parameters {double Q2; double x;};
@@ -90,10 +95,10 @@ int main() {
 
   const string data_filename = "data/HERA_data.dat";
 
-  string bk_dipamp_filename = "data/dipole_amplitude_with_IP_dependence.csv";
+  string bk_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bk_p.csv";
   load_dipole_amplitudes(bk_table, bk_dipamp_filename);
 
-  string bfkl_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bfkl.csv";
+  string bfkl_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bfkl_p.csv";
   load_dipole_amplitudes(bfkl_table, bfkl_dipamp_filename);
 
   current_table = bk_table;
@@ -343,15 +348,6 @@ int main() {
     comparison_graphs[n]->GetXaxis()->SetLimits(1e-5, 1e-1);
     comparison_graphs[n]->GetYaxis()->SetRangeUser(0, 0.7);
 
-    stringstream Q2_stream;
-    int precision = 0;
-    if (Q2_selection == 2.5) {
-      precision = 2;
-    }
-    Q2_stream << fixed << setprecision(precision) << Q2_selection;
-
-    TString outfile_name = "figures/J_data_comparison_Q2_"+Q2_stream.str()+".pdf";
-
     gsl_rng_free(rng);
 
     for (long unsigned int j=0; j<size(Q2_values); j++) {
@@ -417,7 +413,7 @@ int main() {
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
   //top_pad->Draw();
 
-  TString figure_filename = "figures/J_inclusive_sigma_r_data_comparison.pdf";
+  TString figure_filename = "figures/J_inclusive_sigma_r_data_comparison_sifted_x.pdf";
   multicanvas->Print(figure_filename);
 
   cout << "chisq=" << chisq << ", ndf=" << ndf << ", chisq/ndf=" << chisq/ndf << endl;

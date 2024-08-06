@@ -96,12 +96,8 @@ int main() {
 
   vector<double> L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit;
   string L_prediction_filenames[] = {
-      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_0-4.txt",
-      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_5-19.txt",
-      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_20-39.txt",
-      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_40-50.txt",
-      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_51-84.txt",
-      "archive/Jdipamp/diffractive/bing_int/differential_diffractive_L_20mil_85-225.txt"
+      "/home/jarno/Cross_section_calculation/archive/data/diffractive/differential/measurement_comparison/x_pom/differential_diffractive_L_20mil_0-19_xpom.txt",
+      "/home/jarno/Cross_section_calculation/archive/data/diffractive/differential/measurement_comparison/x_pom/differential_diffractive_L_20mil_20-59_xpom.txt"
     };
 
   for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -116,12 +112,8 @@ int main() {
 
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
   string T_prediction_filenames[] = {
-    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_0-4.txt",
-    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_5-19.txt",
-    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_20-39.txt",
-    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_40-50.txt",
-    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_51-84.txt",
-    "archive/Jdipamp/diffractive/bing_int/differential_diffractive_T_20mil_85-225.txt"
+    "/home/jarno/Cross_section_calculation/archive/data/diffractive/differential/measurement_comparison/x_pom/differential_diffractive_T_20mil_0-19_xpom.txt",
+    "/home/jarno/Cross_section_calculation/archive/data/diffractive/differential/measurement_comparison/x_pom/differential_diffractive_T_20mil_20-59_xpom.txt"
   };
 
   for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -134,7 +126,7 @@ int main() {
 
   read_data_file(measurement_filename, measurement_Q2, measurement_beta, measurement_x, measurement_xpomF2, measurement_delta_stat, measurement_delta_sys);
 
-
+/*
   double Q2_selections[] = {
     4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 
     7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 
@@ -155,6 +147,17 @@ int main() {
     0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
     0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
           0.1, 0.2, 0.4, 0.65, 0.9
+    };
+*/
+
+  double Q2_selections[] = {
+    4.5, 4.5, 4.5, 4.5, 4.5, 4.5,
+    7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 
+    };
+
+  double beta_selections[] = {
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9,
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9,
     };
 
   if (size(Q2_selections) != size(beta_selections)) {
@@ -305,8 +308,11 @@ struct plot {
     plots.push_back(new_plot);
 
   }
-  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 6*10000, 8*10000);
-  multicanvas->Divide(6, 8, 0, 0);
+
+  int figure_width = 6;
+  int figure_height = 2; //8
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*10000, figure_height*10000);
+  multicanvas->Divide(figure_width, figure_height, 0, 0);
 
   int offset = 0;
   for (int i=0; i<plots.size(); i++) {
