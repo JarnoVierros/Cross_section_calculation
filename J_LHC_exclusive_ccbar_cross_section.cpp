@@ -52,28 +52,28 @@ const double max_theta_root_excess = 1e-6;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
 
-double calc_h(double r, double b_min, double phi) {
-  return 4*b_min*b_min + 4*b_min*r*cos(phi) + r*r;
+double calc_h(double r, double b_min, double phi, double z) {
+  return b_min*b_min + (1-z)*2*b_min*r*cos(phi) + gsl_pow_2(1-z)*r*r;
 }
 
-double calc_b1(double r, double b_min, double phi) {
-  return b_min + r/2*cos(phi);
+double calc_b1(double r, double b_min, double phi, double z) {
+  return b_min + (1-z)*r*cos(phi);
 }
 
-double calc_b2(double r, double b_min, double phi) {
-  return r/2*sin(phi);
+double calc_b2(double r, double b_min, double phi, double z) {
+  return (1-z)*r*sin(phi);
 }
 
-double calc_j(double b2, double r_bar, double phi_bar) {
-  return 4*b2*r_bar*sin(phi_bar);
+double calc_j(double b2, double r_bar, double phi_bar, double z) {
+  return (1-z)*2*b2*r_bar*sin(phi_bar);
 }
 
 double calc_A(double j, double h, double b1, double b2) {
-  return sqrt(j*j + h*(16*b1*b1-gsl_pow_2(j/(2*b2))));
+  return sqrt(j*j + 4*h*(b1*b1-gsl_pow_2(j/(2*b2))));
 }
 
-bool theta_root_invalid(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar) {
-  double excess = abs(tan(theta_bar)*(b_min+r/2*cos(phi)-r_bar/2*cos(phi_bar+theta_bar)) + r_bar/2*sin(phi_bar+theta_bar) - r/2*sin(phi));
+bool theta_root_invalid(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar, double z) {
+  double excess = abs(tan(theta_bar)*(b_min+(1-z)*r*cos(phi)-(1-z)*r_bar*cos(theta_bar+phi_bar)) + (1-z)*r_bar*sin(theta_bar+phi_bar) - (1-z)*r*sin(phi));
   if (excess > max_theta_root_excess) {
     return 1;
   } else {
@@ -81,40 +81,40 @@ bool theta_root_invalid(double r, double b_min, double phi, double r_bar, double
   }
 }
 
-int calc_theta_bar(double return_values[4], double r, double b_min, double phi, double r_bar, double phi_bar) {
-  double b1 = calc_b1(r, b_min, phi);
-  double b2 = calc_b2(r, b_min, phi);
-  double h = calc_h(r, b_min, phi);
-  if (r_bar*r_bar > (4*h*b1*b1)/(gsl_pow_2(sin(phi_bar))*(h-4*b2*b2))) {
+int calc_theta_bar(double return_values[4], double r, double b_min, double phi, double r_bar, double phi_bar, double z) {
+  double b1 = calc_b1(r, b_min, phi, z);
+  double b2 = calc_b2(r, b_min, phi, z);
+  double h = calc_h(r, b_min, phi, z);
+  if (r_bar*r_bar > (4*h*b1*b1)/(gsl_pow_2((1-z)*2*sin(phi_bar))*(h-b2*b2))) {
     //r_bar is too large
     return 1;
   }
-  double j = calc_j(b2, r_bar, phi_bar);
+  double j = calc_j(b2, r_bar, phi_bar, z);
   double A = calc_A(j, h, b1, b2);
   if (gsl_isnan(A)) {
     cout << "A is nan!" << endl;
   }
   return_values[0] = acos((A+j)/(2*h));
-  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[0])) {
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[0], z)) {
     return_values[0] = 10; // 10 means that the theta_bar value is invalid and should be skipped
   }
   return_values[1] = acos((-A+j)/(2*h));
-  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[1])) {
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[1], z)) {
     return_values[1] = 10;
   }
   return_values[2] = -acos((A+j)/(2*h));
-  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[2])) {
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[2], z)) {
     return_values[2] = 10;
   }
   return_values[3] = -acos((-A+j)/(2*h));
-  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[3])) {
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[3], z)) {
     return_values[3] = 10;
   }
   return 0;
 }
 
-double calc_b_bar(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar) {
-  return 1/cos(theta_bar)*(b_min + r/2*cos(phi) - r_bar/2*cos(theta_bar+phi_bar));
+double calc_b_bar(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar, double z) {
+  return 1/cos(theta_bar)*(b_min + (1-z)*r*cos(phi) - (1-z)*r_bar*cos(theta_bar+phi_bar));
 }
 
 double step(double argument) {
@@ -145,7 +145,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
   }
   double total_integrand = 0;
   double theta_bar[4];
-  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, r_bar, phi_bar);
+  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, r_bar, phi_bar, z);
   if (r_bar_too_large == 1) {
     return 0;
   }
@@ -153,7 +153,7 @@ double L_integrand(double r, double b_min, double phi, double r_bar, double phi_
     if (theta_bar[i] == 10) {
       continue;
     }
-    double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
+    double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i], z);
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*M_X*M_X-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))
     *z*(1-z)*4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)
@@ -191,7 +191,7 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
   }
   double total_integrand = 0;
   double theta_bar[4];
-  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, r_bar, phi_bar);
+  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, r_bar, phi_bar, z);
   if (r_bar_too_large == 1) {
     return 0;
   }
@@ -199,7 +199,7 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
     if (theta_bar[i] == 10) {
       continue;
     }
-    double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
+    double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i], z);
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*M_X*M_X-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))
@@ -285,11 +285,11 @@ void integrate_for_L_sigma(thread_par_struct par) {
   status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
   if (status != 0) {cout << "integrate_for_L_sigma: " << status << endl; throw (status);}
   for (int i=0; i<integration_iterations; i++) {
-    static auto t1 = chrono::high_resolution_clock::now();
+    //static auto t1 = chrono::high_resolution_clock::now();
     status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, integration_calls, rng, L_s, &res, &err);
     if (status != 0) {cout << "integrate_for_L_sigma: " << status << endl; throw (status);}
-    static auto t2 = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
+    //static auto t2 = chrono::high_resolution_clock::now();
+    //auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
     //cout << "L iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(L_s) << ", duration: " << duration.count() << endl;
   }
   if (gsl_isnan(res)) {
@@ -336,11 +336,11 @@ void integrate_for_T_sigma(thread_par_struct par) {
   status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
   if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
   for (int i=0; i<integration_iterations; i++) {
-    static auto t1 = chrono::high_resolution_clock::now();
+    //static auto t1 = chrono::high_resolution_clock::now();
     status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
     if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
-    static auto t2 = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
+    //static auto t2 = chrono::high_resolution_clock::now();
+    //auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
     //cout << "T iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(T_s) << ", duration: " << duration.count() << endl;
   }
   if (gsl_isnan(res)) {
