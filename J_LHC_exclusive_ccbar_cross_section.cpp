@@ -41,6 +41,10 @@ const int warmup_calls = 100000;
 const int integration_calls = 100000000;//20 000 000
 const int integration_iterations = 1;
 
+const string dipole_amp_type = "bk";
+const string nucleus_type = "p";
+const string filename_end = "";
+
 //const string filename_end = "_20mil_85-225";//
 
 const int debug_precision = 10;
@@ -355,27 +359,100 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  string filename = "data/dipole_amplitude_with_IP_dependence_bk_p.csv";
+  const double Q2 = 0;
+
+  const int W_steps = 50;
+  const double W_start = 2e1;
+  const double W_stop = 2e4;
+  const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
+
+  stringstream r_limit_stream;
+  r_limit_stream << fixed << setprecision(0) << r_limit;
+  string r_limit_string = r_limit_stream.str();
+
+  TString r_limit_filename_string = r_limit_string;
+
+  stringstream b_limit_stream;
+  b_limit_stream << fixed << setprecision(0) << b_min_limit;
+  string b_limit_string = b_limit_stream.str();
+
+  TString b_limit_filename_string = b_limit_string;
+
+  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
   load_dipole_amplitudes(table, filename);
 
-  double Q2 = 35;
-  double W = 1;
-  double sigma;
-  double sigma_error;
-  double sigma_fit;
+  TString title, outfile_name;
 
-  cout << "Q2=" << Q2 << endl;
-  cout << "W=" << W << endl;
+  TMultiGraph* T_graphs = new TMultiGraph();
 
-  thread_par_struct parameters(Q2, W, sigma, sigma_error, sigma_fit);
-  integrate_for_T_sigma(parameters);
+  if (print_r_limit) {
+    title = "Transverse exclusive "+dipole_amp_type+" "+nucleus_type+" cross section with r limit: "+r_limit_string+" GeV^-1;W (GeV);cross section (mb)";
+  } else if (print_b_min_limit) {
+    title = "Transverse exclusive "+dipole_amp_type+" "+nucleus_type+" cross section with b limit: "+b_limit_string+" GeV^-1;W (GeV);cross section (mb)";
+  } else {
+    title = "Transverse exclusive "+dipole_amp_type+" "+nucleus_type+" cross section;W (GeV);cross section (mb)";
+  }
+  T_graphs->SetTitle(title);
 
-  cout << "Q2=" << Q2 << endl;
-  cout << "W=" << W << endl;
+  if (print_r_limit) {
+    outfile_name = "data/J_LHC_T_exclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".txt";
+  } else if (print_b_min_limit) {
+    outfile_name = "data/J_LHC_T_exclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".txt";
+  } else {
+    outfile_name = "data/J_LHC_T_exclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
+  }
+  ofstream T_output_file(outfile_name);
+  T_output_file << "W;sigma (mb);sigma error (mb)" << endl;
 
-  cout << endl;
+  cout << "Starting T integration" << endl;
+  
+  double T_W_values[W_steps], T_sigma_values[W_steps], T_W_errors[W_steps], T_sigma_errors[W_steps], T_sigma_fits[W_steps];
+  thread T_threads[W_steps];
 
-  cout << "T sigma=" << sigma << endl;
-  cout << "T sigma_error=" << sigma_error << endl;
-  cout << "T sigma_fit=" << sigma_fit << endl;
+  for (int i=0; i<W_steps; i++) {
+    double W = pow(10, log10(W_start) + i*W_step);
+    T_W_values[i] = W;
+    T_W_errors[i] = 0;
+    thread_par_struct par(Q2, W, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i]);
+    T_threads[i] = thread(integrate_for_T_sigma, par);
+  }
+
+  for (int j=0; j<W_steps; j++) {
+    T_threads[j].join();
+  }
+
+  TGraphErrors* subgraph = new TGraphErrors(W_steps, T_W_values, T_sigma_values, T_W_errors, T_sigma_errors);
+  T_graphs->Add(subgraph);
+
+  for (int i=0; i<W_steps; i++) {
+    ostringstream W;
+    W << T_W_values[i];
+    ostringstream sigma;
+    sigma << T_sigma_values[i];
+    ostringstream sigma_err;
+    sigma_err << T_sigma_errors[i];
+    string line = W.str() + ";" + sigma.str() + ";" + sigma_err.str();
+    T_output_file << line << endl;
+  }
+  
+  T_output_file.close();
+
+  TCanvas* T_sigma_canvas = new TCanvas("J_LHC_T_exclusive_sigma_canvas", "", 1100, 600);
+  T_graphs->Draw("A PMC PLC");
+
+  gPad->SetLogx();
+  gPad->SetLogy();
+
+  //T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+
+  if (print_r_limit) {
+    outfile_name = "figures/J_LHC_T_exclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".pdf";
+  } else if (print_b_min_limit) {
+    outfile_name = "figures/J_LHC_T_exclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".pdf";
+  } else {
+    outfile_name = "figures/J_LHC_T_exclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".pdf";
+  }
+  T_sigma_canvas->Print(outfile_name);
+
+  return 0;
 }
