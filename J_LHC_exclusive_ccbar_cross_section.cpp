@@ -42,7 +42,7 @@ const int integration_calls = 1000000;//20 000 000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bfkl";
-const string nucleus_type = "Pb";
+const string nucleus_type = "p";
 const string filename_end = "";
 
 //const string filename_end = "_20mil_85-225";//
