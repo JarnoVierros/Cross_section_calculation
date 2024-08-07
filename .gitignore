@@ -1,6 +1,6 @@
 *.o
 *.exe
 .vscode/
-figures/*.pdf
+figures/
 *.nb
 /data/

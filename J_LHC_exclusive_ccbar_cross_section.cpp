@@ -38,11 +38,11 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 100000;
-const int integration_calls = 100000000;//20 000 000
+const int integration_calls = 1000000;//20 000 000
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bk";
-const string nucleus_type = "p";
+const string dipole_amp_type = "bfkl";
+const string nucleus_type = "Pb";
 const string filename_end = "";
 
 //const string filename_end = "_20mil_85-225";//
@@ -260,7 +260,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
 
   //double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x, double beta) {
   double xl[dim] = {0, 0, 0, 0, 0, 0, 0};
-  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, 100};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, 1000};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
@@ -311,7 +311,7 @@ void integrate_for_T_sigma(thread_par_struct par) {
 
   //double L_integrand(double r, double b_min, double phi, double theta, double r_bar, double phi_bar, double z, double Q2, double x, double beta) {
   double xl[dim] = {0, 0, 0, 0, 0, 0, 0};
-  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, 100};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, 1000};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
