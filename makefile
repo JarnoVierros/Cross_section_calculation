@@ -25,6 +25,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make J_LHC_inclusive_ccbar_cross_section
 	make J_improvised_inclusive_data_fit
 	make J_light_quark_sigma_calculator
+	make J_LHC_exclusive_ccbar_cross_section
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -139,6 +140,10 @@ custom_plot: custom_plot.cpp
 J_light_quark_sigma_calculator: J_light_quark_sigma_calculator.cpp
 	g++ -Wall -c J_light_quark_sigma_calculator.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_light_quark_sigma_calculator.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_light_quark_sigma_calculator.exe
+
+J_LHC_exclusive_ccbar_cross_section: J_LHC_exclusive_ccbar_cross_section.cpp
+	g++ -Wall -c J_LHC_exclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
+	g++ J_LHC_exclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_LHC_exclusive_ccbar_cross_section.exe
 
 clean:
 	-rm *.exe
