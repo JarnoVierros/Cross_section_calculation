@@ -289,28 +289,70 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  double Q2 = 1;
-  double x = 1e-2;
+  const int Q2_values[] = {1, 3, 5};
+
+  const int x_steps = 30;
+  const double x_start = 1e-5;
+  const double x_stop = 0.01;
+  const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
+
   double beta = -1;
-  double trans_sigma;
-  double trans_sigma_error;
-  double trans_sigma_fit;
 
-  thread_par_struct trans_parameters(Q2, x, beta, trans_sigma, trans_sigma_error, trans_sigma_fit);
-  trans_integrate_for_T_sigma(trans_parameters);
+  TMultiGraph* T_graphs = new TMultiGraph();
+  T_graphs->SetTitle("Variable change comparison;x;cross section (mb)");
+  
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
+    double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps], T_sigma_fits[x_steps];
+    thread T_threads[x_steps];
 
-  cout << "trans T sigma=" << trans_sigma << endl;
-  cout << "trans T sigma_error=" << trans_sigma_error << endl;
-  cout << "trans T sigma_fit=" << trans_sigma_fit << endl;
+    for (int i=0; i<x_steps; i++) {
+      double x = pow(10, log10(x_start) + i*x_step);
+      T_x_values[i] = x;
+      T_x_errors[i] = 0;
+      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i]);
+      T_threads[i] = thread(trans_integrate_for_T_sigma, par);
+    }
 
-  double orig_sigma;
-  double orig_sigma_error;
-  double orig_sigma_fit;
+    for (int j=0; j<x_steps; j++) {
+      T_threads[j].join();
+    }
 
-  thread_par_struct orig_parameters(Q2, x, beta, orig_sigma, orig_sigma_error, orig_sigma_fit);
-  orig_integrate_for_T_sigma(orig_parameters);
+    TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
+    TString subgraph_name = "trans Q^{2}=" + to_string(Q2_values[j]);
+    subgraph->SetTitle(subgraph_name);
+    T_graphs->Add(subgraph);
+  }
 
-  cout << "orig T sigma=" << orig_sigma << endl;
-  cout << "orig T sigma_error=" << orig_sigma_error << endl;
-  cout << "orig T sigma_fit=" << orig_sigma_fit << endl;
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
+    double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps], T_sigma_fits[x_steps];
+    thread T_threads[x_steps];
+
+    for (int i=0; i<x_steps; i++) {
+      double x = pow(10, log10(x_start) + i*x_step);
+      T_x_values[i] = x;
+      T_x_errors[i] = 0;
+      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i]);
+      T_threads[i] = thread(orig_integrate_for_T_sigma, par);
+    }
+
+    for (int j=0; j<x_steps; j++) {
+      T_threads[j].join();
+    }
+
+    TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
+    TString subgraph_name = "orig Q^{2}=" + to_string(Q2_values[j]);
+    subgraph->SetTitle(subgraph_name);
+    T_graphs->Add(subgraph);
+  }
+
+  TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
+  T_graphs->Draw("A PMC PLC");
+
+  gPad->SetLogx();
+
+  comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+
+  comparison_canvas->Print("figures/variable_change_comparison.pdf");
+
+  return 0;
 }
