@@ -35,8 +35,8 @@ const double lambda_star = 3.64361e-01;
 const double r_limit = 34.64; // 34.64
 const double b_min_limit = 17.32; // 17.32
 
-const int warmup_calls = 100000;
-const int integration_calls = 1000000;
+const int warmup_calls = 10000;
+const int integration_calls = 200000;
 const int integration_iterations = 1;
 
 const double max_theta_root_excess = 1e-6;
@@ -120,7 +120,7 @@ double calc_b_bar(double r, double b_min, double phi, double r_bar, double phi_b
   return 1/cos(theta_bar)*(b_min + r/2*cos(phi) - r_bar/2*cos(theta_bar+phi_bar));
 }
 
-double trans_T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta) {
+double trans_T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta, double M_X) {
   if (z*(1-z)*M_X*M_X-m_f*m_f < 0) {
     return 0;
   }
@@ -155,7 +155,7 @@ struct parameters {double Q2; double x; double beta;};
 
 double trans_T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return trans_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x, par->beta);
+  return trans_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x, par->beta, k[6]);
 }
 
 struct thread_par_struct
@@ -171,11 +171,11 @@ struct thread_par_struct
 
 void trans_integrate_for_T_sigma(thread_par_struct par) {
 
-  const int dim = 6;
+  const int dim = 7;
   double res, err;
 
-  double xl[dim] = {0, 0, 0, 0, 0, 0};
-  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1};
+  double xl[dim] = {0, 0, 0, 0, 0, 0, M_X};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, M_X*1.1};
 
   struct parameters params = {1, 1, 1};
   params.Q2 = par.Q2;
@@ -220,27 +220,27 @@ void trans_integrate_for_T_sigma(thread_par_struct par) {
   gsl_monte_vegas_free(T_s);
 }
 
-double orig_T_integrand(double rx, double ry, double rx_bar, double ry_bar, double bx, double by, double z, double Q2, double x) {
+double orig_T_integrand(double rx, double ry, double rx_bar, double ry_bar, double bx, double by, double z, double Q2, double x, double M_X) {
     if (z*(1-z)*M_X*M_X-m_f*m_f<0) {
         return 0;
     }
-    return 1/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f
+    return 6.7065002*1/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f // 6.7065002*
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*M_X*M_X-m_f*m_f)*sqrt(gsl_pow_2(rx-rx_bar)+gsl_pow_2(ry-ry_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*sqrt(rx*rx+ry*ry))*gsl_sf_bessel_K0(epsilon(z, Q2)*sqrt(rx_bar*rx_bar+ry_bar*ry_bar))+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(rx*rx_bar+ry*ry_bar)/(sqrt(rx*rx+ry*ry)*sqrt(rx_bar*rx_bar+ry_bar*ry_bar))*gsl_sf_bessel_K1(epsilon(z, Q2)*sqrt(rx*rx+ry*ry))*gsl_sf_bessel_K1(epsilon(z, Q2)*sqrt(rx_bar*rx_bar+ry_bar*ry_bar)))*dipole_amplitude(sqrt(rx*rx+ry*ry), x, sqrt(bx*bx+by*by))*dipole_amplitude(sqrt(rx_bar*rx_bar+ry_bar*ry_bar), x, sqrt(bx*bx+by*by));
 }
 
 double orig_T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return orig_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], k[6], par->Q2, par->x);
+  return orig_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], k[6], par->Q2, par->x, k[7]);
 }
 
 void orig_integrate_for_T_sigma(thread_par_struct par) {
 
-  const int dim = 7;
+  const int dim = 8;
   double res, err;
 
-  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, -b_min_limit, -b_min_limit, 0};
-  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, b_min_limit, 1};
+  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, -b_min_limit, -b_min_limit, 0, M_X};
+  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, b_min_limit, 1, M_X*1.1};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
@@ -289,7 +289,7 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const int Q2_values[] = {1, 3, 5};
+  const double Q2_values[] = {0, 1, 2, 3, 4, 5};
 
   const int x_steps = 30;
   const double x_start = 1e-5;
@@ -320,7 +320,8 @@ int main() {
     TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
     TString subgraph_name = "trans Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
-    T_graphs->Add(subgraph);
+    subgraph->SetLineColor(j+1);
+    T_graphs->Add(subgraph, "PC");
   }
 
   for (long unsigned int j=0; j<size(Q2_values); j++) {
@@ -342,13 +343,16 @@ int main() {
     TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
     TString subgraph_name = "orig Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
-    T_graphs->Add(subgraph);
+    subgraph->SetLineStyle(2);
+    subgraph->SetLineColor(j+1);
+    T_graphs->Add(subgraph, "PC");
   }
 
   TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
-  T_graphs->Draw("A PMC PLC");
+  T_graphs->Draw("A");
 
   gPad->SetLogx();
+  gPad->SetLogy();
 
   comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
