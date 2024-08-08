@@ -35,8 +35,8 @@ const double lambda_star = 3.64361e-01;
 const double r_limit = 34.64; // 34.64
 const double b_min_limit = 17.32; // 17.32
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int warmup_calls = 100000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
 const double max_theta_root_excess = 1e-6;
@@ -239,12 +239,13 @@ void orig_integrate_for_T_sigma(thread_par_struct par) {
   const int dim = 7;
   double res, err;
 
-  double xl[dim] = {0, 0, 0, 0, 0, 0, 0};
+  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, -b_min_limit, -b_min_limit, 0};
   double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, b_min_limit, 1};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
   params.x = par.x;
+  params.beta = par.beta;
   double &sigma = par.sigma;
   double &sigma_error = par.sigma_error;
   double &sigma_fit = par.sigma_fit;
@@ -289,7 +290,7 @@ int main() {
   gsl_set_error_handler_off();
 
   double Q2 = 1;
-  double x = 1e-4;
+  double x = 1e-2;
   double beta = -1;
   double trans_sigma;
   double trans_sigma_error;
@@ -306,8 +307,8 @@ int main() {
   double orig_sigma_error;
   double orig_sigma_fit;
 
-  thread_par_struct trans_parameters(Q2, x, beta, orig_sigma, orig_sigma_error, orig_sigma_fit);
-  trans_integrate_for_T_sigma(trans_parameters);
+  thread_par_struct orig_parameters(Q2, x, beta, orig_sigma, orig_sigma_error, orig_sigma_fit);
+  orig_integrate_for_T_sigma(orig_parameters);
 
   cout << "orig T sigma=" << orig_sigma << endl;
   cout << "orig T sigma_error=" << orig_sigma_error << endl;
