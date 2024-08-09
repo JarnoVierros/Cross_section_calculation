@@ -37,15 +37,15 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 100000;
-const int integration_calls = 20000000;//20 000 000
+const int integration_calls = 2000000;//20 000 000
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bk";
+const string dipole_amp_type = "bfkl";
 const string nucleus_type = "Pb";
 const string filename_end = "";
 
-const double r_limit;
-const double b_min_limit;
+static double r_limit;
+static double b_min_limit;
 
 //const string filename_end = "_20mil_85-225";//
 
@@ -96,19 +96,35 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
   if (gsl_isnan(A)) {
     cout << "A is nan!" << endl;
   }
-  return_values[0] = acos((A+j)/(2*h));
+  double acos_arg_plus_type = (A+j)/(2*h);
+  if (acos_arg_plus_type > 1) {
+    cout << "acos arg of type plus changed: " << setprecision(debug_precision) << acos_arg_plus_type << "->1" << endl;
+    acos_arg_plus_type = 1;
+  } else if (acos_arg_plus_type < -1) {
+    cout << "acos arg of type plus changed: " << setprecision(debug_precision) << acos_arg_plus_type << "->-1" << endl;
+    acos_arg_plus_type = -1;
+  }
+  double acos_arg_minus_type = (-A+j)/(2*h);
+  if (acos_arg_minus_type > 1) {
+    cout << "acos arg of type minus changed: " << setprecision(debug_precision) << acos_arg_minus_type << "->1" << endl;
+    acos_arg_minus_type = 1;
+  } else if (acos_arg_minus_type < -1) {
+    cout << "acos arg of type minus changed: " << setprecision(debug_precision) << acos_arg_minus_type << "->-1" << endl;
+    acos_arg_minus_type = -1;
+  }
+  return_values[0] = acos(acos_arg_plus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[0], z)) {
     return_values[0] = 10; // 10 means that the theta_bar value is invalid and should be skipped
   }
-  return_values[1] = acos((-A+j)/(2*h));
+  return_values[1] = acos(acos_arg_minus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[1], z)) {
     return_values[1] = 10;
   }
-  return_values[2] = -acos((A+j)/(2*h));
+  return_values[2] = -acos(acos_arg_plus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[2], z)) {
     return_values[2] = 10;
   }
-  return_values[3] = -acos((-A+j)/(2*h));
+  return_values[3] = -acos(acos_arg_minus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[3], z)) {
     return_values[3] = 10;
   }
@@ -364,11 +380,14 @@ int main() {
   const double Q2 = 0;
 
   if (nucleus_type == "Pb") {
-    double r_limit = 657; // 34.64
-    double b_min_limit = 328; // 17.32
+    r_limit = 657; // 34.64
+    b_min_limit = 328; // 17.32
+  } else if (nucleus_type == "p"){
+    r_limit = 34.64;
+    b_min_limit = 17.32;
   } else {
-    double r_limit = 34.64;
-    double b_min_limit = 17.32;
+    cout << "invalid nucleus_type" << endl;
+    throw 1;
   }
 
   const int W_steps = 10;
