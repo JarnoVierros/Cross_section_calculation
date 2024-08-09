@@ -30,12 +30,27 @@ void zero_array(double array[], int size) {
 }
 
 int main() {
-
+  /*
   string filenames[] = {
     "data/J_LHC_T_exclusive_bk_Pb.txt",
     "data/J_LHC_T_exclusive_bfkl_Pb.txt",
     "data/J_LHC_T_exclusive_bk_p.txt",
     "data/J_LHC_T_exclusive_bfkl_p.txt",
+  };
+  */
+ /*
+  string filenames[] = {
+    "data/J_LHC_T_inclusive_bk_Pb.txt",
+    "data/J_LHC_T_inclusive_bfkl_Pb.txt",
+    "data/J_LHC_T_inclusive_bk_p.txt",
+    "data/J_LHC_T_inclusive_bfkl_p.txt",
+  };
+*/
+  string filenames[] = {
+    "data/diff_LHC_T_sigma_W_bk_Pb.txt",
+    "data/diff_LHC_T_sigma_W_bfkl_Pb.txt",
+    "data/diff_LHC_T_sigma_W_bk_p.txt",
+    "data/diff_LHC_T_sigma_W_bfkl_p.txt",
   };
   int filecount = size(filenames);
 
@@ -81,7 +96,7 @@ int main() {
   TGraph* BK_p_Q20_graph = new TGraph(x[0].size(), BK_p_Q20_x_arr, BK_sigma_tot_p_Q20);
   BK_p_Q20_graph->SetTitle("p BK");
   BK_p_Q20_graph->SetLineColor(2);
-  comparison_graph->Add(BK_p_Q20_graph);
+  //comparison_graph->Add(BK_p_Q20_graph);
 
   double BFKL_p_Q20_x_arr[x[2].size()];
   vector_to_array(BFKL_p_Q20_x_arr, x[2]);
@@ -90,7 +105,7 @@ int main() {
   BFKL_p_Q20_graph->SetTitle("p BFKL");
   BFKL_p_Q20_graph->SetLineColor(2);
   BFKL_p_Q20_graph->SetLineStyle(2);
-  comparison_graph->Add(BFKL_p_Q20_graph);
+  //comparison_graph->Add(BFKL_p_Q20_graph);
 
 
   TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
@@ -99,18 +114,24 @@ int main() {
   gPad->SetLogx();
   gPad->SetLogy();
   comparison_graph->GetXaxis()->SetTitle("W (GeV)");
-  comparison_graph->GetYaxis()->SetTitle("#sigma_{L+T} (GeV^{-2})");
+  comparison_graph->GetYaxis()->SetTitle("#sigma_{T} (GeV^{-2})");
 
   if (false) {
     comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
   } else {
-    comparison_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
+    comparison_canvas->BuildLegend(0.2, 0.7, 0.35, 0.9);
   }
 
-  TLatex* Q2_text = new TLatex(2e3, 1e-2, "Q^{2} = 0 GeV^{2}");
-  //Q2_text->Draw("same");
+  if (true) {
+    TLatex* Q2_text = new TLatex(2e3, 1e-4, "Q^{2} = 0 GeV^{2}");
+    Q2_text->Draw("same");
+  } else {
+    TLatex* Q2_text = new TLatex(2e-5, 1e-4, "Q^{2} = 0 GeV^{2}");
+    Q2_text->Draw("same");
+  }
+  
 
-  comparison_canvas->Print("figures/LHC_exclusive_prediction.pdf");
+  comparison_canvas->Print("figures/LHC_simplified_exclusive_prediction.pdf");
   
   return 0;
 }
