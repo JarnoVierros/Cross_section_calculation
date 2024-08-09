@@ -364,11 +364,11 @@ int main() {
   const double Q2 = 0;
 
   if (nucleus_type == "Pb") {
-    const double r_limit = 657; // 34.64
-    const double b_min_limit = 328; // 17.32
+    double r_limit = 657; // 34.64
+    double b_min_limit = 328; // 17.32
   } else {
-    const double r_limit = 34.64;
-    const double b_min_limit = 17.32;
+    double r_limit = 34.64;
+    double b_min_limit = 17.32;
   }
 
   const int W_steps = 10;
