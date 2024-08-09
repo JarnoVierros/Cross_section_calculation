@@ -34,12 +34,12 @@ const double normalization = 8/(2*M_PI)*alpha_em*N_c*e_f*e_f;
 static double r_limit; // 34.64
 static double b_min_limit; // 17.32
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int warmup_calls = 100000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bk";
-const string nucleus_type = "Pb";
+const string dipole_amp_type = "bfkl";
+const string nucleus_type = "p";
 const string filename_end = "";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
@@ -53,7 +53,8 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double W, double Q2) {
-  return get_dipole_amplitude(table, r, b_min, phi, W);//Q2/(W*W+Q2)
+  double shifted_x = Q2/(W*W+Q2) + 4*m_f*m_f/(W*W+Q2);
+  return get_dipole_amplitude(table, r, b_min, phi, shifted_x);//Q2/(W*W+Q2)
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
@@ -188,17 +189,18 @@ int main() {
 
   const int Q2_values[] = {0};
 
-  /*
+  
   const int W_steps = 50;
   const double W_start = 2e1;
   const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
-  */
-
+  
+  /*
   const int W_steps = 30;
   const double W_start = 1e-5;
   const double W_stop = 0.01;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
+  */
 
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
   load_dipole_amplitudes(table, filename);
@@ -207,7 +209,7 @@ int main() {
   L_graphs->SetTitle("Diffractive longitudinal cross section;W (GeV);cross section (mb)");
 
   ofstream L_output_file("data/diff_LHC_L_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".txt");
-  L_output_file << "Q2 (GeV);W (GeV);sigma (mb);sigma error (mb)" << endl;
+  L_output_file << "W (GeV);sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting L integration" << endl;
   for (long unsigned int j=0; j<size(Q2_values); j++) {
@@ -238,7 +240,7 @@ int main() {
       sigma << L_sigma_values[i];
       ostringstream sigma_err;
       sigma_err << L_sigma_errors[i];
-      string line = to_string(Q2_values[j]) + ";" + W.str() + ";" + sigma.str() + ";" + sigma_err.str();
+      string line = W.str() + ";" + sigma.str() + ";" + sigma_err.str();
       L_output_file << line << endl;
     }
   }
@@ -260,7 +262,7 @@ int main() {
   T_graphs->SetTitle("Diffractive transverse cross section;W (GeV);cross section (mb)");
 
   ofstream T_output_file("data/diff_LHC_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".txt");
-  T_output_file << "Q2 (GeV);W (GeV);sigma (mb);sigma error (mb)" << endl;
+  T_output_file << "W (GeV);sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
   
@@ -293,7 +295,7 @@ int main() {
       sigma << T_sigma_values[i];
       ostringstream sigma_err;
       sigma_err << T_sigma_errors[i];
-      string line = to_string(Q2_values[j]) + ";" + W.str() + ";" + sigma.str() + ";" + sigma_err.str();
+      string line = W.str() + ";" + sigma.str() + ";" + sigma_err.str();
       T_output_file << line << endl;
     }
   }
