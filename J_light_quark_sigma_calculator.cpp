@@ -153,19 +153,35 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
   if (gsl_isnan(A)) {
     cout << "A is nan!" << endl;
   }
-  return_values[0] = acos((A+j)/(2*h));
+  double acos_arg_plus_type = (A+j)/(2*h);
+  if (acos_arg_plus_type > 1) {
+    cout << "acos arg of type plus changed: " << setprecision(debug_precision) << acos_arg_plus_type << "->1" << endl;
+    acos_arg_plus_type = 1;
+  } else if (acos_arg_plus_type < -1) {
+    cout << "acos arg of type plus changed: " << setprecision(debug_precision) << acos_arg_plus_type << "->-1" << endl;
+    acos_arg_plus_type = -1;
+  }
+  double acos_arg_minus_type = (-A+j)/(2*h);
+  if (acos_arg_minus_type > 1) {
+    cout << "acos arg of type minus changed: " << setprecision(debug_precision) << acos_arg_minus_type << "->1" << endl;
+    acos_arg_minus_type = 1;
+  } else if (acos_arg_minus_type < -1) {
+    cout << "acos arg of type minus changed: " << setprecision(debug_precision) << acos_arg_minus_type << "->-1" << endl;
+    acos_arg_minus_type = -1;
+  }
+  return_values[0] = acos(acos_arg_plus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[0])) {
     return_values[0] = 10; // 10 means that the theta_bar value is invalid and should be skipped
   }
-  return_values[1] = acos((-A+j)/(2*h));
+  return_values[1] = acos(acos_arg_minus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[1])) {
     return_values[1] = 10;
   }
-  return_values[2] = -acos((A+j)/(2*h));
+  return_values[2] = -acos(acos_arg_plus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[2])) {
     return_values[2] = 10;
   }
-  return_values[3] = -acos((-A+j)/(2*h));
+  return_values[3] = -acos(acos_arg_minus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[3])) {
     return_values[3] = 10;
   }
