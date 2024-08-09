@@ -57,7 +57,7 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double W, double Q2) {
-  return get_dipole_amplitude(table, r, b_min, phi, W);//Q2/(W*W+Q2)
+  return get_dipole_amplitude(table, r, b_min, phi, Q2/(W*W+Q2));//
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
@@ -102,10 +102,10 @@ void integrate_for_L_sigma(thread_par_struct par) {
   double res, err;
 
   
-  double Q2_limit = W_stop*W_stop*max_x/(1-max_x);
+  //double Q2_limit = W_stop*W_stop*max_x/(1-max_x);
 
   double xl[dim] = {0, 0, 0, 0, 0};
-  double xu[dim] = {r_limit, b_min_limit, M_PI, 1, Q2_limit};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, 1, 100};
 
   struct parameters params = {1};
   params.W = par.W;
@@ -146,10 +146,10 @@ void integrate_for_T_sigma(thread_par_struct par) {
   const int dim = 5;
   double res, err;
 
-  double Q2_limit = W_stop*W_stop*max_x/(1-max_x);
+  //double Q2_limit = W_stop*W_stop*max_x/(1-max_x);
 
   double xl[dim] = {0, 0, 0, 0, 0};
-  double xu[dim] = {r_limit, b_min_limit, M_PI, 1, Q2_limit};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, 1, 100};
 
   struct parameters params = {1};
   params.W = par.W;
@@ -201,8 +201,8 @@ int main() {
   }
 
   const int W_steps = 50;
-  double W_start = 2e1;
-  double W_stop = 2e4;
+  W_start = 2e1;
+  W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
 
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
@@ -284,7 +284,7 @@ int main() {
     T_threads[j].join();
   }
 
-  TGraphErrors* subgraph = new TGraphErrors(W_steps, T_W_values, T_sigma_values, T_W_errors, T_sigma_errors);
+  subgraph = new TGraphErrors(W_steps, T_W_values, T_sigma_values, T_W_errors, T_sigma_errors);
   T_graphs->Add(subgraph);
 
   for (int i=0; i<W_steps; i++) {
