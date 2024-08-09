@@ -34,17 +34,17 @@ const double normalization = 8/M_PI*alpha_em*N_c*e_f*e_f;
 //35, 34, 33, 32, 30, 25, 20, 15, 10, 5, 4, 3, 2, 1, 0.5
 // 17, 16, 15, 10, 5, 1
 
-const double r_limit = 34.64; // 34.64
-const double b_min_limit = 17.32; // 17.32
+static double r_limit; // 34.64
+static double b_min_limit; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
-const string dipole_amp_type = "bk";
+const string dipole_amp_type = "bfkl";
 const string nucleus_type = "Pb";
-const string filename_end = "_xpom_Q2=0";
+const string filename_end = "";
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int warmup_calls = 100000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
@@ -59,11 +59,6 @@ double epsilon(double z, double Q2) {
 
 double dipole_amplitude(double r, double b_min, double phi, double x) {
   return get_dipole_amplitude(table, r, b_min, phi, x);
-}
-
-double shifted_x(double x, double Q2) {
-  //return x;
-  return x*(1+(4*m_f*m_f)/Q2);
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
@@ -183,6 +178,30 @@ int main() {
 
   gsl_set_error_handler_off();
 
+  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  load_dipole_amplitudes(table, filename);
+
+  if (nucleus_type == "Pb") {
+    r_limit = 657; // 34.64, 657
+    b_min_limit = 328; // 17.32, 328
+  } else if (nucleus_type == "p") {
+    r_limit = 34.64;
+    b_min_limit = 17.32;
+  } else {
+    cout << "invalid nucleus type" << endl;
+    throw 1;
+  }
+
+  /*
+  double W = 100;
+  double sigma_value;
+  double sigma_error;
+  thread_par_struct par(W, sigma_value, sigma_error);
+  integrate_for_T_sigma(par);
+  cout << "sigma=" << sigma_value << ", sigma_error=" << sigma_error << endl;
+  return 0;
+  */
+
   const int W_steps = 50;
   const double W_start = 2e1;
   const double W_stop = 2e4;
@@ -203,8 +222,7 @@ int main() {
 
   TString b_limit_filename_string = b_limit_string;
 
-  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
-  load_dipole_amplitudes(table, filename);
+
 
   TMultiGraph* L_graphs = new TMultiGraph();
   TString title;
