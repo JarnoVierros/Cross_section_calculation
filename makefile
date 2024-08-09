@@ -28,6 +28,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make J_LHC_exclusive_ccbar_cross_section
 	make variable_change_test
 	make J_LHC_simplified_exclusive_ccbar_cross_section
+	make J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -154,6 +155,10 @@ variable_change_test: variable_change_test.cpp
 J_LHC_simplified_exclusive_ccbar_cross_section: J_LHC_simplified_exclusive_ccbar_cross_section.cpp
 	g++ -Wall -c J_LHC_simplified_exclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_LHC_simplified_exclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_LHC_simplified_exclusive_ccbar_cross_section.exe
+
+J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section: J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section.cpp
+	g++ -Wall -c J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
+	g++ J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section.exe
 
 clean:
 	-rm *.exe
