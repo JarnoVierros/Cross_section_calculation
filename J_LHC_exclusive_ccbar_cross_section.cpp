@@ -31,19 +31,21 @@ const double m_f = 1.27;
 
 const double normalization = 16.0/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
-const double r_limit = 34.64; // 34.64
-const double b_min_limit = 17.32; // 17.32
+
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 100000;
-const int integration_calls = 1000000;//20 000 000
+const int integration_calls = 20000000;//20 000 000
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bfkl";
-const string nucleus_type = "p";
+const string dipole_amp_type = "bk";
+const string nucleus_type = "Pb";
 const string filename_end = "";
+
+const double r_limit;
+const double b_min_limit;
 
 //const string filename_end = "_20mil_85-225";//
 
@@ -361,7 +363,15 @@ int main() {
 
   const double Q2 = 0;
 
-  const int W_steps = 50;
+  if (nucleus_type == "Pb") {
+    const double r_limit = 657; // 34.64
+    const double b_min_limit = 328; // 17.32
+  } else {
+    const double r_limit = 34.64;
+    const double b_min_limit = 17.32;
+  }
+
+  const int W_steps = 10;
   const double W_start = 2e1;
   const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
