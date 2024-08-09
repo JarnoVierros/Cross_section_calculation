@@ -31,15 +31,15 @@ const double m_f = 1.27; //GeV 1.27
 
 const double normalization = 8/(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
-const double r_limit; // 34.64
-const double b_min_limit; // 17.32
+static double r_limit; // 34.64
+static double b_min_limit; // 17.32
 
 const int warmup_calls = 10000;
 const int integration_calls = 100000;
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bfkl";
-const string nucleus_type = "p";
+const string dipole_amp_type = "bk";
+const string nucleus_type = "Pb";
 const string filename_end = "";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
@@ -53,7 +53,7 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double W, double Q2) {
-  return get_dipole_amplitude(table, r, b_min, phi, Q2/(W*W+Q2));
+  return get_dipole_amplitude(table, r, b_min, phi, W);//Q2/(W*W+Q2)
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
@@ -176,17 +176,24 @@ int main() {
   gsl_set_error_handler_off();
 
   if (nucleus_type == "Pb") {
-    const double r_limit = 657; // 34.64
-    const double b_min_limit = 328; // 17.32
+    r_limit = 657; // 34.64
+    b_min_limit = 328; // 17.32
   } else if (nucleus_type == "p") {
-    const double r_limit = 34.64;
-    const double b_min_limit = 17.32;
+    r_limit = 34.64;
+    b_min_limit = 17.32;
   } else {
     cout << "invalid nucleus type" << endl;
     throw 1;
   }
 
-  const int Q2_values[] = {1, 3, 5, 8, 10};
+  const int Q2_values[] = {0};
+
+  /*
+  const int W_steps = 50;
+  const double W_start = 2e1;
+  const double W_stop = 2e4;
+  const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
+  */
 
   const int W_steps = 30;
   const double W_start = 1e-5;
@@ -197,10 +204,10 @@ int main() {
   load_dipole_amplitudes(table, filename);
 
   TMultiGraph* L_graphs = new TMultiGraph();
-  L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (mb)");
+  L_graphs->SetTitle("Diffractive longitudinal cross section;W (GeV);cross section (mb)");
 
-  ofstream L_output_file("data/diff_L_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".txt");
-  L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
+  ofstream L_output_file("data/diff_LHC_L_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".txt");
+  L_output_file << "Q2 (GeV);W (GeV);sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting L integration" << endl;
   for (long unsigned int j=0; j<size(Q2_values); j++) {
@@ -241,18 +248,19 @@ int main() {
   L_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
+  gPad->SetLogy();
 
-  L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  L_sigma_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
 
-  TString fig_filename = "figures/diff_L_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".pdf";
+  TString fig_filename = "figures/diff_LHC_L_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".pdf";
   L_sigma_canvas->Print(fig_filename);
  
 
   TMultiGraph* T_graphs = new TMultiGraph();
-  T_graphs->SetTitle("Diffractive transverse cross section;x;cross section (mb)");
+  T_graphs->SetTitle("Diffractive transverse cross section;W (GeV);cross section (mb)");
 
-  ofstream T_output_file("data/diff_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".txt");
-  T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
+  ofstream T_output_file("data/diff_LHC_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".txt");
+  T_output_file << "Q2 (GeV);W (GeV);sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
   
@@ -295,10 +303,11 @@ int main() {
   T_graphs->Draw("A PMC PLC");
 
   gPad->SetLogx();
+  gPad->SetLogy();
 
-  T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+  T_sigma_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
 
-  fig_filename = "figures/diff_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".pdf";
+  fig_filename = "figures/diff_LHC_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".pdf";
   T_sigma_canvas->Print(fig_filename);
 
   return 0;
