@@ -205,59 +205,6 @@ int main() {
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
   load_dipole_amplitudes(table, filename);
 
-  TMultiGraph* L_graphs = new TMultiGraph();
-  L_graphs->SetTitle("Diffractive longitudinal cross section;W (GeV);cross section (mb)");
-
-  ofstream L_output_file("data/diff_LHC_L_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".txt");
-  L_output_file << "W (GeV);sigma (mb);sigma error (mb)" << endl;
-
-  cout << "Starting L integration" << endl;
-  for (long unsigned int j=0; j<size(Q2_values); j++) {
-    double L_W_values[W_steps], L_sigma_values[W_steps], L_W_errors[W_steps], L_sigma_errors[W_steps];
-    thread L_threads[W_steps];
-
-    for (int i=0; i<W_steps; i++) {
-      double W = pow(10, log10(W_start) + i*W_step);
-      L_W_values[i] = W;
-      L_W_errors[i] = 0;
-      thread_par_struct par(Q2_values[j], W, L_sigma_values[i], L_sigma_errors[i]);
-      L_threads[i] = thread(integrate_for_L_sigma, par);
-    }
-
-    for (int j=0; j<W_steps; j++) {
-      L_threads[j].join();
-    }
-
-    TGraphErrors* subgraph = new TGraphErrors(W_steps, L_W_values, L_sigma_values, L_W_errors, L_sigma_errors);
-    TString subgraph_name = "Q^{2}=" + to_string(Q2_values[j]);
-    subgraph->SetTitle(subgraph_name);
-    L_graphs->Add(subgraph);
-
-    for (int i=0; i<W_steps; i++) {
-      ostringstream W;
-      W << L_W_values[i];
-      ostringstream sigma;
-      sigma << L_sigma_values[i];
-      ostringstream sigma_err;
-      sigma_err << L_sigma_errors[i];
-      string line = W.str() + ";" + sigma.str() + ";" + sigma_err.str();
-      L_output_file << line << endl;
-    }
-  }
-  L_output_file.close();
-
-  TCanvas* L_sigma_canvas = new TCanvas("diff_L_sigma_canvas", "", 1000, 600);
-  L_graphs->Draw("A PMC PLC");
-
-  gPad->SetLogx();
-  gPad->SetLogy();
-
-  L_sigma_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
-
-  TString fig_filename = "figures/diff_LHC_L_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".pdf";
-  L_sigma_canvas->Print(fig_filename);
- 
-
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Diffractive transverse cross section;W (GeV);cross section (mb)");
 
@@ -309,7 +256,7 @@ int main() {
 
   T_sigma_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
 
-  fig_filename = "figures/diff_LHC_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".pdf";
+  TString fig_filename = "figures/diff_LHC_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".pdf";
   T_sigma_canvas->Print(fig_filename);
 
   return 0;
