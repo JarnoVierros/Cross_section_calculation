@@ -221,6 +221,71 @@ double get_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>, 
     return table[i_closer][j_closer][k_closer][l_closer][4] + r_corr + b_corr + phi_corr + x_corr;
 }
 
+double get_raw_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> &table, double r, double b, double phi, double x) {
+
+    if (phi > calc_max_phi(r, b)) {
+        return 0;
+    }
+
+    int r_index = 0;
+    if (table[29][0][0][0][0] <= r) {
+        r_index = 29;
+    } else if (r <= table[0][0][0][0][0]) {
+        r_index = 0;
+    } else {
+        while (table[r_index][0][0][0][0] < r) {
+            r_index++;
+        }
+        if (r - table[r_index-1][0][0][0][0] < table[r_index][0][0][0][0] - r) {
+            r_index = r_index - 1;
+        }
+    }
+
+    int b_index = 0;
+    if (table[0][29][0][0][1] <= b) {
+        b_index = 29;
+    } else if (r <= table[0][0][0][0][1]) {
+        b_index = 0;
+    } else {
+        while (table[0][b_index][0][0][1] < b) {
+            b_index++;
+        }
+        if (b - table[0][b_index-1][0][0][1] < table[0][b_index][0][0][1] - r) {
+            b_index = b_index - 1;
+        }
+    }
+
+    int phi_index = 0;
+    if (table[0][0][29][0][2] <= phi_index) {
+        phi_index = 29;
+    } else if (phi <= table[0][0][0][0][2]) {
+        phi_index = 0;
+    } else {
+        while (table[0][0][phi_index][0][2] < phi) {
+            phi_index++;
+        }
+        if (phi - table[0][0][phi_index-1][0][2] < table[0][0][phi_index][0][2] - phi) {
+            phi_index = phi_index - 1;
+        }
+    }
+
+    int x_index = 0;
+    if (table[0][0][0][80][3] <= x) {
+        x_index = 80;
+    } else if (x <= table[0][0][0][0][3]) {
+        x_index = 0;
+    } else {
+        while (table[0][0][0][x_index][3] < x) {
+            x_index++;
+        }
+        if (x - table[0][0][0][x_index-1][3] < table[0][0][0][x_index][3] - x) {
+            x_index = x_index - 1;
+        }
+    }
+
+    return table[r_index][b_index][phi_index][x_index][4];
+}
+
 void load_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> &table, string filename, double plot=false) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
