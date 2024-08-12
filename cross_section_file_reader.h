@@ -17,7 +17,7 @@ void read_sigma_file(string filename, vector<double> &Q2, vector<double> &x, vec
             continue;
         }
         string Q2_string = "";
-        int i = 0;
+        long unsigned int i = 0;
         while (line[i] != ';') {
             Q2_string += line[i];
             i++;
@@ -66,7 +66,7 @@ void read_LHC_sigma_file(string filename, vector<double> &x, vector<double> &sig
             first_line = false;
             continue;
         }
-        int i = 0;
+        long unsigned int i = 0;
         string x_value_string = "";
         while (line[i] != ';') {
             x_value_string += line[i];
@@ -109,7 +109,7 @@ void read_differential_sigma_file(string filename, vector<double> &Q2, vector<do
         }
 
         string Q2_string = "";
-        int i = 0;
+        long unsigned int i = 0;
         while (line[i] != ';') {
             Q2_string += line[i];
             i++;
@@ -168,7 +168,7 @@ void read_differential_sigma_file(string filename, vector<double> &Q2, vector<do
 void split_by_Q2(vector<double> &new_Q2, vector<vector<double>> &new_x, vector<vector<double>> &new_sigma, vector<vector<double>> &new_sigma_error, vector<double> &Q2, vector<double> &x, vector<double> &sigma, vector<double> &sigma_error) {
     vector<double> current_x, current_sigma, current_sigma_error;
     double current_Q2 = Q2[0];
-    for (int i=0; i<size(Q2); i++) {
+    for (long unsigned int i=0; i<size(Q2); i++) {
         if (Q2[i] != current_Q2) {
             new_x.push_back(current_x);
             new_sigma.push_back(current_sigma);
