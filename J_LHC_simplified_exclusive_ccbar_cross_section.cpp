@@ -42,7 +42,8 @@ const string dipole_amp_type = "bk";
 const string nucleus_type = "Pb";
 const string filename_end = "";
 
-static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
+static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
+static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -54,7 +55,13 @@ double epsilon(double z, double Q2) {
 
 double dipole_amplitude(double r, double b_min, double phi, double W, double Q2) {
   double shifted_x = Q2/(W*W+Q2) + 4*m_f*m_f/(W*W+Q2);
-  return get_dipole_amplitude(table, r, b_min, phi, shifted_x);//Q2/(W*W+Q2)
+  if (nucleus_type == "p") {
+    return get_p_dipole_amplitude(p_table, r, b_min, phi, shifted_x);
+  } else if (nucleus_type == "Pb") {
+    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, shifted_x);
+  } else {
+    throw 1;
+  }
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
@@ -203,7 +210,13 @@ int main() {
   */
 
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
-  load_dipole_amplitudes(table, filename);
+  if (nucleus_type == "p") {
+    load_p_dipole_amplitudes(p_table, filename);
+  } else if (nucleus_type == "Pb") {
+    load_Pb_dipole_amplitudes(Pb_table, filename);
+  } else {
+    throw 1;
+  }
 
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Diffractive transverse cross section;W (GeV);cross section (mb)");
