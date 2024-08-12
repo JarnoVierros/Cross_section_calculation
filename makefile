@@ -14,7 +14,8 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make J_data_comparison_inclusive_ccbar
 	make simplified_exclusive_ccbar_cross_section
 	make alternative_exclusive_ccbar_cross_section
-	make diffractive_inclusive_ratio
+	make ratio_plotter
+	make LHC_ratio_plotter
 	make dipole_amp_reader
 	make plot_comparator
 	make J_diff_ccbar_cross_section
@@ -95,9 +96,13 @@ fit_data_comparison_inclusive_ccbar: fit_data_comparison_inclusive_ccbar.cpp
 	g++ -Wall -c fit_data_comparison_inclusive_ccbar.cpp $$(root-config --glibs --cflags --libs)
 	g++ fit_data_comparison_inclusive_ccbar.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o fit_data_comparison_inclusive_ccbar.exe
 
-diffractive_inclusive_ratio: diffractive_inclusive_ratio.cpp
-	g++ -Wall -c diffractive_inclusive_ratio.cpp $$(root-config --glibs --cflags --libs)
-	g++ diffractive_inclusive_ratio.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o diffractive_inclusive_ratio.exe
+ratio_plotter: ratio_plotter.cpp
+	g++ -Wall -c ratio_plotter.cpp $$(root-config --glibs --cflags --libs)
+	g++ ratio_plotter.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o ratio_plotter.exe
+
+LHC_ratio_plotter: LHC_ratio_plotter.cpp
+	g++ -Wall -c LHC_ratio_plotter.cpp $$(root-config --glibs --cflags --libs)
+	g++ LHC_ratio_plotter.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o LHC_ratio_plotter.exe
 
 dipole_amp_reader: dipole_amp_reader.cpp
 	g++ dipole_amp_reader.cpp -o dipole_amp_reader.exe
