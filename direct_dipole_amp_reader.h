@@ -527,7 +527,7 @@ void load_Pb_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 40
     cout << "Data read successfully" << endl;
     
     const int icof = 40*40*81;
-    const int jcof = 430*81;
+    const int jcof = 40*81;
 
     for (int i=0; i<40; i++) {
             for (int j=0; j<40; j++) {
