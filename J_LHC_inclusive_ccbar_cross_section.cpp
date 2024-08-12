@@ -27,12 +27,9 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV
 
-static const double Q2 = 0;
+static const double global_Q2 = 0;
 
 const double normalization = 8/M_PI*alpha_em*N_c*e_f*e_f;
-
-//35, 34, 33, 32, 30, 25, 20, 15, 10, 5, 4, 3, 2, 1, 0.5
-// 17, 16, 15, 10, 5, 1
 
 static double r_limit; // 34.64
 static double b_min_limit; // 17.32
@@ -73,12 +70,12 @@ struct parameters {double W;};
 
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*L_integrand(k[0], k[1], k[2], k[3], Q2, par->W);
+  return normalization*L_integrand(k[0], k[1], k[2], k[3], global_Q2, par->W);
 }
 
 double T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*T_integrand(k[0], k[1], k[2], k[3], Q2, par->W);
+  return normalization*T_integrand(k[0], k[1], k[2], k[3], global_Q2, par->W);
 }
 
 struct thread_par_struct
