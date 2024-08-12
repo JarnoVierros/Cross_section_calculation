@@ -41,7 +41,7 @@ const string nucleus_type = "Pb";
 const string filename_end = "";
 
 const int warmup_calls = 100000;
-const int integration_calls = 100000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
@@ -220,85 +220,9 @@ int main() {
   TString b_limit_filename_string = b_limit_string;
 
 
-
-  TMultiGraph* L_graphs = new TMultiGraph();
-  TString title;
-  if (print_r_limit) {
-    title = "Longitudinal "+dipole_amp_type+" "+nucleus_type+" inclusive cross section with r limit: "+r_limit_string+" GeV^-1;W (GeV);cross section (mb)";
-  } else if (print_b_min_limit) {
-    title = "Longitudinal "+dipole_amp_type+" "+nucleus_type+" inclusive cross section with b limit: "+b_limit_string+" GeV^-1;W (GeV);cross section (mb)";
-  } else {
-    title = "Longitudinal "+dipole_amp_type+" "+nucleus_type+" inclusive cross section;W (GeV);cross section (mb)";
-  }
-  L_graphs->SetTitle(title);
-
-  TString outfile_name;
-  if (print_r_limit) {
-    outfile_name = "data/J_LHC_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".txt";
-  } else if (print_b_min_limit) {
-    outfile_name = "data/J_LHC_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".txt";
-  } else {
-    outfile_name = "data/J_LHC_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
-  }
-
-  ofstream L_output_file(outfile_name);
-  L_output_file << "W;sigma (mb);sigma error (mb)" << endl;
-
-  cout << "Starting L integration" << endl;
-  double L_W_values[W_steps], L_sigma_values[W_steps], L_W_errors[W_steps], L_sigma_errors[W_steps];
-  thread L_threads[W_steps];
-
-  for (int i=0; i<W_steps; i++) {
-    double W = pow(10, log10(W_start) + i*W_step);
-    L_W_values[i] = W;
-    L_W_errors[i] = 0;
-    thread_par_struct par(W, L_sigma_values[i], L_sigma_errors[i]);
-    L_threads[i] = thread(integrate_for_L_sigma, par);
-  }
-
-  for (int j=0; j<W_steps; j++) {
-    L_threads[j].join();
-  }
-  TGraphErrors* subgraph = new TGraphErrors(W_steps, L_W_values, L_sigma_values, L_W_errors, L_sigma_errors);
-  L_graphs->Add(subgraph);
-
-  for (int i=0; i<W_steps; i++) {
-    ostringstream W;
-    W << L_W_values[i];
-    ostringstream sigma;
-    sigma << L_sigma_values[i];
-    ostringstream sigma_err;
-    sigma_err << L_sigma_errors[i];
-    string line = W.str() + ";" + sigma.str() + ";" + sigma_err.str();
-    L_output_file << line << endl;
-  }
-  
-  L_output_file.close();
-
-  TCanvas* L_sigma_canvas = new TCanvas("J_LHC_L_inclusive_sigma_canvas", "", 1100, 600);
-  L_graphs->Draw("A PMC PLC");
-
-  gPad->SetLogx();
-  gPad->SetLogy();
-
-  //L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
-
-
-  if (print_r_limit) {
-    outfile_name = "figures/J_LHC_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".pdf";
-  } else if (print_b_min_limit) {
-    outfile_name = "figures/J_LHC_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".pdf";
-  } else {
-    outfile_name = "figures/J_LHC_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".pdf";
-  }
-  L_sigma_canvas->Print(outfile_name);
- 
- 
-
-
-
   TMultiGraph* T_graphs = new TMultiGraph();
 
+  TString title, outfile_name;
   if (print_r_limit) {
     title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+" cross section with r limit: "+r_limit_string+" GeV^-1;W (GeV);cross section (mb)";
   } else if (print_b_min_limit) {
@@ -336,7 +260,7 @@ int main() {
     T_threads[j].join();
   }
 
-  subgraph = new TGraphErrors(W_steps, T_W_values, T_sigma_values, T_W_errors, T_sigma_errors);
+  TGraphErrors* subgraph = new TGraphErrors(W_steps, T_W_values, T_sigma_values, T_W_errors, T_sigma_errors);
   T_graphs->Add(subgraph);
 
   for (int i=0; i<W_steps; i++) {
