@@ -19,7 +19,7 @@ int main() {
   string numerator_filename, denominator_filename;
   TString title, outfile_name;
 
-  bool diffractive = true;
+  bool diffractive = false;
 
   if (diffractive) {
     numerator_filename = "/home/jarno/Cross_section_calculation/archive/data/LHC/diff_LHC_T_sigma_W_bk_Pb.txt";
@@ -27,18 +27,18 @@ int main() {
     title = "Diffractive BK Pb p cross section ration; W (GeV); #sigma_{Pb}/#sigma_{p}";
     outfile_name = "figures/diffractive_bk_Pb_p_ratio.pdf";
   } else {
-    numerator_filename = "/home/jarno/Cross_section_calculation/archive/data/LHC/J_LHC_T_inclusive_bk_Pb.txt";
-    denominator_filename = "/home/jarno/Cross_section_calculation/archive/data/LHC/J_LHC_T_inclusive_bk_p.txt";
+    numerator_filename = "data/J_LHC_T_inclusive_bk_Pb.txt";
+    denominator_filename = "data/J_LHC_T_inclusive_bk_p.txt";
     title = "Inlcusive BK Pb p cross section ration; W (GeV); #sigma_{Pb}/#sigma_{p}";
     outfile_name = "figures/inclusive_bk_Pb_p_ratio.pdf";
   }
-
+  
   vector<double> numerator_W, numerator_sigma, numerator_sigma_error, denominator_W, denominator_sigma, denominator_sigma_error;
 
   read_LHC_sigma_file(numerator_filename, numerator_W, numerator_sigma, numerator_sigma_error);
   read_LHC_sigma_file(denominator_filename, denominator_W, denominator_sigma, denominator_sigma_error);
 
-
+  
   double ratio[numerator_W.size()];
   double W[numerator_W.size()];
   for (long unsigned int j=0; j<numerator_W.size(); j++) {

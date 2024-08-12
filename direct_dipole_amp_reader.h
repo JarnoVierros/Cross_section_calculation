@@ -244,19 +244,19 @@ double get_raw_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 3
     int b_index = 0;
     if (table[0][29][0][0][1] <= b) {
         b_index = 29;
-    } else if (r <= table[0][0][0][0][1]) {
+    } else if (b <= table[0][0][0][0][1]) {
         b_index = 0;
     } else {
         while (table[0][b_index][0][0][1] < b) {
             b_index++;
         }
-        if (b - table[0][b_index-1][0][0][1] < table[0][b_index][0][0][1] - r) {
+        if (b - table[0][b_index-1][0][0][1] < table[0][b_index][0][0][1] - b) {
             b_index = b_index - 1;
         }
     }
 
     int phi_index = 0;
-    if (table[0][0][29][0][2] <= phi_index) {
+    if (table[0][0][29][0][2] <= phi) {
         phi_index = 29;
     } else if (phi <= table[0][0][0][0][2]) {
         phi_index = 0;
@@ -282,7 +282,6 @@ double get_raw_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 3
             x_index = x_index - 1;
         }
     }
-
     return table[r_index][b_index][phi_index][x_index][4];
 }
 

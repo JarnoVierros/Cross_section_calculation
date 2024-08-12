@@ -30,6 +30,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make variable_change_test
 	make J_LHC_simplified_exclusive_ccbar_cross_section
 	make J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section
+	make interpolation_test
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -164,6 +165,9 @@ J_LHC_simplified_exclusive_ccbar_cross_section: J_LHC_simplified_exclusive_ccbar
 J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section: J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section.cpp
 	g++ -Wall -c J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section.exe
+
+interpolation_test: interpolation_test.cpp
+	g++ interpolation_test.cpp $$(root-config --glibs --cflags --libs) -o interpolation_test.exe
 
 clean:
 	-rm *.exe
