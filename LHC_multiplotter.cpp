@@ -38,20 +38,22 @@ int main() {
     "data/J_LHC_T_exclusive_bfkl_p.txt",
   };
   */
- /*
+  ///*
   string filenames[] = {
     "data/J_LHC_T_inclusive_bk_Pb.txt",
     "data/J_LHC_T_inclusive_bfkl_Pb.txt",
     "data/J_LHC_T_inclusive_bk_p.txt",
     "data/J_LHC_T_inclusive_bfkl_p.txt",
   };
-*/
+  //*/
+  /*
   string filenames[] = {
     "data/diff_LHC_T_sigma_W_bk_Pb.txt",
     "data/diff_LHC_T_sigma_W_bfkl_Pb.txt",
     "data/diff_LHC_T_sigma_W_bk_p.txt",
     "data/diff_LHC_T_sigma_W_bfkl_p.txt",
   };
+  */
   int filecount = size(filenames);
 
   vector<double> x[filecount], sigma[filecount], sigma_error[filecount];
@@ -71,7 +73,7 @@ int main() {
   }
 
   TMultiGraph* comparison_graph = new TMultiGraph();
-  comparison_graph->SetTitle("Exclusive cross section comparison between BK and BFKL");
+  comparison_graph->SetTitle("Inclusive cross section comparison between BK and BFKL");
 
   double BK_Pb_Q20_x_arr[x[0].size()];
   vector_to_array(BK_Pb_Q20_x_arr, x[0]);
@@ -122,16 +124,22 @@ int main() {
     comparison_canvas->BuildLegend(0.2, 0.7, 0.35, 0.9);
   }
 
-  if (true) {
+  if (false) {
     TLatex* Q2_text = new TLatex(2e3, 1e-4, "Q^{2} = 0 GeV^{2}");
     Q2_text->Draw("same");
+  } else if (false) {
+    TLatex* Q2_text = new TLatex(5e3, 6e-3, "Q^{2} = 0 GeV^{2}");
+    Q2_text->Draw("same");
+  } else if (false) {
+    TLatex* Q2_text = new TLatex(2e3, 7e-2, "Q^{2} = 0 GeV^{2}");
+    Q2_text->Draw("same");
   } else {
-    TLatex* Q2_text = new TLatex(2e-5, 1e-4, "Q^{2} = 0 GeV^{2}");
+    TLatex* Q2_text = new TLatex(1e3, 1, "Q^{2} = 0 GeV^{2}");
     Q2_text->Draw("same");
   }
   
 
-  comparison_canvas->Print("figures/LHC_simplified_exclusive_prediction.pdf");
+  comparison_canvas->Print("figures/LHC_inclusive_Pb_prediction.pdf");
   
   return 0;
 }

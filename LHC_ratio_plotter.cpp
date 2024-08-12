@@ -19,17 +19,17 @@ int main() {
   string numerator_filename, denominator_filename;
   TString title, outfile_name;
 
-  bool diffractive = false;
+  bool diffractive = true;
 
   if (diffractive) {
-    numerator_filename = "/home/jarno/Cross_section_calculation/archive/data/LHC/diff_LHC_T_sigma_W_bk_Pb.txt";
-    denominator_filename = "/home/jarno/Cross_section_calculation/archive/data/LHC/diff_LHC_T_sigma_W_bk_p.txt";
+    numerator_filename = "data/diff_LHC_T_sigma_W_bk_Pb.txt";
+    denominator_filename = "data/diff_LHC_T_sigma_W_bk_p.txt";
     title = "Diffractive BK Pb p cross section ration; W (GeV); #sigma_{Pb}/#sigma_{p}";
     outfile_name = "figures/diffractive_bk_Pb_p_ratio.pdf";
   } else {
     numerator_filename = "data/J_LHC_T_inclusive_bk_Pb.txt";
     denominator_filename = "data/J_LHC_T_inclusive_bk_p.txt";
-    title = "Inlcusive BK Pb p cross section ration; W (GeV); #sigma_{Pb}/#sigma_{p}";
+    title = "Inclusive BK Pb p cross section ration; W (GeV); #sigma_{Pb}/#sigma_{p}";
     outfile_name = "figures/inclusive_bk_Pb_p_ratio.pdf";
   }
   

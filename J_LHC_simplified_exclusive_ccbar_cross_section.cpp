@@ -38,8 +38,8 @@ const int warmup_calls = 100000;
 const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bk";
-const string nucleus_type = "Pb";
+const string dipole_amp_type = "bfkl";
+const string nucleus_type = "p";
 const string filename_end = "";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
