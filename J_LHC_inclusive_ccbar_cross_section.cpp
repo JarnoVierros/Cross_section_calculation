@@ -200,7 +200,7 @@ int main() {
   */
 
   const int W_steps = 50;
-  const double W_start = 2e1;
+  const double W_start = 3e1;
   const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
 
