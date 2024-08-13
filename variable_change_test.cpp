@@ -96,6 +96,13 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
   double A = calc_A(j, h, b1, b2);
   if (gsl_isnan(A)) {
     cout << "A is nan!" << endl;
+    cout << "j=" << j << endl;
+    cout << "h=" << h << endl;
+    cout << "b1=" << b1 << endl;
+    cout << "b2=" << b2 << endl;
+    cout << "A'=" << j*j + 4*h*(b1*b1-gsl_pow_2(j/(2*b2))) << endl;
+    cout << endl;
+
   }
   return_values[0] = acos((A+j)/(2*h));
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[0], z)) {
@@ -136,8 +143,9 @@ double trans_T_integrand(double r, double b_min, double phi, double r_bar, doubl
     }
     double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i], z);
 
-    cout << "r=" << r << ", bmin=" << b_min << ", phi=" << phi << "r_bar=" << r_bar << ", phi_bar=" << phi_bar << ", z=" << z << ", Q2=" << Q2 << ", x=" << x << ", beta=" << beta << ", M_X=" << M_X << endl;
-    cout << "b=" << sqrt(b_min*b_min+2*(1-z)*b_min*r*cos(phi)+gsl_pow_2(1-z)*r*r) << ", b_bar=" << sqrt(b_min_bar*b_min_bar+gsl_pow_2(1-z)*r_bar*r_bar+(1-z)*2*r_bar*b_min_bar*cos(phi_bar)) << endl << endl;
+    //cout << sqrt(b_min*b_min+2*(1-z)*b_min*r*cos(phi)+gsl_pow_2(1-z)*r*r) - sqrt(b_min_bar*b_min_bar+gsl_pow_2(1-z)*r_bar*r_bar+(1-z)*2*r_bar*b_min_bar*cos(phi_bar)) << endl;
+    //cout << "r=" << r << ", bmin=" << b_min << ", phi=" << phi << "r_bar=" << r_bar << ", phi_bar=" << phi_bar << ", z=" << z << ", Q2=" << Q2 << ", x=" << x << ", beta=" << beta << ", M_X=" << M_X << endl;
+    //cout << "b=" << sqrt(b_min*b_min+2*(1-z)*b_min*r*cos(phi)+gsl_pow_2(1-z)*r*r) << ", b_bar=" << sqrt(b_min_bar*b_min_bar+gsl_pow_2(1-z)*r_bar*r_bar+(1-z)*2*r_bar*b_min_bar*cos(phi_bar)) << endl << endl;
     
     double sub_integrand = 16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f*r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*M_X*M_X-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
@@ -146,6 +154,7 @@ double trans_T_integrand(double r, double b_min, double phi, double r_bar, doubl
 
     if (gsl_isnan(sub_integrand)) {
       cout << "T sub_integrand " << i << " is nan" << endl;
+      cout << "r=" << r << ", bmin=" << b_min << ", phi=" << phi << "r_bar=" << r_bar << ", phi_bar=" << phi_bar << ", z=" << z << ", Q2=" << Q2 << ", x=" << x << ", beta=" << beta << ", M_X=" << M_X << endl << endl;;
 
       sub_integrand = 0;
     }
@@ -297,7 +306,7 @@ int main() {
   //r=6.6823, bmin=13.6696, phi=1.86557r_bar=16.187, phi_bar=1.15127, z=0.683371, Q2=0, x=0.00188739, beta=-1, M_X=3.00891
   //b=13.2109, b_bar=11.2299
 
-  
+  /*
   double results[4];
 
   double r = 6.6823;
@@ -322,7 +331,7 @@ int main() {
   cout << "j=" << calc_j(calc_b2(r, b_min, phi, z), r_bar, phi_bar, z) << endl;
 
   return 0;
-  
+  */
 
   gsl_set_error_handler_off();
 
