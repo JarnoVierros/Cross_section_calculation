@@ -33,17 +33,17 @@ const double Q_0 = 1; //GeV
 const double x_0 = 7.67079e-05;
 const double lambda_star = 3.64361e-01;
 
-const double r_limit = 100; // 34.64
-const double b_min_limit = 100; // 17.32
+const double r_limit = 50; // 34.64
+const double b_min_limit = 50; // 17.32
 
 const int warmup_calls = 10000;
-const int integration_calls = 500000;
+const int integration_calls = 200000;
 const int integration_iterations = 1;
 
 const double max_theta_root_excess = 1e-6;
 const int debug_precision = 10;
 
-static const double M_X = 3; 
+static const double M_X = 4; 
 
 double dipole_amplitude(double r, double x, double b) {
   return exp(-(2*M_PI*b*b)/sigma_0)*(1 - exp(-1*gsl_pow_2((Q_0*r)/(2*pow(x/x_0, lambda_star/2)))));
@@ -418,7 +418,7 @@ int main() {
     TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
     TString subgraph_name = "theta 1 Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
-    subgraph->SetLineColor(j+1);
+    subgraph->SetLineColor(2);
     subgraph->SetLineStyle(3);
     T_graphs->Add(subgraph, "PC");
   }
@@ -442,7 +442,7 @@ int main() {
     TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
     TString subgraph_name = "theta 2 Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
-    subgraph->SetLineColor(j+1);
+    subgraph->SetLineColor(3);
     subgraph->SetLineStyle(4);
     T_graphs->Add(subgraph, "PC");
   }
@@ -466,7 +466,7 @@ int main() {
     TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
     TString subgraph_name = "theta 3 Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
-    subgraph->SetLineColor(j+1);
+    subgraph->SetLineColor(4);
     subgraph->SetLineStyle(5);
     T_graphs->Add(subgraph, "PC");
   }
@@ -490,7 +490,7 @@ int main() {
     TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
     TString subgraph_name = "theta 4 Q^{2}=" + to_string(Q2_values[j]);
     subgraph->SetTitle(subgraph_name);
-    subgraph->SetLineColor(j+1);
+    subgraph->SetLineColor(5);
     subgraph->SetLineStyle(6);
     T_graphs->Add(subgraph, "PC");
   }
