@@ -294,6 +294,22 @@ void orig_integrate_for_T_sigma(thread_par_struct par) {
 
 int main() {
 
+  double results[4];
+
+  double r = 8.24694;
+  double b_min = 12.4978;
+  double phi = 1.64167;
+  double r_bar = 23.4391;
+  double phi_bar = 1.48005;
+
+  calc_theta_bar(results, r, b_min, phi, r_bar, phi_bar);
+
+  cout << results[0] << endl;
+  cout << results[1] << endl;
+  cout << results[2] << endl;
+  cout << results[3] << endl;
+  return 0;
+
   gsl_set_error_handler_off();
 
   const double Q2_values[] = {0, 1, 2, 3, 4, 5};
