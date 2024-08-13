@@ -309,6 +309,11 @@ int main() {
   cout << results[1] << endl;
   cout << results[2] << endl;
   cout << results[3] << endl;
+
+  cout << endl;
+
+  cout << "b1=" << calc_b1(r, b_min, phi, z) << endl;;
+
   return 0;
 
   gsl_set_error_handler_off();
