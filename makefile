@@ -31,6 +31,8 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make J_LHC_simplified_exclusive_ccbar_cross_section
 	make J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section
 	make interpolation_test
+	make GBW_LHC_diffractive_ccbar_cross_section
+	make GBW_var_change_LHC_diffractive_ccbar_cross_section
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -139,6 +141,9 @@ multiplotter: multiplotter.cpp
 LHC_multiplotter: LHC_multiplotter.cpp
 	g++ LHC_multiplotter.cpp $$(root-config --glibs --cflags --libs) -o LHC_multiplotter.exe
 
+LHC_multiplotter_2: LHC_multiplotter_2.cpp
+	g++ LHC_multiplotter_2.cpp $$(root-config --glibs --cflags --libs) -o LHC_multiplotter_2.exe
+
 J_improvised_inclusive_data_fit: J_improvised_inclusive_data_fit.cpp
 	g++ -Wall -c J_improvised_inclusive_data_fit.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_improvised_inclusive_data_fit.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_improvised_inclusive_data_fit.exe
@@ -168,6 +173,14 @@ J_LHC_Q2_int_simplified_exclusive_ccbar_cross_section: J_LHC_Q2_int_simplified_e
 
 interpolation_test: interpolation_test.cpp
 	g++ interpolation_test.cpp $$(root-config --glibs --cflags --libs) -o interpolation_test.exe
+
+GBW_LHC_diffractive_ccbar_cross_section: GBW_LHC_diffractive_ccbar_cross_section.cpp
+	g++ -Wall -c GBW_LHC_diffractive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
+	g++ GBW_LHC_diffractive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o GBW_LHC_diffractive_ccbar_cross_section.exe
+
+GBW_var_change_LHC_diffractive_ccbar_cross_section: GBW_var_change_LHC_diffractive_ccbar_cross_section.cpp
+	g++ -Wall -c GBW_var_change_LHC_diffractive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
+	g++ GBW_var_change_LHC_diffractive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o GBW_var_change_LHC_diffractive_ccbar_cross_section.exe
 
 clean:
 	-rm *.exe
