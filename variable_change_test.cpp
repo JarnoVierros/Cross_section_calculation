@@ -294,14 +294,18 @@ void orig_integrate_for_T_sigma(thread_par_struct par) {
 
 int main() {
 
+  //r=6.6823, bmin=13.6696, phi=1.86557r_bar=16.187, phi_bar=1.15127, z=0.683371, Q2=0, x=0.00188739, beta=-1, M_X=3.00891
+  //b=13.2109, b_bar=11.2299
+
+  
   double results[4];
 
-  double r = 8.24694;
-  double b_min = 12.4978;
-  double phi = 1.64167;
-  double r_bar = 23.4391;
-  double phi_bar = 1.48005;
-  double z = 0.615793;
+  double r = 6.6823;
+  double b_min = 13.6696;
+  double phi = 1.86557;
+  double r_bar = 16.187;
+  double phi_bar = 1.15127;
+  double z = 0.683371;
 
   calc_theta_bar(results, r, b_min, phi, r_bar, phi_bar, z);
 
@@ -309,12 +313,16 @@ int main() {
   cout << results[1] << endl;
   cout << results[2] << endl;
   cout << results[3] << endl;
+  cout << "b_min_bar=" << calc_b_bar(r, b_min, phi, r_bar, phi_bar, results[0]) << endl;
 
   cout << endl;
 
-  cout << "b1=" << calc_b1(r, b_min, phi, z) << endl;;
+  cout << "b1=" << calc_b1(r, b_min, phi, z) << endl;
+  cout << "b2=" << calc_b2(r, b_min, phi, z) << endl;
+  cout << "j=" << calc_j(calc_b2(r, b_min, phi, z), r_bar, phi_bar, z) << endl;
 
   return 0;
+  
 
   gsl_set_error_handler_off();
 
