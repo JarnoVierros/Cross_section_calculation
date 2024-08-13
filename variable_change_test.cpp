@@ -55,24 +55,24 @@ double epsilon(double z, double Q2) {
   return sqrt(epsilon2(z, Q2));
 }
 
-double calc_h(double r, double b_min, double phi) {
-  return 4*b_min*b_min + 4*b_min*r*cos(phi) + r*r;
+double calc_h(double r, double b_min, double phi, double z) {
+  return b_min*b_min + (1-z)*2*b_min*r*cos(phi) + gsl_pow_2(1-z)*r*r;
 }
 
-double calc_b1(double r, double b_min, double phi) {
-  return b_min + r/2*cos(phi);
+double calc_b1(double r, double b_min, double phi, double z) {
+  return b_min + r*(1-z)*cos(phi);
 }
 
-double calc_b2(double r, double b_min, double phi) {
-  return r/2*sin(phi);
+double calc_b2(double r, double b_min, double phi, double z) {
+  return r*(1-z)*sin(phi);
 }
 
-double calc_j(double b2, double r_bar, double phi_bar) {
-  return 4*b2*r_bar*sin(phi_bar);
+double calc_j(double b2, double r_bar, double phi_bar, double z) {
+  return (1-z)*2*b2*r_bar*sin(phi_bar);
 }
 
 double calc_A(double j, double h, double b1, double b2) {
-  return sqrt(j*j + h*(16*b1*b1-gsl_pow_2(j/(2*b2))));
+  return sqrt(j*j + 4*h*(b1*b1-gsl_pow_2(j/(2*b2))));
 }
 
 bool theta_root_invalid(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar) {
@@ -84,15 +84,15 @@ bool theta_root_invalid(double r, double b_min, double phi, double r_bar, double
   }
 }
 
-int calc_theta_bar(double return_values[4], double r, double b_min, double phi, double r_bar, double phi_bar) {
-  double b1 = calc_b1(r, b_min, phi);
-  double b2 = calc_b2(r, b_min, phi);
-  double h = calc_h(r, b_min, phi);
+int calc_theta_bar(double return_values[4], double r, double b_min, double phi, double r_bar, double phi_bar, double z) {
+  double b1 = calc_b1(r, b_min, phi, z);
+  double b2 = calc_b2(r, b_min, phi, z);
+  double h = calc_h(r, b_min, phi, z);
   if (r_bar*r_bar > (4*h*b1*b1)/(gsl_pow_2(sin(phi_bar))*(h-4*b2*b2))) {
     //r_bar is too large
     return 1;
   }
-  double j = calc_j(b2, r_bar, phi_bar);
+  double j = calc_j(b2, r_bar, phi_bar, z);
   double A = calc_A(j, h, b1, b2);
   if (gsl_isnan(A)) {
     cout << "A is nan!" << endl;
@@ -126,7 +126,7 @@ double trans_T_integrand(double r, double b_min, double phi, double r_bar, doubl
   }
   double total_integrand = 0;
   double theta_bar[4];
-  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, r_bar, phi_bar);
+  int r_bar_too_large = calc_theta_bar(theta_bar, r, b_min, phi, r_bar, phi_bar, z);
   if (r_bar_too_large == 1) {
     return 0;
   }
@@ -301,8 +301,9 @@ int main() {
   double phi = 1.64167;
   double r_bar = 23.4391;
   double phi_bar = 1.48005;
+  double z = 0.615793;
 
-  calc_theta_bar(results, r, b_min, phi, r_bar, phi_bar);
+  calc_theta_bar(results, r, b_min, phi, r_bar, phi_bar, z);
 
   cout << results[0] << endl;
   cout << results[1] << endl;
