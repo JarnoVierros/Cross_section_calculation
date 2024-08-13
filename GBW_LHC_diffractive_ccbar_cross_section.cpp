@@ -22,7 +22,6 @@
 #include <sstream>
 using namespace std;
 
-#include "direct_dipole_amp_reader.h"
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
@@ -41,9 +40,6 @@ const int integration_iterations = 1;
 const string dipole_amp_type = "bk";
 const string nucleus_type = "Pb";
 const string filename_end = "";
-
-static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
-static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 
 const double sigma_0 = 2.99416e+01; //mb
 const double Q_0 = 1; //GeV
@@ -206,15 +202,6 @@ int main() {
   const double W_stop = 0.01;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
   */
-
-  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
-  if (nucleus_type == "p") {
-    load_p_dipole_amplitudes(p_table, filename);
-  } else if (nucleus_type == "Pb") {
-    load_Pb_dipole_amplitudes(Pb_table, filename);
-  } else {
-    throw 1;
-  }
 
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("GBW diffractive transverse cross section;W (GeV);cross section (mb)");

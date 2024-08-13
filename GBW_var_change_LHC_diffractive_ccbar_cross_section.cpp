@@ -42,12 +42,9 @@ const string dipole_amp_type = "bk";
 const string nucleus_type = "Pb";
 const string filename_end = "";
 
-static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
-static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
-
 const double sigma_0 = 2.99416e+01; //mb
 const double Q_0 = 1; //GeV
-const double x_0 = 7.67079e-05;
+const double GBW_x_0 = 7.67079e-05;
 const double lambda_star = 3.64361e-01;
 
 double epsilon2(double z, double Q2) {
@@ -61,7 +58,7 @@ double epsilon(double z, double Q2) {
 double dipole_amplitude(double r, double b_min, double phi, double z, double Q2, double W) {
   double x = (Q2+4*m_f*m_f)/(W*W+Q2);
   double b = sqrt(b_min*b_min + 2*(1-z)*b_min*r*cos(phi) + gsl_pow_2(1-z)*r*r);
-  return exp(-(2*M_PI*b*b)/sigma_0)*(1 - exp(-1*gsl_pow_2((Q_0*r)/(2*pow(x/x_0, lambda_star/2)))));
+  return exp(-(2*M_PI*b*b)/sigma_0)*(1 - exp(-1*gsl_pow_2((Q_0*r)/(2*pow(x/GBW_x_0, lambda_star/2)))));
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
@@ -211,15 +208,6 @@ int main() {
   const double W_stop = 0.01;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
   */
-
-  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
-  if (nucleus_type == "p") {
-    load_p_dipole_amplitudes(p_table, filename);
-  } else if (nucleus_type == "Pb") {
-    load_Pb_dipole_amplitudes(Pb_table, filename);
-  } else {
-    throw 1;
-  }
 
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("GBW variable changed diffractive transverse cross section;W (GeV);cross section (mb)");
