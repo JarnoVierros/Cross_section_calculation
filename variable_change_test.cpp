@@ -88,7 +88,7 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
   double b1 = calc_b1(r, b_min, phi, z);
   double b2 = calc_b2(r, b_min, phi, z);
   double h = calc_h(r, b_min, phi, z);
-  if (r_bar*r_bar > (4*h*b1*b1)/(gsl_pow_2(sin(phi_bar))*(h-4*b2*b2))) {
+  if (r_bar*r_bar > (4*h*b1*b1)/(gsl_pow_2((1-z)*2*sin(phi_bar))*(h-b2*b2))) {
     //r_bar is too large
     return 1;
   }
