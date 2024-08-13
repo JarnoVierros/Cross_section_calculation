@@ -116,8 +116,8 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
   return 0;
 }
 
-double calc_b_bar(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar) {
-  return 1/cos(theta_bar)*(b_min + r/2*cos(phi) - r_bar/2*cos(theta_bar+phi_bar));
+double calc_b_bar(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar, double z) {
+  return 1/cos(theta_bar)*(b_min + (1-z)*r*cos(phi) - (1-z)*r_bar*cos(theta_bar+phi_bar));
 }
 
 double trans_T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta, double M_X) {
@@ -134,7 +134,7 @@ double trans_T_integrand(double r, double b_min, double phi, double r_bar, doubl
     if (theta_bar[i] == 10) {
       continue;
     }
-    double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
+    double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i], z);
 
     cout << "r=" << r << ", bmin=" << b_min << ", phi=" << phi << "r_bar=" << r_bar << ", phi_bar=" << phi_bar << ", z=" << z << ", Q2=" << Q2 << ", x=" << x << ", beta=" << beta << ", M_X=" << M_X << endl;
     cout << "b=" << sqrt(b_min*b_min+2*(1-z)*b_min*r*cos(phi)+gsl_pow_2(1-z)*r*r) << ", b_bar=" << sqrt(b_min_bar*b_min_bar+gsl_pow_2(1-z)*r_bar*r_bar+(1-z)*2*r_bar*b_min_bar*cos(phi_bar)) << endl << endl;
@@ -313,7 +313,7 @@ int main() {
   cout << results[1] << endl;
   cout << results[2] << endl;
   cout << results[3] << endl;
-  cout << "b_min_bar=" << calc_b_bar(r, b_min, phi, r_bar, phi_bar, results[0]) << endl;
+  cout << "b_min_bar=" << calc_b_bar(r, b_min, phi, r_bar, phi_bar, results[0], z) << endl;
 
   cout << endl;
 
