@@ -145,7 +145,7 @@ double calc_b_bar(double r, double b_min, double phi, double r_bar, double phi_b
   return 1/cos(theta_bar)*(b_min + (1-z)*r*cos(phi) - (1-z)*r_bar*cos(theta_bar+phi_bar));
 }
 
-double trans_T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta, double M_X) {
+double trans_T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta, double M_X, double theta_selection[4]) {
   if (z*(1-z)*M_X*M_X-m_f*m_f < 0) {
     return 0;
   }
@@ -156,6 +156,9 @@ double trans_T_integrand(double r, double b_min, double phi, double r_bar, doubl
     return 0;
   }
   for (int i=0; i<4; i++) {
+    if (theta_selection[i] != 1) {
+      continue;
+    }
     if (theta_bar[i] == 10) {
       continue;
     }
@@ -182,11 +185,12 @@ double trans_T_integrand(double r, double b_min, double phi, double r_bar, doubl
   return total_integrand;
 }
 
-struct parameters {double Q2; double x; double beta;};
+struct parameters {double Q2; double x; double beta; double theta_1; double theta_2; double theta_3; double theta_4;};
 
 double trans_T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return trans_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x, par->beta, k[6]);
+  double theta_selection[4] = {par->theta_1, par->theta_2, par->theta_3, par->theta_4};
+  return trans_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x, par->beta, k[6], theta_selection);
 }
 
 struct thread_par_struct
@@ -197,7 +201,11 @@ struct thread_par_struct
   double &sigma;
   double &sigma_error;
   double &sigma_fit;
-  thread_par_struct(double a1, double a2, double a3, double &a4, double &a5, double &a6) : Q2(a1), x(a2), beta(a3), sigma(a4), sigma_error(a5), sigma_fit(a6) {}
+  int theta_1;
+  int theta_2;
+  int theta_3;
+  int theta_4;
+  thread_par_struct(double a1, double a2, double a3, double &a4, double &a5, double &a6, double a7, double a8, double a9, double a10) : Q2(a1), x(a2), beta(a3), sigma(a4), sigma_error(a5), sigma_fit(a6), theta_1(a7), theta_2(a8), theta_3(a9), theta_4(a10) {}
 };
 
 void trans_integrate_for_T_sigma(thread_par_struct par) {
@@ -208,10 +216,14 @@ void trans_integrate_for_T_sigma(thread_par_struct par) {
   double xl[dim] = {0, 0, 0, 0, 0, 0, M_X};
   double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, 1.1*M_X};
 
-  struct parameters params = {1, 1, 1};
+  struct parameters params = {1, 1, 1, 1};
   params.Q2 = par.Q2;
   params.x = par.x;
   params.beta = par.beta;
+  params.theta_1 = par.theta_1;
+  params.theta_2 = par.theta_2;
+  params.theta_3 = par.theta_3;
+  params.theta_4 = par.theta_4;
   double &sigma = par.sigma;
   double &sigma_error = par.sigma_error;
   double &sigma_fit = par.sigma_fit;
@@ -352,7 +364,7 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const double Q2_values[] = {0, 1, 2, 3, 4, 5};
+  const double Q2_values[] = {0}; //{0, 1, 2, 3, 4, 5}
 
   const int x_steps = 30;
   const double x_start = 1e-5;
@@ -372,7 +384,7 @@ int main() {
       double x = pow(10, log10(x_start) + i*x_step);
       T_x_values[i] = x;
       T_x_errors[i] = 0;
-      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i]);
+      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i], 1, 1, 1, 1);
       T_threads[i] = thread(trans_integrate_for_T_sigma, par);
     }
 
@@ -395,7 +407,103 @@ int main() {
       double x = pow(10, log10(x_start) + i*x_step);
       T_x_values[i] = x;
       T_x_errors[i] = 0;
-      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i]);
+      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i], 1, 0, 0, 0);
+      T_threads[i] = thread(trans_integrate_for_T_sigma, par);
+    }
+
+    for (int j=0; j<x_steps; j++) {
+      T_threads[j].join();
+    }
+
+    TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
+    TString subgraph_name = "theta 1 Q^{2}=" + to_string(Q2_values[j]);
+    subgraph->SetTitle(subgraph_name);
+    subgraph->SetLineColor(j+1);
+    subgraph->SetLineStyle(3);
+    T_graphs->Add(subgraph, "PC");
+  }
+
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
+    double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps], T_sigma_fits[x_steps];
+    thread T_threads[x_steps];
+
+    for (int i=0; i<x_steps; i++) {
+      double x = pow(10, log10(x_start) + i*x_step);
+      T_x_values[i] = x;
+      T_x_errors[i] = 0;
+      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i], 0, 1, 0, 0);
+      T_threads[i] = thread(trans_integrate_for_T_sigma, par);
+    }
+
+    for (int j=0; j<x_steps; j++) {
+      T_threads[j].join();
+    }
+
+    TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
+    TString subgraph_name = "theta 2 Q^{2}=" + to_string(Q2_values[j]);
+    subgraph->SetTitle(subgraph_name);
+    subgraph->SetLineColor(j+1);
+    subgraph->SetLineStyle(4);
+    T_graphs->Add(subgraph, "PC");
+  }
+
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
+    double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps], T_sigma_fits[x_steps];
+    thread T_threads[x_steps];
+
+    for (int i=0; i<x_steps; i++) {
+      double x = pow(10, log10(x_start) + i*x_step);
+      T_x_values[i] = x;
+      T_x_errors[i] = 0;
+      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i], 0, 0, 1, 0);
+      T_threads[i] = thread(trans_integrate_for_T_sigma, par);
+    }
+
+    for (int j=0; j<x_steps; j++) {
+      T_threads[j].join();
+    }
+
+    TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
+    TString subgraph_name = "theta 3 Q^{2}=" + to_string(Q2_values[j]);
+    subgraph->SetTitle(subgraph_name);
+    subgraph->SetLineColor(j+1);
+    subgraph->SetLineStyle(5);
+    T_graphs->Add(subgraph, "PC");
+  }
+
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
+    double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps], T_sigma_fits[x_steps];
+    thread T_threads[x_steps];
+
+    for (int i=0; i<x_steps; i++) {
+      double x = pow(10, log10(x_start) + i*x_step);
+      T_x_values[i] = x;
+      T_x_errors[i] = 0;
+      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i], 0, 0, 0, 1);
+      T_threads[i] = thread(trans_integrate_for_T_sigma, par);
+    }
+
+    for (int j=0; j<x_steps; j++) {
+      T_threads[j].join();
+    }
+
+    TGraphErrors* subgraph = new TGraphErrors(x_steps, T_x_values, T_sigma_values, T_x_errors, T_sigma_errors);
+    TString subgraph_name = "theta 4 Q^{2}=" + to_string(Q2_values[j]);
+    subgraph->SetTitle(subgraph_name);
+    subgraph->SetLineColor(j+1);
+    subgraph->SetLineStyle(6);
+    T_graphs->Add(subgraph, "PC");
+  }
+
+  for (long unsigned int j=0; j<size(Q2_values); j++) {
+    double T_x_values[x_steps], T_sigma_values[x_steps], T_x_errors[x_steps], T_sigma_errors[x_steps], T_sigma_fits[x_steps];
+    thread T_threads[x_steps];
+
+    for (int i=0; i<x_steps; i++) {
+      double x = pow(10, log10(x_start) + i*x_step);
+      T_x_values[i] = x;
+      T_x_errors[i] = 0;
+      thread_par_struct par(Q2_values[j], x, beta, T_sigma_values[i], T_sigma_errors[i], T_sigma_fits[i], 0, 0, 0, 0);
       T_threads[i] = thread(orig_integrate_for_T_sigma, par);
     }
 
