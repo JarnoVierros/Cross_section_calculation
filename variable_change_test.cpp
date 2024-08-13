@@ -174,8 +174,8 @@ void trans_integrate_for_T_sigma(thread_par_struct par) {
   const int dim = 7;
   double res, err;
 
-  double xl[dim] = {0, 0, 0, 0, 0, 0, M_X};
-  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, M_X*1.1};
+  double xl[dim] = {0, 0, 0, 0, 0, 0, 0};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, 100};
 
   struct parameters params = {1, 1, 1};
   params.Q2 = par.Q2;
@@ -224,9 +224,12 @@ double orig_T_integrand(double rx, double ry, double rx_bar, double ry_bar, doub
     if (z*(1-z)*M_X*M_X-m_f*m_f<0) {
         return 0;
     }
-    return 6.7065002*1/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f // 6.7065002*
+    double r = sqrt(rx*rx+ry*ry);
+    double r_bar = sqrt(rx_bar*rx_bar+ry_bar*ry_bar);
+    double b = sqrt(bx*bx+by*by);
+    return 1/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f // 6.7065002*
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*M_X*M_X-m_f*m_f)*sqrt(gsl_pow_2(rx-rx_bar)+gsl_pow_2(ry-ry_bar)))*z*(1-z)
-    *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*sqrt(rx*rx+ry*ry))*gsl_sf_bessel_K0(epsilon(z, Q2)*sqrt(rx_bar*rx_bar+ry_bar*ry_bar))+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(rx*rx_bar+ry*ry_bar)/(sqrt(rx*rx+ry*ry)*sqrt(rx_bar*rx_bar+ry_bar*ry_bar))*gsl_sf_bessel_K1(epsilon(z, Q2)*sqrt(rx*rx+ry*ry))*gsl_sf_bessel_K1(epsilon(z, Q2)*sqrt(rx_bar*rx_bar+ry_bar*ry_bar)))*dipole_amplitude(sqrt(rx*rx+ry*ry), x, sqrt(bx*bx+by*by))*dipole_amplitude(sqrt(rx_bar*rx_bar+ry_bar*ry_bar), x, sqrt(bx*bx+by*by));
+    *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(rx*rx_bar+ry*ry_bar)/(r*r_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))*dipole_amplitude(r, x, b)*dipole_amplitude(r_bar, x, b);
 }
 
 double orig_T_g(double *k, size_t dim, void * params) {
@@ -239,8 +242,8 @@ void orig_integrate_for_T_sigma(thread_par_struct par) {
   const int dim = 8;
   double res, err;
 
-  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, -b_min_limit, -b_min_limit, 0, M_X};
-  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, b_min_limit, 1, M_X*1.1};
+  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, -b_min_limit, -b_min_limit, 0, 0};
+  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, b_min_limit, 1, 100};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
