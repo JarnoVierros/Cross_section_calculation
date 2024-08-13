@@ -75,8 +75,8 @@ double calc_A(double j, double h, double b1, double b2) {
   return sqrt(j*j + 4*h*(b1*b1-gsl_pow_2(j/(2*b2))));
 }
 
-bool theta_root_invalid(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar) {
-  double excess = abs(tan(theta_bar)*(b_min+r/2*cos(phi)-r_bar/2*cos(phi_bar+theta_bar)) + r_bar/2*sin(phi_bar+theta_bar) - r/2*sin(phi));
+bool theta_root_invalid(double r, double b_min, double phi, double r_bar, double phi_bar, double theta_bar, double z) {
+  double excess = abs(tan(theta_bar)*(b_min+r*(1-z)*cos(phi)-r_bar*(1-z)*cos(phi_bar+theta_bar)) + r_bar*(1-z)*sin(phi_bar+theta_bar) - r*(1-z)*sin(phi));
   if (excess > max_theta_root_excess) {
     return 1;
   } else {
@@ -98,19 +98,19 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
     cout << "A is nan!" << endl;
   }
   return_values[0] = acos((A+j)/(2*h));
-  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[0])) {
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[0], z)) {
     return_values[0] = 10; // 10 means that the theta_bar value is invalid and should be skipped
   }
   return_values[1] = acos((-A+j)/(2*h));
-  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[1])) {
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[1], z)) {
     return_values[1] = 10;
   }
   return_values[2] = -acos((A+j)/(2*h));
-  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[2])) {
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[2], z)) {
     return_values[2] = 10;
   }
   return_values[3] = -acos((-A+j)/(2*h));
-  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[3])) {
+  if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[3], z)) {
     return_values[3] = 10;
   }
   return 0;
