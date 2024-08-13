@@ -135,6 +135,7 @@ double trans_T_integrand(double r, double b_min, double phi, double r_bar, doubl
       continue;
     }
     double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i]);
+    cout << (sqrt(b_min*b_min+2*(1-z)*b_min*r*cos(phi)+gsl_pow_2(1-z)*r*r) - sqrt(b_min_bar*b_min_bar+gsl_pow_2(1-z)*r_bar*r_bar+(1-z)*2*r_bar*b_min_bar*cos(phi_bar)))/sqrt(b_min*b_min+2*(1-z)*b_min*r*cos(phi)+gsl_pow_2(1-z)*r*r) << endl;
     double sub_integrand = 16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f*r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*M_X*M_X-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))
@@ -174,8 +175,8 @@ void trans_integrate_for_T_sigma(thread_par_struct par) {
   const int dim = 7;
   double res, err;
 
-  double xl[dim] = {0, 0, 0, 0, 0, 0, 0};
-  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, 100};
+  double xl[dim] = {0, 0, 0, 0, 0, 0, M_X};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, 1.1*M_X};
 
   struct parameters params = {1, 1, 1};
   params.Q2 = par.Q2;
@@ -242,8 +243,8 @@ void orig_integrate_for_T_sigma(thread_par_struct par) {
   const int dim = 8;
   double res, err;
 
-  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, -b_min_limit, -b_min_limit, 0, 0};
-  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, b_min_limit, 1, 100};
+  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, -b_min_limit, -b_min_limit, 0, M_X};
+  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, b_min_limit, 1, 1.1*M_X};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
