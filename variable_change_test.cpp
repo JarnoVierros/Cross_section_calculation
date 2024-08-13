@@ -20,6 +20,7 @@
 #include <fstream>
 #include <ostream>
 #include <sstream>
+#include <iomanip>
 using namespace std;
 
 const double alpha_em = 1.0/137;
@@ -32,14 +33,15 @@ const double Q_0 = 1; //GeV
 const double x_0 = 7.67079e-05;
 const double lambda_star = 3.64361e-01;
 
-const double r_limit = 34.64; // 34.64
-const double b_min_limit = 17.32; // 17.32
+const double r_limit = 100; // 34.64
+const double b_min_limit = 100; // 17.32
 
 const int warmup_calls = 10000;
-const int integration_calls = 200000;
+const int integration_calls = 500000;
 const int integration_iterations = 1;
 
 const double max_theta_root_excess = 1e-6;
+const int debug_precision = 10;
 
 static const double M_X = 3; 
 
@@ -104,19 +106,35 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
     cout << endl;
 
   }
-  return_values[0] = acos((A+j)/(2*h));
+  double acos_arg_plus_type = (A+j)/(2*h);
+  if (acos_arg_plus_type > 1) {
+    cout << "acos arg of type plus changed: " << setprecision(debug_precision) << acos_arg_plus_type << "->1" << endl;
+    acos_arg_plus_type = 1;
+  } else if (acos_arg_plus_type < -1) {
+    cout << "acos arg of type plus changed: " << setprecision(debug_precision) << acos_arg_plus_type << "->-1" << endl;
+    acos_arg_plus_type = -1;
+  }
+  double acos_arg_minus_type = (-A+j)/(2*h);
+  if (acos_arg_minus_type > 1) {
+    cout << "acos arg of type minus changed: " << setprecision(debug_precision) << acos_arg_minus_type << "->1" << endl;
+    acos_arg_minus_type = 1;
+  } else if (acos_arg_minus_type < -1) {
+    cout << "acos arg of type minus changed: " << setprecision(debug_precision) << acos_arg_minus_type << "->-1" << endl;
+    acos_arg_minus_type = -1;
+  }
+  return_values[0] = acos(acos_arg_plus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[0], z)) {
     return_values[0] = 10; // 10 means that the theta_bar value is invalid and should be skipped
   }
-  return_values[1] = acos((-A+j)/(2*h));
+  return_values[1] = acos(acos_arg_minus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[1], z)) {
     return_values[1] = 10;
   }
-  return_values[2] = -acos((A+j)/(2*h));
+  return_values[2] = -acos(acos_arg_plus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[2], z)) {
     return_values[2] = 10;
   }
-  return_values[3] = -acos((-A+j)/(2*h));
+  return_values[3] = -acos(acos_arg_minus_type);
   if (theta_root_invalid(r, b_min, phi, r_bar, phi_bar, return_values[3], z)) {
     return_values[3] = 10;
   }
@@ -233,30 +251,29 @@ void trans_integrate_for_T_sigma(thread_par_struct par) {
   gsl_monte_vegas_free(T_s);
 }
 
-double orig_T_integrand(double rx, double ry, double rx_bar, double ry_bar, double bx, double by, double z, double Q2, double x, double M_X) {
+double orig_T_integrand(double rx, double ry, double rx_bar, double ry_bar, double b, double z, double Q2, double x, double M_X) {
     if (z*(1-z)*M_X*M_X-m_f*m_f<0) {
         return 0;
     }
     double r = sqrt(rx*rx+ry*ry);
     double r_bar = sqrt(rx_bar*rx_bar+ry_bar*ry_bar);
-    double b = sqrt(bx*bx+by*by);
-    return 1/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f // 6.7065002*
+    return 2*M_PI*b*1/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f // 6.7065002*
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*M_X*M_X-m_f*m_f)*sqrt(gsl_pow_2(rx-rx_bar)+gsl_pow_2(ry-ry_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(rx*rx_bar+ry*ry_bar)/(r*r_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))*dipole_amplitude(r, x, b)*dipole_amplitude(r_bar, x, b);
 }
 
 double orig_T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return orig_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], k[6], par->Q2, par->x, k[7]);
+  return orig_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x, k[6]);
 }
 
 void orig_integrate_for_T_sigma(thread_par_struct par) {
 
-  const int dim = 8;
+  const int dim = 7;
   double res, err;
 
-  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, -b_min_limit, -b_min_limit, 0, M_X};
-  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, b_min_limit, 1, 1.1*M_X};
+  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, 0, 0, M_X};
+  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, 1, 1.1*M_X};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
