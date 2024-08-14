@@ -36,14 +36,16 @@ const double lambda_star = 3.64361e-01;
 const double r_limit = 50; // 34.64
 const double b_min_limit = 50; // 17.32
 
-const int warmup_calls = 10000;
-const int integration_calls = 200000;
+const int warmup_calls = 100000;
+const int integration_calls = 2000000;
 const int integration_iterations = 1;
 
 const double max_theta_root_excess = 1e-6;
 const int debug_precision = 10;
+const double value_for_nan = 1e-5;
+const double max_value = 1e10;
 
-static const double M_X = 4; 
+static const double M_X = 3;
 
 double dipole_amplitude(double r, double x, double b) {
   return exp(-(2*M_PI*b*b)/sigma_0)*(1 - exp(-1*gsl_pow_2((Q_0*r)/(2*pow(x/x_0, lambda_star/2)))));
@@ -168,7 +170,7 @@ double trans_T_integrand(double r, double b_min, double phi, double r_bar, doubl
     //cout << "r=" << r << ", bmin=" << b_min << ", phi=" << phi << "r_bar=" << r_bar << ", phi_bar=" << phi_bar << ", z=" << z << ", Q2=" << Q2 << ", x=" << x << ", beta=" << beta << ", M_X=" << M_X << endl;
     //cout << "b=" << sqrt(b_min*b_min+2*(1-z)*b_min*r*cos(phi)+gsl_pow_2(1-z)*r*r) << ", b_bar=" << sqrt(b_min_bar*b_min_bar+gsl_pow_2(1-z)*r_bar*r_bar+(1-z)*2*r_bar*b_min_bar*cos(phi_bar)) << endl << endl;
     
-    double sub_integrand = 1/abs(theta_bar[i])*1/abs(b_min_bar*cos(theta_bar[i])+(1-z)*r_bar*cos(theta_bar[i]+phi_bar))
+    double sub_integrand = 1/abs(cos(theta_bar[i]))*1/abs(b_min_bar*cos(theta_bar[i])+(1-z)*r_bar*cos(theta_bar[i]+phi_bar))
     *16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f*r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*M_X*M_X-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))
@@ -253,8 +255,12 @@ void trans_integrate_for_T_sigma(thread_par_struct par) {
     //cout << "T iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(T_s) << ", duration: " << duration.count() << endl;
   }
   if (gsl_isnan(res)) {
-    res = 0;
+    res = value_for_nan;
     cout << "nan found at x=" << params.x << endl;
+  }
+  if (res > max_value) {
+    res = value_for_nan;
+    cout << "inf found at x=" << params.x << endl;
   }
   sigma = res;
   sigma_error = err;
@@ -320,8 +326,12 @@ void orig_integrate_for_T_sigma(thread_par_struct par) {
     //cout << "T iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(T_s) << ", duration: " << duration.count() << endl;
   }
   if (gsl_isnan(res)) {
-    res = 0;
+    res = value_for_nan;
     cout << "nan found at x=" << params.x << endl;
+  }
+  if (res > max_value) {
+    res = value_for_nan;
+    cout << "inf found at x=" << params.x << endl;
   }
   sigma = res;
   sigma_error = err;
@@ -367,7 +377,7 @@ int main() {
 
   const double Q2_values[] = {0}; //{0, 1, 2, 3, 4, 5}
 
-  const int x_steps = 30;
+  const int x_steps = 5;
   const double x_start = 1e-5;
   const double x_stop = 0.01;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
