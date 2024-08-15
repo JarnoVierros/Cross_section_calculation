@@ -36,7 +36,8 @@ double calc_max_phi(double r, double b_min) {
     }
 }
 
-double trans_integral_1(double z, double r, double b_min, double phi, double theta) {
+double trans_integral_1(double r, double b_min, double phi) {
+    double z = 1.0/2;
     if (calc_max_phi(r, b_min) < phi) {
         return 0;
     }
@@ -44,27 +45,27 @@ double trans_integral_1(double z, double r, double b_min, double phi, double the
 }
 
 double trans_integral_1_wrap(double *k, size_t dim, void * params) {
-    return trans_integral_1(k[0], k[1], k[2], k[3], k[4]);
+    return trans_integral_1(k[0], k[1], k[2]);
 }
 
 double orig_integral_1(double z, double r, double b_min, double phi, double theta) {
     if (calc_max_phi(r, b_min) < phi) {
         return 0;
     }
-    return 4*1/r*1/sqrt(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r);
+    return 2*M_PI*4*1/r*1/sqrt(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r);
 }
 
 double orig_integral_1_wrap(double *k, size_t dim, void * params) {
-    return trans_integral_1(k[0], k[1], k[2], k[3], k[4]);
+    return trans_integral_1(k[0], k[1], k[2]);
 }
 
-void trans_integrate(double &return_res, double &return_err, double (*func)(double *x_array, size_t, void *params), int calls) {
+void trans_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls) {
 
-    const int dim = 5;
+    const int dim = 3;
     double res, err;
 
-    double xl[dim] = {0, 0, 0, 0, 0};
-    double xu[dim] = {1, radius, radius, M_PI, 2*M_PI};
+    double xl[dim] = {0, 0, 0};
+    double xu[dim] = {radius, radius, M_PI};
     struct parameters params = {1};
 
     const gsl_rng_type *T;
@@ -80,21 +81,25 @@ void trans_integrate(double &return_res, double &return_err, double (*func)(doub
     gsl_rng_set(rng, 1);
 
     gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(dim);
+    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, 10000, rng, s, &res, &err);
+    if (status != 0) {cout << "trans_integral_1_wrap: " << status << endl; throw (status);}
+
     status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, calls, rng, s, &res, &err);
     if (status != 0) {cout << "trans_integral_1_wrap: " << status << endl; throw (status);}
 
     return_res = res;
     return_err = err;
+    return_fit = gsl_monte_vegas_chisq(s);
 
     gsl_monte_vegas_free(s);
 }
 
 int main() {
 
-    double res, err;
+    double res, err, fit;
 
-    trans_integrate(res, err, trans_integral_1_wrap, 10000);
+    trans_integrate(res, err, fit, trans_integral_1_wrap, 100000000);
 
-    cout << "trans integral 1: res=" << res << ", err=" << err << endl;
+    cout << "trans integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     
 }

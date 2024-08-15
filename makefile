@@ -33,6 +33,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make interpolation_test
 	make GBW_LHC_diffractive_ccbar_cross_section
 	make GBW_var_change_LHC_diffractive_ccbar_cross_section
+	make integration_tests
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -181,6 +182,10 @@ GBW_LHC_diffractive_ccbar_cross_section: GBW_LHC_diffractive_ccbar_cross_section
 GBW_var_change_LHC_diffractive_ccbar_cross_section: GBW_var_change_LHC_diffractive_ccbar_cross_section.cpp
 	g++ -Wall -c GBW_var_change_LHC_diffractive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
 	g++ GBW_var_change_LHC_diffractive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o GBW_var_change_LHC_diffractive_ccbar_cross_section.exe
+
+integration_tests: integration_tests.cpp
+	g++ -Wall -c integration_tests.cpp $$(root-config --glibs --cflags --libs)
+	g++ integration_tests.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o integration_tests.exe
 
 clean:
 	-rm *.exe
