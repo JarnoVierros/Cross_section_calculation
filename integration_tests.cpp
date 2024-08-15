@@ -36,32 +36,63 @@ double calc_max_phi(double r, double b_min) {
     }
 }
 
-double trans_integral_1(double r, double b_min, double phi, double z) {
+double trans_integral_0(double r, double theta) {
+    return r*1/(r*r);
+}
+
+double trans_integral_0_wrap(double *k, size_t dim, void * params) {
+    return trans_integral_0(k[0], k[1]);
+}
+
+double trans_integral_1(double r, double b_min, double phi) {
     if (calc_max_phi(r, b_min) < phi) {
         return 0;
     }
+    double z = 1.0/2;
     return r*b_min*4*2*M_PI*1/(r*r)*1/(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r);
 }
 
 double trans_integral_1_wrap(double *k, size_t dim, void * params) {
-    return trans_integral_1(k[0], k[1], k[2], k[3]);
+    return trans_integral_1(k[0], k[1], k[2]);
 }
 
-double orig_integral_1(double r1, double r2, double b1, double b2, double z) {
+double orig_integral_0(double r1, double r2) {
+    return 1/(r1*r1+r2*r2);
+}
+
+double orig_integral_0_wrap(double *k, size_t dim, void * params) {
+    return orig_integral_0(k[0], k[1]);
+}
+
+double orig_integral_1(double r1, double r2, double b1, double b2) {
     return 1/(r1*r1+r2*r2)*1/(b1*b1+b2*b2);
 }
 
 double orig_integral_1_wrap(double *k, size_t dim, void * params) {
-    return orig_integral_1(k[0], k[1], k[2],  k[3], k[4]);
+    return orig_integral_1(k[0], k[1], k[2],  k[3]);
 }
 
-void trans_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls) {
+void trans_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls, int dim) {
 
-    const int dim = 4;
     double res, err;
 
-    double xl[dim] = {0, 0, 0, 0};
-    double xu[dim] = {radius, radius, M_PI, 1};
+    double xl[dim];
+    double xu[dim];
+
+    if (dim==2) {
+        xl[0] = 0;
+        xu[0] = radius;
+        xl[1] = 0;
+        xu[1] = M_PI;
+    } else if (dim==3) {
+        xl[0] = 0;
+        xu[0] = radius;
+        xl[1] = 0;
+        xu[1] = radius;
+        xl[2] = 0;
+        xu[2] = M_PI;
+    }
+
     struct parameters params = {1};
 
     const gsl_rng_type *T;
@@ -90,13 +121,27 @@ void trans_integrate(double &return_res, double &return_err, double &return_fit,
     gsl_monte_vegas_free(s);
 }
 
-void orig_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls) {
+void orig_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls, int dim) {
 
-    const int dim = 5;
     double res, err;
 
-    double xl[dim] = {-width, -width, -width, -width, 0};
-    double xu[dim] = {width, width, width, width, 1};
+    double xl[dim];
+    double xu[dim];
+
+    if (dim==2) {
+        xl[0] = -width;
+        xu[0] = width;
+        xl[1] = -width;
+        xu[1] = width;
+    } else if (dim==4) {
+        xl[0] = -width;
+        xu[0] = width;
+        xl[1] = -width;
+        xu[1] = width;
+        xl[2] = -width;
+        xu[2] = width;
+    }
+
     struct parameters params = {1};
 
     const gsl_rng_type *T;
@@ -129,11 +174,19 @@ int main() {
 
     double res, err, fit;
 
-    trans_integrate(res, err, fit, trans_integral_1_wrap, 1e7);
+    trans_integrate(res, err, fit, trans_integral_1_wrap, 1e4, 2);
+    cout << "trans integral 0: res=" << res << ", err=" << err << ", fit=" << fit << endl;
+    //trans integral 1: res=2819.87, err=78.2318, fit=6.22363
+
+    orig_integrate(res, err, fit, orig_integral_1_wrap, 1e4, 2);
+    cout << "orig integral 0: res=" << res << ", err=" << err << ", fit=" << fit << endl;
+
+    /*
+    trans_integrate(res, err, fit, trans_integral_1_wrap, 1e7, 3);
     cout << "trans integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     //trans integral 1: res=2819.87, err=78.2318, fit=6.22363
 
-    orig_integrate(res, err, fit, orig_integral_1_wrap, 1e7);
+    orig_integrate(res, err, fit, orig_integral_1_wrap, 1e7, 4);
     cout << "orig integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
-    
+    */
 }
