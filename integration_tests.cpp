@@ -23,8 +23,8 @@
 #include <iomanip>
 using namespace std;
 
-const double radius = 100;
-const double width = 200;
+const double radius = 50;
+const double width = 2*radius;
 
 struct parameters {double the_parameter;};
 
@@ -36,33 +36,32 @@ double calc_max_phi(double r, double b_min) {
     }
 }
 
-double trans_integral_1(double r, double b_min, double phi) {
-    double z = 1.0/2;
+double trans_integral_1(double r, double b_min, double phi, double z) {
     if (calc_max_phi(r, b_min) < phi) {
         return 0;
     }
-    return 4*1/r*1/sqrt(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r);
+    return r*b_min*4*2*M_PI*1/(r*r)*1/(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r);
 }
 
 double trans_integral_1_wrap(double *k, size_t dim, void * params) {
-    return trans_integral_1(k[0], k[1], k[2]);
+    return trans_integral_1(k[0], k[1], k[2], k[3]);
 }
 
-double orig_integral_1(double r1, double r2, double b1, double b2) {
-    return 1/sqrt(r1*r1+r2*r2)*1/sqrt(b1*b1+b2*b2);
+double orig_integral_1(double r1, double r2, double b1, double b2, double z) {
+    return 1/(r1*r1+r2*r2)*1/(b1*b1+b2*b2);
 }
 
 double orig_integral_1_wrap(double *k, size_t dim, void * params) {
-    return orig_integral_1(k[0], k[1], k[2],  k[3]);
+    return orig_integral_1(k[0], k[1], k[2],  k[3], k[4]);
 }
 
 void trans_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls) {
 
-    const int dim = 3;
+    const int dim = 4;
     double res, err;
 
-    double xl[dim] = {0, 0, 0};
-    double xu[dim] = {radius, radius, M_PI};
+    double xl[dim] = {0, 0, 0, 0};
+    double xu[dim] = {radius, radius, M_PI, 1};
     struct parameters params = {1};
 
     const gsl_rng_type *T;
@@ -93,11 +92,11 @@ void trans_integrate(double &return_res, double &return_err, double &return_fit,
 
 void orig_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls) {
 
-    const int dim = 4;
+    const int dim = 5;
     double res, err;
 
-    double xl[dim] = {0, 0, 0, 0};
-    double xu[dim] = {width, width, width, width};
+    double xl[dim] = {-width, -width, -width, -width, 0};
+    double xu[dim] = {width, width, width, width, 1};
     struct parameters params = {1};
 
     const gsl_rng_type *T;
@@ -130,11 +129,11 @@ int main() {
 
     double res, err, fit;
 
-    trans_integrate(res, err, fit, trans_integral_1_wrap, 100000000);
+    trans_integrate(res, err, fit, trans_integral_1_wrap, 1e7);
     cout << "trans integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
+    //trans integral 1: res=2819.87, err=78.2318, fit=6.22363
 
-
-    orig_integrate(res, err, fit, orig_integral_1_wrap, 10000);
+    orig_integrate(res, err, fit, orig_integral_1_wrap, 1e7);
     cout << "orig integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     
 }
