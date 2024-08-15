@@ -44,16 +44,15 @@ double trans_integral_0_wrap(double *k, size_t dim, void * params) {
     return trans_integral_0(k[0], k[1]);
 }
 
-double trans_integral_1(double r, double b_min, double phi) {
+double trans_integral_1(double r, double b_min, double phi, double z) {
     if (calc_max_phi(r, b_min) < phi) {
         return 0;
     }
-    double z = 1.0/2;
     return r*b_min*4*2*M_PI*1/(r*r*r+1)*1/(gsl_pow_3(sqrt(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r))+1);
 }
 
 double trans_integral_1_wrap(double *k, size_t dim, void * params) {
-    return trans_integral_1(k[0], k[1], k[2]);
+    return trans_integral_1(k[0], k[1], k[2], k[3]);
 }
 
 double orig_integral_0(double r1, double r2) {
@@ -64,12 +63,12 @@ double orig_integral_0_wrap(double *k, size_t dim, void * params) {
     return orig_integral_0(k[0], k[1]);
 }
 
-double orig_integral_1(double r1, double r2, double b1, double b2) {
+double orig_integral_1(double r1, double r2, double b1, double b2, double z) {
     return 1/(gsl_pow_3(sqrt(r1*r1+r2*r2))+1)*1/(gsl_pow_3(sqrt(b1*b1+b2*b2))+1);
 }
 
 double orig_integral_1_wrap(double *k, size_t dim, void * params) {
-    return orig_integral_1(k[0], k[1], k[2],  k[3]);
+    return orig_integral_1(k[0], k[1], k[2],  k[3],  k[4]);
 }
 
 void trans_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls, size_t dim) {
@@ -91,6 +90,15 @@ void trans_integrate(double &return_res, double &return_err, double &return_fit,
         xu[1] = radius;
         xl[2] = 0;
         xu[2] = M_PI;
+    } else if (dim==4) {
+        xl[0] = 0;
+        xu[0] = radius;
+        xl[1] = 0;
+        xu[1] = radius;
+        xl[2] = 0;
+        xu[2] = M_PI;
+        xl[3] = 0;
+        xu[3] = 1;
     }
 
     struct parameters params = {1};
@@ -142,6 +150,17 @@ void orig_integrate(double &return_res, double &return_err, double &return_fit, 
         xu[2] = width;
         xl[3] = -width;
         xu[3] = width;
+    } else if (dim==5) {
+        xl[0] = -width;
+        xu[0] = width;
+        xl[1] = -width;
+        xu[1] = width;
+        xl[2] = -width;
+        xu[2] = width;
+        xl[3] = -width;
+        xu[3] = width;
+        xl[4] = 0;
+        xu[4] = 1;
     }
 
     struct parameters params = {1};
