@@ -23,8 +23,8 @@
 #include <iomanip>
 using namespace std;
 
-const double radius = 50;
-const double width = 2*radius;
+const double radius = 100;
+const double width = radius;
 
 struct parameters {double the_parameter;};
 
@@ -37,7 +37,7 @@ double calc_max_phi(double r, double b_min) {
 }
 
 double trans_integral_0(double r, double theta) {
-    return r*1/(r*r);
+    return r*1/(r*r*r+1);
 }
 
 double trans_integral_0_wrap(double *k, size_t dim, void * params) {
@@ -49,7 +49,7 @@ double trans_integral_1(double r, double b_min, double phi) {
         return 0;
     }
     double z = 1.0/2;
-    return r*b_min*4*2*M_PI*1/(r*r)*1/(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r);
+    return r*b_min*4*2*M_PI*1/(r*r*r+1)*1/(gsl_pow_3(sqrt(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r))+1);
 }
 
 double trans_integral_1_wrap(double *k, size_t dim, void * params) {
@@ -57,7 +57,7 @@ double trans_integral_1_wrap(double *k, size_t dim, void * params) {
 }
 
 double orig_integral_0(double r1, double r2) {
-    return 1/(r1*r1+r2*r2);
+    return 1/(gsl_pow_3(sqrt(r1*r1+r2*r2))+1);
 }
 
 double orig_integral_0_wrap(double *k, size_t dim, void * params) {
@@ -65,14 +65,14 @@ double orig_integral_0_wrap(double *k, size_t dim, void * params) {
 }
 
 double orig_integral_1(double r1, double r2, double b1, double b2) {
-    return 1/(r1*r1+r2*r2)*1/(b1*b1+b2*b2);
+    return 1/(gsl_pow_3(sqrt(r1*r1+r2*r2))+1)*1/(gsl_pow_3(sqrt(b1*b1+b2*b2))+1);
 }
 
 double orig_integral_1_wrap(double *k, size_t dim, void * params) {
     return orig_integral_1(k[0], k[1], k[2],  k[3]);
 }
 
-void trans_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls, int dim) {
+void trans_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls, size_t dim) {
 
     double res, err;
 
@@ -83,7 +83,7 @@ void trans_integrate(double &return_res, double &return_err, double &return_fit,
         xl[0] = 0;
         xu[0] = radius;
         xl[1] = 0;
-        xu[1] = M_PI;
+        xu[1] = 2*M_PI;
     } else if (dim==3) {
         xl[0] = 0;
         xu[0] = radius;
@@ -121,7 +121,7 @@ void trans_integrate(double &return_res, double &return_err, double &return_fit,
     gsl_monte_vegas_free(s);
 }
 
-void orig_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls, int dim) {
+void orig_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls, size_t dim) {
 
     double res, err;
 
@@ -140,6 +140,8 @@ void orig_integrate(double &return_res, double &return_err, double &return_fit, 
         xu[1] = width;
         xl[2] = -width;
         xu[2] = width;
+        xl[3] = -width;
+        xu[3] = width;
     }
 
     struct parameters params = {1};
@@ -174,19 +176,20 @@ int main() {
 
     double res, err, fit;
 
-    trans_integrate(res, err, fit, trans_integral_1_wrap, 1e4, 2);
+    /*
+    trans_integrate(res, err, fit, trans_integral_0_wrap, 1e4, 2);
     cout << "trans integral 0: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     //trans integral 1: res=2819.87, err=78.2318, fit=6.22363
 
-    orig_integrate(res, err, fit, orig_integral_1_wrap, 1e4, 2);
+    orig_integrate(res, err, fit, orig_integral_0_wrap, 1e4, 2);
     cout << "orig integral 0: res=" << res << ", err=" << err << ", fit=" << fit << endl;
-
-    /*
+    */
+    
     trans_integrate(res, err, fit, trans_integral_1_wrap, 1e7, 3);
     cout << "trans integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     //trans integral 1: res=2819.87, err=78.2318, fit=6.22363
 
     orig_integrate(res, err, fit, orig_integral_1_wrap, 1e7, 4);
     cout << "orig integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
-    */
+    
 }
