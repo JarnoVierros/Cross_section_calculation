@@ -204,11 +204,11 @@ int main() {
     cout << "orig integral 0: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     */
     
-    trans_integrate(res, err, fit, trans_integral_1_wrap, 1e7, 3);
+    trans_integrate(res, err, fit, trans_integral_1_wrap, 1e9, 4);
     cout << "trans integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     //trans integral 1: res=2819.87, err=78.2318, fit=6.22363
 
-    orig_integrate(res, err, fit, orig_integral_1_wrap, 1e7, 4);
+    orig_integrate(res, err, fit, orig_integral_1_wrap, 1e9, 5);
     cout << "orig integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     
 }
