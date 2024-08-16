@@ -259,6 +259,17 @@ void generate_dipole_amplitudes(string in_filename, string out_filename) {
 
     //array<array<array<array<array<array<array<double, 7>, 81>, 100>, 100>, 100>, 100>, 100> table;
 
+    cout << "Reading " << in_filename << endl;
+    rapidcsv::Document doc(in_filename);
+    
+    vector<double> r1_vec = doc.GetColumn<double>("r1");
+    vector<double> r2_vec = doc.GetColumn<double>("r2");
+    vector<double> b1_vec = doc.GetColumn<double>("b1");
+    vector<double> b2_vec = doc.GetColumn<double>("b2");
+    vector<double> z_vec = doc.GetColumn<double>("z");
+    vector<double> x_vec = doc.GetColumn<double>("x");
+    vector<double> N_vec = doc.GetColumn<double>("N");
+
     ofstream outfile(out_filename);
     outfile << "r1, r2, b1, b2, z, x, N\n";
 
@@ -270,6 +281,7 @@ void generate_dipole_amplitudes(string in_filename, string out_filename) {
     const int table_size = 100;
     const double r_limit = 40;
     const double b_limit = 20;
+    
     for (int r1i=0; r1i<table_size; r1i++) {
         for (int r2i=0; r2i<table_size; r2i++) {
             for (int b1i=0; b1i<table_size; b1i++) {
@@ -284,17 +296,17 @@ void generate_dipole_amplitudes(string in_filename, string out_filename) {
                             double x = pow(10, log10(x_start) + xi*x_step);
 
                             int best_index = 0;
-                            double best_distance = abs(r1-raw_table[0][0])/34.0 + abs(r2-raw_table[0][1])/34.0
-                                 + abs(b1-raw_table[0][3])/17.0 + abs(b1-raw_table[0][4])/17.0
-                                 + abs(z-raw_table[0][5]) + abs(x - raw_table[0][6]);;
+                            double best_distance = abs(r1-r1_vec[0])/34.0 + abs(r2-r2_vec[0])/34.0
+                                 + abs(b1-b1_vec[0])/17.0 + abs(b2-b2_vec[0])/17.0
+                                 + abs(z-z_vec[0]) + abs(x - x_vec[0]);
 
-                            for (int i=0; i<raw_table.size(); i++) {
-                                double distance = abs(r1-raw_table[i][0])/34.0 + abs(r2-raw_table[i][1])/34.0
-                                 + abs(b1-raw_table[i][3])/17.0 + abs(b1-raw_table[i][4])/17.0
-                                 + abs(z-raw_table[i][5]) + abs(x - raw_table[i][6]); // might need to boost x distance
+                            for (int i=0; i<r1_vec.size(); i++) {
+                                double distance = abs(r1-r1_vec[i])/34.0 + abs(r2-r2_vec[i])/34.0
+                                 + abs(b1-b1_vec[i])/17.0 + abs(b2-b2_vec[i])/17.0
+                                 + abs(z-z_vec[i]) + abs(x - x_vec[i]); // might need to boost x distance
                                 if (distance < best_distance) {
-                                best_index = i;
-                                best_distance = distance;
+                                    best_index = i;
+                                    best_distance = distance;
                                 }
                             }
                             /*
@@ -306,7 +318,7 @@ void generate_dipole_amplitudes(string in_filename, string out_filename) {
                             table[r1i][r2i][b1i][b2i][zi][xi][5] = raw_table[best_index][5];
                             table[r1i][r2i][b1i][b2i][zi][xi][6] = raw_table[best_index][6];       
                             */
-                            outfile << raw_table[best_index][0] << "," << raw_table[best_index][1] << "," << raw_table[best_index][3] << "," << raw_table[best_index][4] << "," << raw_table[best_index][5] << "," << raw_table[best_index][6] << "\n";
+                            outfile << r1_vec[best_index] << "," << r2_vec[best_index] << "," << b1_vec[best_index] << "," << b2_vec[best_index] << "," << z_vec[best_index] << "," << x_vec[best_index] << "," << N_vec[best_index] << "\n";
                         }
                     }
                 }
