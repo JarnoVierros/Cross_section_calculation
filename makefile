@@ -34,6 +34,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make GBW_LHC_diffractive_ccbar_cross_section
 	make GBW_var_change_LHC_diffractive_ccbar_cross_section
 	make integration_tests
+	make dipole_amplitude_generator
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -186,6 +187,9 @@ GBW_var_change_LHC_diffractive_ccbar_cross_section: GBW_var_change_LHC_diffracti
 integration_tests: integration_tests.cpp
 	g++ -Wall -c integration_tests.cpp $$(root-config --glibs --cflags --libs)
 	g++ integration_tests.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o integration_tests.exe
+
+dipole_amplitude_generator: dipole_amplitude_generator.cpp
+	g++ dipole_amplitude_generator.cpp -o dipole_amplitude_generator.exe
 
 clean:
 	-rm *.exe

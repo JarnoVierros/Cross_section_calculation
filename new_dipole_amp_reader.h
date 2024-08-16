@@ -168,6 +168,140 @@ double get_dipole_amplitude(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     return table[i+r_closer][j+b_closer][k+x_closer][3] + r_corr + b_corr + x_corr;
 }
 
+void generate_dipole_amplitudes(string in_filename, string out_filename) {
+    cout << "Reading " << in_filename << endl;
+    rapidcsv::Document doc(in_filename);
+    
+    vector<double> r_vec = doc.GetColumn<double>("r [GeV^-1]");
+    vector<double> b_min_vec = doc.GetColumn<double>("b_min [GeV^-1]");
+    vector<double> phi_vec = doc.GetColumn<double>("phi");
+    vector<double> Y = doc.GetColumn<double>("Y");
+    vector<double> N = doc.GetColumn<double>("N");
+
+    cout << "Dipole amplitude read successfully" << endl;
+    
+    const int icof = 30*30*81;
+    const int jcof = 30*81;
+
+    vector<array<double, 7>> raw_table;
+
+    for (int i=0; i<30; i++) {
+        for (int j=0; j<30; j++) {
+            for (int k=0; k<30; k++) {
+                for (int l=0; l<81; l++) {
+                    int index = i*icof + j*jcof + k*81 + l;
+
+                    double r = r_vec[index];
+                    double b_min = b_min_vec[index];
+                    double phi = phi_vec[index];
+
+                    if (phi > calc_max_phi(r, b_min)) {
+                        //cout << "skipping" << endl;
+                        continue; //Skip if phi is in forbidden region
+                    }
+
+                    for (int m=0; m<100; m++) {
+                        double theta = m/100*2*M_PI;
+                        for (int n=0; n<100; n++) {
+                            double z = n/100;
+
+                            double r1 = -r*cos(theta+phi);
+                            double r2 = -r*sin(theta+phi);
+                            double b1 = b_min*cos(theta) + (1-z)*r*cos(theta+phi);
+                            double b2 = b_min*sin(theta) + (1-z)*r*sin(theta+phi);
+                            double x = calc_x(Y[index]);
+                            double N_val = N[index];
+
+                            array<double, 7> cell = {r1, r2, b1, b2, z, x, N_val};
+                            raw_table.push_back(cell);
+
+                            double r1 = r*cos(theta+phi);
+                            double r2 = r*sin(theta+phi);
+
+                            cell = {r1, r2, b1, b2, z, x, N_val};
+                            raw_table.push_back(cell);
+
+                            double r1 = -r*cos(theta-phi);
+                            double r2 = -r*sin(theta-phi);
+                            double b1 = b_min*cos(theta) + (1-z)*r*cos(theta-phi);
+                            double b2 = b_min*sin(theta) + (1-z)*r*sin(theta-phi);
+
+                            cell = {r1, r2, b1, b2, z, x, N_val};
+                            raw_table.push_back(cell);
+
+                            double r1 = r*cos(theta-phi);
+                            double r2 = r*sin(theta-phi);
+
+                            cell = {r1, r2, b1, b2, z, x, N_val};
+                            raw_table.push_back(cell);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //array<array<array<array<array<array<array<double, 7>, 81>, 100>, 100>, 100>, 100>, 100> table;
+
+    ofstream outfile(out_filename);
+    outfile << "r1, r2, b1, b2, z, x, N\n";
+
+    const int x_steps = 100;
+    const double x_start = 1e-9; //2.37024e-05
+    const double x_stop = 0.01;
+    const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
+
+    const int table_size = 100;
+    const double r_limit = 40;
+    const double b_limit = 20;
+    for (int r1i=0; r1i<table_size; r1i++) {
+        for (int r2i=0; r2i<table_size; r2i++) {
+            for (int b1i=0; b1i<table_size; b1i++) {
+                for (int b2i=0; b2i<table_size; b2i++) {
+                    for (int zi=0; zi<table_size; zi++) {
+                        for (int xi=0; xi<81; xi++) {
+                            double r1 = r1i/table_size*2*r_limit - r_limit;
+                            double r2 = r2i/table_size*2*r_limit - r_limit;
+                            double b1 = b1i/table_size*2*b_limit - b_limit;
+                            double b2 = b2i/table_size*2*b_limit - b_limit;
+                            double z = zi/table_size*1;
+                            double x = pow(10, log10(x_start) + xi*x_step);
+
+                            int best_index = 0;
+                            double best_distance = abs(r1-raw_table[0][0])/34 + abs(r2-raw_table[0][1])/34
+                                 + abs(b1-raw_table[0][3])/17 + abs(b1-raw_table[0][4])/17
+                                 + abs(z-raw_table[0][5]) + abs(x - raw_table[0][6]);;
+
+                            for (int i=0; i<raw_table.size(); i++) {
+                                double distance = abs(r1-raw_table[i][0])/34 + abs(r2-raw_table[i][1])/34
+                                 + abs(b1-raw_table[i][3])/17 + abs(b1-raw_table[i][4])/17
+                                 + abs(z-raw_table[i][5]) + abs(x - raw_table[i][6]); // might need to boost x distance
+                                if (distance < best_distance) {
+                                best_index = i;
+                                best_distance = distance;
+                                }
+                            }
+                            /*
+                            table[r1i][r2i][b1i][b2i][zi][xi][0] = raw_table[best_index][0];
+                            table[r1i][r2i][b1i][b2i][zi][xi][1] = raw_table[best_index][1];
+                            table[r1i][r2i][b1i][b2i][zi][xi][2] = raw_table[best_index][2];
+                            table[r1i][r2i][b1i][b2i][zi][xi][3] = raw_table[best_index][3];
+                            table[r1i][r2i][b1i][b2i][zi][xi][4] = raw_table[best_index][4];
+                            table[r1i][r2i][b1i][b2i][zi][xi][5] = raw_table[best_index][5];
+                            table[r1i][r2i][b1i][b2i][zi][xi][6] = raw_table[best_index][6];       
+                            */
+                            outfile << raw_table[best_index][0] << "," << raw_table[best_index][1] << "," << raw_table[best_index][3] << "," << raw_table[best_index][4] << "," << raw_table[best_index][5] << "," << raw_table[best_index][6] << "\n";
+                        }
+                    }
+                }
+            }
+        }
+    }
+    cout << "Program finished successfully" << endl;
+}
+
+
+/*
 void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &table, string filename, double plot=false) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
@@ -178,7 +312,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     vector<double> Y = doc.GetColumn<double>("Y");
     vector<double> N = doc.GetColumn<double>("N");
 
-    cout << "Data read successfully" << endl;
+    cout << "Dipole amplitude read successfully" << endl;
     
     const int icof = 30*30*81;
     const int jcof = 30*81;
@@ -197,7 +331,7 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
                     //cout << "phi=" << phi[index] << ", max=" << calc_max_phi(r[index], b_min[index]) << endl;
                     if (phi[index] > calc_max_phi(r[index], b_min[index])) {
                         //cout << "skipping" << endl;
-                        break; //Skip if phi is in forbidden region
+                        continue; //Skip if phi is in forbidden region
                     }
                     double sub_b_value = calc_b(r[index], b_min[index], phi[index]);
                     if (sub_b_value == 0) {
@@ -361,3 +495,4 @@ void load_dipole_amplitudes(array<array<array<array<double, 4>, 81>, 30>, 30> &t
     cout << "x sorting finished, table ready" << endl;
 
 }
+*/
