@@ -147,7 +147,8 @@ double calc_b_bar(double r, double b_min, double phi, double r_bar, double phi_b
   return 1/cos(theta_bar)*(b_min + (1-z)*r*cos(phi) - (1-z)*r_bar*cos(theta_bar+phi_bar));
 }
 
-double trans_T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta, double M_X, double theta_selection[4]) {
+double trans_T_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double Q2, double x, double beta, double theta_selection[4]) {
+  double z = 1.0/2;
   if (z*(1-z)*M_X*M_X-m_f*m_f < 0) {
     return 0;
   }
@@ -170,8 +171,8 @@ double trans_T_integrand(double r, double b_min, double phi, double r_bar, doubl
     //cout << "r=" << r << ", bmin=" << b_min << ", phi=" << phi << "r_bar=" << r_bar << ", phi_bar=" << phi_bar << ", z=" << z << ", Q2=" << Q2 << ", x=" << x << ", beta=" << beta << ", M_X=" << M_X << endl;
     //cout << "b=" << sqrt(b_min*b_min+2*(1-z)*b_min*r*cos(phi)+gsl_pow_2(1-z)*r*r) << ", b_bar=" << sqrt(b_min_bar*b_min_bar+gsl_pow_2(1-z)*r_bar*r_bar+(1-z)*2*r_bar*b_min_bar*cos(phi_bar)) << endl << endl;
     
-    double sub_integrand = 0.01*1/abs(cos(theta_bar[i]))*1/abs(b_min_bar*cos(theta_bar[i])+(1-z)*r_bar*cos(theta_bar[i]+phi_bar))
-    *16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f*r*b_min*r_bar
+    double sub_integrand = 1/abs(cos(theta_bar[i]))*1/abs(b_min_bar*cos(theta_bar[i])+(1-z)*r_bar*cos(theta_bar[i]+phi_bar))
+    *16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f*r*b_min*r_bar*b_min_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*M_X*M_X-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))
     *dipole_amplitude(r, x, sqrt(b_min*b_min+2*(1-z)*b_min*r*cos(phi)+gsl_pow_2(1-z)*r*r))*dipole_amplitude(r_bar, x, sqrt(b_min_bar*b_min_bar+gsl_pow_2(1-z)*r_bar*r_bar+(1-z)*2*r_bar*b_min_bar*cos(phi_bar)));
@@ -193,7 +194,7 @@ struct parameters {double Q2; double x; double beta; double theta_1; double thet
 double trans_T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
   double theta_selection[4] = {par->theta_1, par->theta_2, par->theta_3, par->theta_4};
-  return trans_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x, par->beta, k[6], theta_selection);
+  return trans_T_integrand(k[0], k[1], k[2], k[3], k[4], par->Q2, par->x, par->beta, theta_selection);
 }
 
 struct thread_par_struct
@@ -213,11 +214,11 @@ struct thread_par_struct
 
 void trans_integrate_for_T_sigma(thread_par_struct par) {
 
-  const int dim = 7;
+  const int dim = 5;
   double res, err;
 
-  double xl[dim] = {0, 0, 0, 0, 0, 0, M_X};
-  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI, 1, 1.1*M_X};
+  double xl[dim] = {0, 0, 0, 0, 0};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, r_limit, M_PI};
 
   struct parameters params = {1, 1, 1, 1};
   params.Q2 = par.Q2;
@@ -270,7 +271,8 @@ void trans_integrate_for_T_sigma(thread_par_struct par) {
   gsl_monte_vegas_free(T_s);
 }
 
-double orig_T_integrand(double rx, double ry, double rx_bar, double ry_bar, double b, double z, double Q2, double x, double M_X) {
+double orig_T_integrand(double rx, double ry, double rx_bar, double ry_bar, double b, double Q2, double x) {
+    double z = 1.0/2;
     if (z*(1-z)*M_X*M_X-m_f*m_f<0) {
         return 0;
     }
@@ -283,16 +285,16 @@ double orig_T_integrand(double rx, double ry, double rx_bar, double ry_bar, doub
 
 double orig_T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return orig_T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], par->Q2, par->x, k[6]);
+  return orig_T_integrand(k[0], k[1], k[2], k[3], k[4], par->Q2, par->x);
 }
 
 void orig_integrate_for_T_sigma(thread_par_struct par) {
 
-  const int dim = 7;
+  const int dim = 5;
   double res, err;
 
-  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, 0, 0, M_X};
-  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit, 1, 1.1*M_X};
+  double xl[dim] = {-r_limit, -r_limit, -r_limit, -r_limit, 0};
+  double xu[dim] = {r_limit, r_limit, r_limit, r_limit, b_min_limit};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
@@ -319,7 +321,7 @@ void orig_integrate_for_T_sigma(thread_par_struct par) {
   if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
   for (int i=0; i<integration_iterations; i++) {
     static auto t1 = chrono::high_resolution_clock::now();
-    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, 1000000, rng, T_s, &res, &err);
     if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
     static auto t2 = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);

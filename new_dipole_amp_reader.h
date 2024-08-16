@@ -3,12 +3,12 @@
 #include <vector>
 #include <rapidcsv.h>
 #include <math.h>
-
+/*
 #include "TGraph.h"
 #include "TCanvas.h"
 #include "TAxis.h"
 #include "TLine.h"
-
+*/
 using namespace std;
 
 const double x_0 = 0.01;
@@ -183,63 +183,79 @@ void generate_dipole_amplitudes(string in_filename, string out_filename) {
     const int icof = 30*30*81;
     const int jcof = 30*81;
 
-    vector<array<double, 7>> raw_table;
+    ofstream outfile1("data/variable_change_table.txt");
+    outfile1 << "r1, r2, b1, b2, z, x, N\n";
 
-    for (int i=0; i<30; i++) {
-        for (int j=0; j<30; j++) {
-            for (int k=0; k<30; k++) {
-                for (int l=0; l<81; l++) {
-                    int index = i*icof + j*jcof + k*81 + l;
+    int index;
+    double r, b_min, phi, theta, z;
+    double r1, r2, b1, b2, x, N_val;
+    int i, j, k, l, m, n;
+    array<double, 7> cell;
 
-                    double r = r_vec[index];
-                    double b_min = b_min_vec[index];
-                    double phi = phi_vec[index];
+    for (i=0; i<30; i++) {
+        for (j=0; j<30; j++) {
+            for (k=0; k<30; k++) {
+                for (l=0; l<81; l++) {
+                    index = i*icof + j*jcof + k*81 + l;
+
+                    r = r_vec[index];
+                    b_min = b_min_vec[index];
+                    phi = phi_vec[index];
 
                     if (phi > calc_max_phi(r, b_min)) {
                         //cout << "skipping" << endl;
                         continue; //Skip if phi is in forbidden region
                     }
 
-                    for (int m=0; m<100; m++) {
-                        double theta = m/100*2*M_PI;
-                        for (int n=0; n<100; n++) {
-                            double z = n/100;
+                    for (m=0; m<100; m++) {
+                        theta = m/100.0*2*M_PI;
+                        for (n=0; n<100; n++) {
+                            z = n/100.0;
 
-                            double r1 = -r*cos(theta+phi);
-                            double r2 = -r*sin(theta+phi);
-                            double b1 = b_min*cos(theta) + (1-z)*r*cos(theta+phi);
-                            double b2 = b_min*sin(theta) + (1-z)*r*sin(theta+phi);
-                            double x = calc_x(Y[index]);
-                            double N_val = N[index];
-
-                            array<double, 7> cell = {r1, r2, b1, b2, z, x, N_val};
-                            raw_table.push_back(cell);
-
-                            double r1 = r*cos(theta+phi);
-                            double r2 = r*sin(theta+phi);
+                            r1 = -r*cos(theta+phi);
+                            r2 = -r*sin(theta+phi);
+                            b1 = b_min*cos(theta) + (1-z)*r*cos(theta+phi);
+                            b2 = b_min*sin(theta) + (1-z)*r*sin(theta+phi);
+                            x = calc_x(Y[index]);
+                            N_val = N[index];
 
                             cell = {r1, r2, b1, b2, z, x, N_val};
-                            raw_table.push_back(cell);
+                            //raw_table.push_back(cell);
+                            outfile1 << r1 << "," << r2 << "," << b1 << "," << b2 << "," << z << "," << x << "," << N_val << "\n";
 
-                            double r1 = -r*cos(theta-phi);
-                            double r2 = -r*sin(theta-phi);
-                            double b1 = b_min*cos(theta) + (1-z)*r*cos(theta-phi);
-                            double b2 = b_min*sin(theta) + (1-z)*r*sin(theta-phi);
-
-                            cell = {r1, r2, b1, b2, z, x, N_val};
-                            raw_table.push_back(cell);
-
-                            double r1 = r*cos(theta-phi);
-                            double r2 = r*sin(theta-phi);
+                            r1 = r*cos(theta+phi);
+                            r2 = r*sin(theta+phi);
 
                             cell = {r1, r2, b1, b2, z, x, N_val};
-                            raw_table.push_back(cell);
+                            //raw_table.push_back(cell);
+                            outfile1 << r1 << "," << r2 << "," << b1 << "," << b2 << "," << z << "," << x << "," << N_val << "\n";
+
+                            r1 = -r*cos(theta-phi);
+                            r2 = -r*sin(theta-phi);
+                            b1 = b_min*cos(theta) + (1-z)*r*cos(theta-phi);
+                            b2 = b_min*sin(theta) + (1-z)*r*sin(theta-phi);
+
+                            cell = {r1, r2, b1, b2, z, x, N_val};
+                            //raw_table.push_back(cell);
+                            outfile1 << r1 << "," << r2 << "," << b1 << "," << b2 << "," << z << "," << x << "," << N_val << "\n";
+
+                            r1 = r*cos(theta-phi);
+                            r2 = r*sin(theta-phi);
+
+                            cell = {r1, r2, b1, b2, z, x, N_val};
+                            //raw_table.push_back(cell);
+                            outfile1 << r1 << "," << r2 << "," << b1 << "," << b2 << "," << z << "," << x << "," << N_val << "\n";
                         }
                     }
                 }
+                //cout << raw_table.size() << endl;
             }
+            cout << "b_min" << endl;
         }
+        cout << "r" << endl;
     }
+    outfile1.close();
+    cout << "Variable change completed" << endl;
 
     //array<array<array<array<array<array<array<double, 7>, 81>, 100>, 100>, 100>, 100>, 100> table;
 
@@ -260,21 +276,21 @@ void generate_dipole_amplitudes(string in_filename, string out_filename) {
                 for (int b2i=0; b2i<table_size; b2i++) {
                     for (int zi=0; zi<table_size; zi++) {
                         for (int xi=0; xi<81; xi++) {
-                            double r1 = r1i/table_size*2*r_limit - r_limit;
-                            double r2 = r2i/table_size*2*r_limit - r_limit;
-                            double b1 = b1i/table_size*2*b_limit - b_limit;
-                            double b2 = b2i/table_size*2*b_limit - b_limit;
-                            double z = zi/table_size*1;
+                            double r1 = r1i/table_size*2.0*r_limit - r_limit;
+                            double r2 = r2i/table_size*2.0*r_limit - r_limit;
+                            double b1 = b1i/table_size*2.0*b_limit - b_limit;
+                            double b2 = b2i/table_size*2.0*b_limit - b_limit;
+                            double z = zi/table_size*1.0;
                             double x = pow(10, log10(x_start) + xi*x_step);
 
                             int best_index = 0;
-                            double best_distance = abs(r1-raw_table[0][0])/34 + abs(r2-raw_table[0][1])/34
-                                 + abs(b1-raw_table[0][3])/17 + abs(b1-raw_table[0][4])/17
+                            double best_distance = abs(r1-raw_table[0][0])/34.0 + abs(r2-raw_table[0][1])/34.0
+                                 + abs(b1-raw_table[0][3])/17.0 + abs(b1-raw_table[0][4])/17.0
                                  + abs(z-raw_table[0][5]) + abs(x - raw_table[0][6]);;
 
                             for (int i=0; i<raw_table.size(); i++) {
-                                double distance = abs(r1-raw_table[i][0])/34 + abs(r2-raw_table[i][1])/34
-                                 + abs(b1-raw_table[i][3])/17 + abs(b1-raw_table[i][4])/17
+                                double distance = abs(r1-raw_table[i][0])/34.0 + abs(r2-raw_table[i][1])/34.0
+                                 + abs(b1-raw_table[i][3])/17.0 + abs(b1-raw_table[i][4])/17.0
                                  + abs(z-raw_table[i][5]) + abs(x - raw_table[i][6]); // might need to boost x distance
                                 if (distance < best_distance) {
                                 best_index = i;

@@ -162,7 +162,8 @@ double trans_integral_1_wrap(double *k, size_t dim, void * params) {
     return trans_integral_1(k[0], k[1], k[2], k[3]);
 }
 
-double trans_integral_2(double r, double b_min, double phi, double r_bar, double phi_bar, double z) {
+double trans_integral_2(double r, double b_min, double phi, double r_bar, double phi_bar) {
+    double z = 1.0/2;
     if (calc_max_phi(r, b_min) < phi) {
         return 0;
     }
@@ -178,7 +179,8 @@ double trans_integral_2(double r, double b_min, double phi, double r_bar, double
         }
         double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i], z);
 
-        double sub_integrand = r*b_min*4*2*M_PI*1/(r*r*r+1)*1/(gsl_pow_3(sqrt(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r))+1)*1/(r_bar*r_bar*r_bar+1);
+        double sub_integrand = 1/abs(cos(theta_bar[i]))*1/abs(b_min_bar*cos(theta_bar[i])+(1-z)*r_bar*cos(theta_bar[i]+phi_bar))
+        *r*b_min*r_bar*b_min_bar*4*2*M_PI*exp(-1*(r + sqrt(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r) + r_bar));
         if (gsl_isnan(sub_integrand)) {
             cout << "T sub_integrand " << i << " is nan" << endl;
             sub_integrand = 0;
@@ -190,7 +192,7 @@ double trans_integral_2(double r, double b_min, double phi, double r_bar, double
 }
 
 double trans_integral_2_wrap(double *k, size_t dim, void * params) {
-    return trans_integral_2(k[0], k[1], k[2], k[3], k[4], k[5]);
+    return trans_integral_2(k[0], k[1], k[2], k[3], k[4]);
 }
 
 double orig_integral_0(double r1, double r2) {
@@ -209,12 +211,12 @@ double orig_integral_1_wrap(double *k, size_t dim, void * params) {
     return orig_integral_1(k[0], k[1], k[2],  k[3],  k[4]);
 }
 
-double orig_integral_2(double r1, double r2, double b1, double b2, double r1_bar, double r2_bar, double z) {
-    return 1/(gsl_pow_3(sqrt(r1*r1+r2*r2))+1)*1/(gsl_pow_3(sqrt(b1*b1+b2*b2))+1)*1/(gsl_pow_3(sqrt(r1_bar*r1_bar+r2_bar*r2_bar))+1);
+double orig_integral_2(double r1, double r2, double b1, double b2, double r1_bar, double r2_bar) {
+    return exp(-1*(sqrt(r1*r1+r2*r2) + sqrt(b1*b1+b2*b2) + sqrt(r1_bar*r1_bar+r2_bar*r2_bar)));
 }
 
 double orig_integral_2_wrap(double *k, size_t dim, void * params) {
-    return orig_integral_2(k[0], k[1], k[2],  k[3],  k[4], k[5],  k[6]);
+    return orig_integral_2(k[0], k[1], k[2],  k[3],  k[4], k[5]);
 }
 
 void trans_integrate(double &return_res, double &return_err, double &return_fit, double (*func)(double *x_array, size_t, void *params), int calls, size_t dim) {
@@ -245,7 +247,7 @@ void trans_integrate(double &return_res, double &return_err, double &return_fit,
         xu[2] = M_PI;
         xl[3] = 0;
         xu[3] = 1;
-    } else if (dim==6) {
+    } else if (dim==5) {
         xl[0] = 0;
         xu[0] = radius;
         xl[1] = 0;
@@ -256,8 +258,6 @@ void trans_integrate(double &return_res, double &return_err, double &return_fit,
         xu[3] = radius;
         xl[4] = 0;
         xu[4] = M_PI;
-        xl[5] = 0;
-        xu[5] = 1;
     }
 
     struct parameters params = {1};
@@ -320,7 +320,7 @@ void orig_integrate(double &return_res, double &return_err, double &return_fit, 
         xu[3] = width;
         xl[4] = 0;
         xu[4] = 1;
-    } else if (dim==7) {
+    } else if (dim==6) {
         xl[0] = -width;
         xu[0] = width;
         xl[1] = -width;
@@ -333,8 +333,6 @@ void orig_integrate(double &return_res, double &return_err, double &return_fit, 
         xu[4] = width;
         xl[5] = -width;
         xu[5] = width;
-        xl[6] = 0;
-        xu[6] = 1;
     }
 
     struct parameters params = {1};
@@ -385,9 +383,9 @@ int main() {
     orig_integrate(res, err, fit, orig_integral_1_wrap, 1e9, 5);
     cout << "orig integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     */
-    trans_integrate(res, err, fit, trans_integral_2_wrap, 1e6, 6);
+    trans_integrate(res, err, fit, trans_integral_2_wrap, 1e7, 5);
     cout << "trans integral 2: res=" << res << ", err=" << err << ", fit=" << fit << endl;
 
-    orig_integrate(res, err, fit, orig_integral_2_wrap, 1e6, 7);
+    orig_integrate(res, err, fit, orig_integral_2_wrap, 1e6, 6);
     cout << "orig integral 2: res=" << res << ", err=" << err << ", fit=" << fit << endl;
 }
