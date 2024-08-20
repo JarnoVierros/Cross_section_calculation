@@ -40,6 +40,7 @@ void parse_line(string line, double &r1, double &r2, double &b1, double &b2, dou
             break;
         }
         value += line[i];
+        i++;
     }
     i++;
     r1 = stod(value);
@@ -51,6 +52,7 @@ void parse_line(string line, double &r1, double &r2, double &b1, double &b2, dou
             break;
         }
         value += line[i];
+        i++;
     }
     i++;
     r2 = stod(value);
@@ -61,6 +63,7 @@ void parse_line(string line, double &r1, double &r2, double &b1, double &b2, dou
             break;
         }
         value += line[i];
+        i++;
     }
     i++;
     b1 = stod(value);
@@ -71,6 +74,7 @@ void parse_line(string line, double &r1, double &r2, double &b1, double &b2, dou
             break;
         }
         value += line[i];
+        i++;
     }
     i++;
     b2 = stod(value);
@@ -81,16 +85,18 @@ void parse_line(string line, double &r1, double &r2, double &b1, double &b2, dou
             break;
         }
         value += line[i];
+        i++;
     }
     i++;
     x = stod(value);
 
     value = "";
     while (true) {
-        if (line[i] == '\n') {
+        if (i == line.size()) {
             break;
         }
         value += line[i];
+        i++;
     }
     N = stod(value);
 }
@@ -323,7 +329,7 @@ void generate_dipole_amplitudes(string in_filename, string out_filename, bool sk
 
     }
 
-    ifstream infile("variable_change_table.txt");
+    ifstream infile1("data/variable_change_table.txt");
 
     ofstream outfile(out_filename);
     outfile << "r1,r2,b1,b2,x,N\n";
@@ -333,48 +339,62 @@ void generate_dipole_amplitudes(string in_filename, string out_filename, bool sk
     const double x_stop = 0.01;
     const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
-    const int table_size = 100;
+    const int table_size = 30;
     const double r_limit = 40;
     const double b_limit = 20;
 
     double first_table_r1, first_table_r2, first_table_b1, first_table_b2, first_table_x, first_table_N;
     
     string line;
-    while (getline(infile, line)) {
+    while (getline(infile1, line)) {
+        if (line == "r1,r2,b1,b2,x,N") {
+            cout << "skipping first line" << endl;
+            continue;
+        }
         parse_line(line, first_table_r1, first_table_r2, first_table_b1, first_table_b2, first_table_x, first_table_N);
         break;
     }
     
-    for (int r1i=0; r1i<table_size; r1i++) {
-        for (int r2i=0; r2i<table_size; r2i++) {
-            for (int b1i=0; b1i<table_size; b1i++) {
-                for (int b2i=0; b2i<table_size; b2i++) {
-                    for (int xi=0; xi<81; xi++) {
-                        cout << "loop" << endl;
-                        double r1 = r1i/table_size*2.0*r_limit - r_limit;
-                        double r2 = r2i/table_size*2.0*r_limit - r_limit;
-                        double b1 = b1i/table_size*2.0*b_limit - b_limit;
-                        double b2 = b2i/table_size*2.0*b_limit - b_limit;
-                        double x = pow(10, log10(x_start) + xi*x_step);
+    double r1, r2, b1, b2, x, table_r1, table_r2, table_b1, table_b2, table_x, table_N, best_table_r1, best_table_r2, best_table_b1, best_table_b2, best_table_x, best_table_N;
+    double best_distance, distance;
+    int best_index, r1i, r2i, b1i, b2i, xi;
 
-                        double table_r1, table_r2, table_b1, table_b2, table_x, table_N;
-                        double best_table_r1 = first_table_r1;
-                        double best_table_r2 = first_table_r2;
-                        double best_table_b1 = first_table_b1;
-                        double best_table_b2 = first_table_b2;
-                        double best_table_x = first_table_x;
-                        double best_table_N = first_table_N;
+    for (r1i=0; r1i<table_size; r1i++) {
+        for (r2i=0; r2i<table_size; r2i++) {
+            for (b1i=0; b1i<table_size; b1i++) {
+                for (b2i=0; b2i<table_size; b2i++) {
+                    for (xi=0; xi<81; xi++) {
+                        cout << "loop1" << endl;
+                        r1 = r1i/table_size*2.0*r_limit - r_limit;
+                        r2 = r2i/table_size*2.0*r_limit - r_limit;
+                        b1 = b1i/table_size*2.0*b_limit - b_limit;
+                        b2 = b2i/table_size*2.0*b_limit - b_limit;
+                        x = pow(10, log10(x_start) + xi*x_step);
 
-                        parse_line(line, table_r1, table_r2, table_b1, table_b2, table_x, table_N);
+                        //table_r1, table_r2, table_b1, table_b2, table_x, table_N;
+                        best_table_r1 = first_table_r1;
+                        best_table_r2 = first_table_r2;
+                        best_table_b1 = first_table_b1;
+                        best_table_b2 = first_table_b2;
+                        best_table_x = first_table_x;
+                        best_table_N = first_table_N;
 
-                        int best_index = 0;
-                        double best_distance = abs(r1-first_table_r1)/34.0 + abs(r2-first_table_r2)/34.0
+                        //parse_line(line, table_r1, table_r2, table_b1, table_b2, table_x, table_N);
+
+                        best_index = 0;
+                        best_distance = abs(r1-first_table_r1)/34.0 + abs(r2-first_table_r2)/34.0
                                 + abs(b1-first_table_b1)/17.0 + abs(b2-first_table_b2)/17.0
                                 + abs(x - first_table_x);
 
-                        while (getline(infile, line)) {
+                        ifstream infile2("data/variable_change_table.txt");
+                        while (getline(infile2, line)) {
+                            if (line == "r1,r2,b1,b2,x,N") {
+                                cout << "skipping first line" << endl;
+                                continue;
+                            }
+                            //cout << "loop2" << endl;
                             parse_line(line, table_r1, table_r2, table_b1, table_b2, table_x, table_N);
-                            double distance = abs(r1-table_r1)/34.0 + abs(r2-table_r2)/34.0
+                            distance = abs(r1-table_r1)/34.0 + abs(r2-table_r2)/34.0
                                 + abs(b1-table_b1)/17.0 + abs(b2-table_b2)/17.0
                                 + abs(x - table_x); // might need to boost x distance
                             if (distance < best_distance) {
