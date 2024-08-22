@@ -31,8 +31,8 @@ const double m_f = 1.27;
 
 const double normalization = 1.0/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
-const double r_limit = 34.64; // 34.64
-const double b_min_limit = 17.32; // 17.32
+static double r_limit; // 34.64
+static double b_min_limit; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
@@ -189,6 +189,17 @@ int main() {
   } else if (nucleus_type == "Pb") {
     load_Pb_dipole_amplitudes(Pb_table, filename);
   } else {
+    throw 1;
+  }
+
+  if (nucleus_type == "Pb") {
+    r_limit = 657; // 34.64, 657
+    b_min_limit = 328; // 17.32, 328
+  } else if (nucleus_type == "p") {
+    r_limit = 34.64;
+    b_min_limit = 17.32;
+  } else {
+    cout << "invalid nucleus type" << endl;
     throw 1;
   }
 

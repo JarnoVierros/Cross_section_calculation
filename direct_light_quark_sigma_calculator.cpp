@@ -31,8 +31,8 @@ const double m_f = 0; //GeV 1.27
 
 const double normalization = 1.0/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
-const double r_limit = 34.64; // 34.64
-const double b_min_limit = 17.32; // 17.32
+static double r_limit; // 34.64
+static double b_min_limit; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
@@ -335,17 +335,17 @@ int main() {
   } else {
     throw 1;
   }
-  
-  /*
-  for (long unsigned int i=0; i<Q2_values.size(); i++) {
-    cout << "Q2=" << Q2_values[i] << endl;
-    cout << "beta=" << beta_values[i] << endl;
-    cout << "x=" << x_values[i] << endl;
-    cout << "x_pom_F2=" << x_pom_F2_values[i] << endl;
-    cout << "delta_stat=" << delta_stat_values[i] << endl;
-    cout << "delta_sys=" << delta_sys_values[i] << endl;
+
+  if (nucleus_type == "Pb") {
+    r_limit = 657; // 34.64, 657
+    b_min_limit = 328; // 17.32, 328
+  } else if (nucleus_type == "p") {
+    r_limit = 34.64;
+    b_min_limit = 17.32;
+  } else {
+    cout << "invalid nucleus type" << endl;
+    throw 1;
   }
-  */
 
   thread L_integration_threads[data_inclusion_count], T_integration_threads[data_inclusion_count];
   double L_sigma[data_inclusion_count], L_error[data_inclusion_count], L_fit[data_inclusion_count];
