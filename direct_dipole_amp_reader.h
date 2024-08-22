@@ -25,12 +25,15 @@ double calc_x(double Y) {
     return exp(-Y)*x_0;
 }
 
-double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> &table, double r, double b, double phi, double x) {
+double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> &table, double r, double b, double phi, double x, bool limit_phi=true) {
     //cout << "Getting amplitude, r=" << r << ", b=" << b << ", phi=" << phi << ", x=" << x << endl;
 
-    if (phi > calc_max_phi(r, b)) {
-        return 0;
+    if (limit_phi) {
+        if (phi > calc_max_phi(r, b)) {
+            return 0;
+        }
     }
+    
 
     long unsigned int i = 0;
     long unsigned int i_closer = 0;
@@ -221,11 +224,13 @@ double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>
     return table[i_closer][j_closer][k_closer][l_closer][4] + r_corr + b_corr + phi_corr + x_corr;
 }
 
-double get_Pb_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> &table, double r, double b, double phi, double x) {
+double get_Pb_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> &table, double r, double b, double phi, double x, bool limit_phi=true) {
     //cout << "Getting amplitude, r=" << r << ", b=" << b << ", phi=" << phi << ", x=" << x << endl;
 
-    if (phi > calc_max_phi(r, b)) {
-        return 0;
+    if (limit_phi) {
+        if (phi > calc_max_phi(r, b)) {
+            return 0;
+        }
     }
 
     long unsigned int i = 0;

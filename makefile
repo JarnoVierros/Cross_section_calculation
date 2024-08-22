@@ -35,6 +35,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make GBW_var_change_LHC_diffractive_ccbar_cross_section
 	make integration_tests
 	make dipole_amplitude_generator
+	make direct_J_differential_diffractive_sigma
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -190,6 +191,10 @@ integration_tests: integration_tests.cpp
 
 dipole_amplitude_generator: dipole_amplitude_generator.cpp
 	g++ dipole_amplitude_generator.cpp -o dipole_amplitude_generator.exe
+
+direct_J_differential_diffractive_sigma: direct_J_differential_diffractive_sigma.cpp
+	g++ -Wall -c direct_J_differential_diffractive_sigma.cpp $$(root-config --glibs --cflags --libs)
+	g++ direct_J_differential_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o direct_J_differential_diffractive_sigma.exe
 
 clean:
 	-rm *.exe
