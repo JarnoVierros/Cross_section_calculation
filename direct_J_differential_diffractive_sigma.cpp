@@ -37,15 +37,15 @@ static double b_min_limit; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 100000;
-const int integration_calls = 1000000;
+static int warmup_calls;
+static int integration_calls;
 const int integration_iterations = 1;
 
 //const string filename_end = "_20mil_85-225";//
 
 const int debug_precision = 10;
 
-const string dipole_amp_type = "bfkl";
+const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
 const string filename_end = "";
 
@@ -97,6 +97,14 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   double bminbar = sqrt(gsl_pow_2(b1+(1-z)*r1bar) + gsl_pow_2(b2+(1-z)*r2bar));
   double phi = calc_phi(r1, r2, b1, b2, z);
   double phibar = calc_phi(r1bar, r2bar, b1, b2, z);
+
+  if (r > r_limit) {
+    cout << "r overlflow, r=" << r << endl;
+  }
+
+  if (bmin > b_min_limit) {
+    cout << "bmin overlflow, bmin=" << bmin << endl;
+  }
 
   return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
@@ -195,17 +203,21 @@ int main() {
   if (nucleus_type == "Pb") {
     r_limit = 657; // 34.64, 657
     b_min_limit = 328; // 17.32, 328
+    warmup_calls = 100000;
+    integration_calls = 5000000;
   } else if (nucleus_type == "p") {
     r_limit = 34.64;
     b_min_limit = 17.32;
+    warmup_calls = 100000;
+    integration_calls = 100000;
   } else {
     cout << "invalid nucleus type" << endl;
     throw 1;
   }
 
-  double Q2 = 5;
-  double beta = 0.3;
-  double x = 1e-4;
+  double Q2 = 7.5;
+  double beta = 0.2;
+  double x = 1e-3;
 
   double z_min = (1-sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
   double z_max = (1+sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;

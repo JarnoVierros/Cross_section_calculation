@@ -41,14 +41,12 @@ const int warmup_calls = 100000;
 const int integration_calls = 1000000;//20 000 000
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bfkl";
+const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
-const string filename_end = "";
+const string filename_end = "_direct_1mil_20-50_xpom";
 
-const int i_start = 0; // number of data points to skip
-const int data_inclusion_count = 20;
-
-const string filename_end = "_direct_1mil_0-19_xpom";//
+const int i_start = 20; // number of data points to skip
+const int data_inclusion_count = 31;
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;

@@ -96,8 +96,8 @@ int main() {
 
   vector<double> L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit;
   string L_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/archive/data/diffractive/differential/measurement_comparison/x_pom/differential_diffractive_L_20mil_0-19_xpom.txt",
-      "/home/jarno/Cross_section_calculation/archive/data/diffractive/differential/measurement_comparison/x_pom/differential_diffractive_L_20mil_20-59_xpom.txt"
+      "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_direct_10mil_0-19_xpom.txt",
+      "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_direct_1mil_20-50_xpom.txt"
     };
 
   for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -112,8 +112,8 @@ int main() {
 
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
   string T_prediction_filenames[] = {
-    "/home/jarno/Cross_section_calculation/archive/data/diffractive/differential/measurement_comparison/x_pom/differential_diffractive_T_20mil_0-19_xpom.txt",
-    "/home/jarno/Cross_section_calculation/archive/data/diffractive/differential/measurement_comparison/x_pom/differential_diffractive_T_20mil_20-59_xpom.txt"
+    "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_direct_10mil_0-19_xpom.txt",
+    "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_direct_1mil_20-50_xpom.txt"
   };
 
   for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -157,7 +157,7 @@ int main() {
 
   double beta_selections[] = {
     0.04, 0.1, 0.2, 0.4, 0.65, 0.9,
-    0.04, 0.1, 0.2, 0.4, 0.65, 0.9,
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
     };
 
   if (size(Q2_selections) != size(beta_selections)) {
@@ -233,10 +233,11 @@ int main() {
         cout << "Warning: T prediction not found" << endl;
         T_sigma = 0;
       }
-      chosen_prediction_xpomF2.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma));
-      chosen_prediction_xpomFL.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
-      chosen_prediction_xpomFT.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
-      chosen_prediction_error.push_back(Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error));
+      const double correction = 1;//12
+      chosen_prediction_xpomF2.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma));
+      chosen_prediction_xpomFL.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
+      chosen_prediction_xpomFT.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
+      chosen_prediction_error.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error));
     }
 /*
 struct plot {
