@@ -59,18 +59,6 @@ double epsilon2(double z, double Q2) {
 double epsilon(double z, double Q2) {
   return sqrt(epsilon2(z, Q2));
 }
-/*
-double dipole_amplitude(double r, double b_min, double phi, double W, double Q2) {
-  double shifted_x = Q2/(W*W+Q2) + 4*m_f*m_f/(W*W+Q2);
-  if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, shifted_x);
-  } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, shifted_x);
-  } else {
-    throw 1;
-  }
-}
-*/
 
 double dipole_amplitude(double r, double b_min, double phi, double x) {
   if (nucleus_type == "p") {
@@ -113,7 +101,7 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(r1*r1bar+r2*r2bar)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))
-  *dipole_amplitude(r, bmin, phi, x)*dipole_amplitude(rbar, bminbar, phibar, x);
+  *dipole_amplitude(r, bmin, phi, x/beta)*dipole_amplitude(rbar, bminbar, phibar, x/beta);
 }
 
 struct parameters {double Q2; double x; double beta;};
@@ -148,7 +136,7 @@ void integrate_for_T_sigma(thread_par_struct par) {
   double xl[dim] = {-r_limit, -r_limit, -b_min_limit, -b_min_limit, -r_limit, -r_limit, z_min};
   double xu[dim] = {r_limit, r_limit, b_min_limit, b_min_limit, r_limit, r_limit, z_max};
 
-  struct parameters params = {1, 1};
+  struct parameters params = {1, 1, 1};
   params.Q2 = par.Q2;
   params.x = par.x;
   params.beta = par.beta;
