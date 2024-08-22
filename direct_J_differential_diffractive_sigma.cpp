@@ -104,23 +104,23 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   double bmin, bminbar, phi, phibar;
   
   if (x2 < y2) {
-    double bmin = sqrt(gsl_pow_2(b1+(1-z)*r1) + gsl_pow_2(b2+(1-z)*r2));
-    double phi = calc_phi(r1, r2, b1, b2, z);
+    bmin = sqrt(gsl_pow_2(b1+(1-z)*r1) + gsl_pow_2(b2+(1-z)*r2));
+    phi = calc_phi(r1, r2, b1, b2, z);
   } else {
-    double bmin = sqrt(gsl_pow_2(b1-(1-z)*r1) + gsl_pow_2(b2-(1-z)*r2));
-    double phi = calc_phi(-r1, -r2, b1, b2, z);
+    bmin = sqrt(gsl_pow_2(b1-(1-z)*r1) + gsl_pow_2(b2-(1-z)*r2));
+    phi = calc_phi(-r1, -r2, b1, b2, z);
   }
 
   if (x2bar < y2bar) {
-    double bminbar = sqrt(gsl_pow_2(b1+(1-z)*r1bar) + gsl_pow_2(b2+(1-z)*r2bar));
-    double phibar = calc_phi(r1bar, r2bar, b1, b2, z);
+    bminbar = sqrt(gsl_pow_2(b1+(1-z)*r1bar) + gsl_pow_2(b2+(1-z)*r2bar));
+    phibar = calc_phi(r1bar, r2bar, b1, b2, z);
   } else {
-    double bminbar = sqrt(gsl_pow_2(b1-(1-z)*r1bar) + gsl_pow_2(b2-(1-z)*r2bar));
-    double phibar = calc_phi(-r1bar, -r2bar, b1, b2, z);
+    bminbar = sqrt(gsl_pow_2(b1-(1-z)*r1bar) + gsl_pow_2(b2-(1-z)*r2bar));
+    phibar = calc_phi(-r1bar, -r2bar, b1, b2, z);
   }
 
 
-
+  /*
   if (r > r_limit) {
     cout << "r overlflow, r=" << r << endl;
   }
@@ -128,6 +128,7 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   if (bmin > b_min_limit) {
     cout << "bmin overlflow, bmin=" << bmin << endl;
   }
+  */
 
   return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
