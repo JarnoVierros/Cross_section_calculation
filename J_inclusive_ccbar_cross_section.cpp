@@ -32,20 +32,21 @@ const double normalization = 8/M_PI*alpha_em*N_c*e_f*e_f;
 //35, 34, 33, 32, 30, 25, 20, 15, 10, 5, 4, 3, 2, 1, 0.5
 // 17, 16, 15, 10, 5, 1
 
-const double r_limit = 34.64; // 34.64
-const double b_min_limit = 17.32; // 17.32
+static double r_limit; // 34.64
+static double b_min_limit; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 const string dipole_amp_type = "bfkl";
 const string nucleus_type = "Pb";
-const string filename_end = "_Q2=0";
+const string filename_end = "";
 
 const int warmup_calls = 10000;
 const int integration_calls = 100000;
 const int integration_iterations = 1;
 
-static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
+static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
+static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -56,12 +57,18 @@ double epsilon(double z, double Q2) {
 }
 
 double shifted_x(double x, double Q2) {
-  return x;
-  //return x*(1+(4*m_f*m_f)/Q2);
+  //return x;
+  return x*(1+(4*m_f*m_f)/Q2);
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double x) {
-  return get_dipole_amplitude(table, r, b_min, phi, x);
+  if (nucleus_type == "p") {
+    return get_p_dipole_amplitude(p_table, r, b_min, phi, x);
+  } else if (nucleus_type == "Pb") {
+    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x);
+  } else {
+    throw 1;
+  }
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
@@ -98,8 +105,8 @@ void integrate_for_L_sigma(thread_par_struct par) {
   const int dim = 4;
   double res, err;
 
-  double xl[4] = {0, 0, 0, 0};
-  double xu[4] = {r_limit, b_min_limit, M_PI, 1};
+  double xl[dim] = {0, 0, 0, 0};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, 1};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
@@ -142,8 +149,8 @@ void integrate_for_T_sigma(thread_par_struct par) {
   const int dim = 4;
   double res, err;
 
-  double xl[4] = {0, 0, 0, 0};
-  double xu[4] = {r_limit, b_min_limit, M_PI, 1};
+  double xl[dim] = {0, 0, 0, 0};
+  double xu[dim] = {r_limit, b_min_limit, M_PI, 1};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
@@ -207,8 +214,13 @@ int main() {
   TString b_limit_filename_string = b_limit_string;
 
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
-
-  load_dipole_amplitudes(table, filename);
+  if (nucleus_type == "p") {
+    load_p_dipole_amplitudes(p_table, filename);
+  } else if (nucleus_type == "Pb") {
+    load_Pb_dipole_amplitudes(Pb_table, filename);
+  } else {
+    throw 1;
+  }
 
   TMultiGraph* L_graphs = new TMultiGraph();
   TString title;
