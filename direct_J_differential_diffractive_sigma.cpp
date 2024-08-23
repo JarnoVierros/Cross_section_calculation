@@ -85,6 +85,8 @@ double calc_phi(double r1, double r2, double b1, double b2, double z) {
   return phi;
 }
 
+double max_sus_integrand = 0;
+
 double T_integrand(double r1, double r2, double b1, double b2, double r1bar, double r2bar, double z, double Q2, double x, double beta) {
   if (z*(1-z)*Q2*(1/beta-1)-m_f*m_f < 0) {
     cout << "setting zero, z=" << z << endl;
@@ -92,7 +94,9 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   }
   
   double r = sqrt(r1*r1 + r2*r2);
+  
   double rbar = sqrt(r1bar*r1bar + r2bar*r2bar);
+  
   double b = sqrt(b1*b1 + b2*b2);
 
   double x2 = gsl_pow_2(1-z)*r*r + 2*(1-z)*(r1*b1+r2*b2) + b*b;
@@ -120,6 +124,8 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   }
 
 
+
+
   /*
   if (r > r_limit) {
     cout << "r overlflow, r=" << r << endl;
@@ -130,10 +136,17 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   }
   */
 
-  return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
+  double integrand =  gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(r1*r1bar+r2*r2bar)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))
   *dipole_amplitude(r, bmin, phi, x/beta)*dipole_amplitude(rbar, bminbar, phibar, x/beta);
+
+  if (r > r_limit||rbar > r_limit||bmin > b_min_limit||bminbar > b_min_limit) {
+    if (integrand > max_sus_integrand) {
+      max_sus_integrand = integrand;
+    }
+  }
+  return integrand;
 }
 
 struct parameters {double Q2; double x; double beta;};
@@ -239,9 +252,9 @@ int main() {
     throw 1;
   }
 
-  double Q2 = 7.5;
-  double beta = 0.2;
-  double x = 1e-3;
+  double Q2 = 18;
+  double beta = 0.4;
+  double x = 1e-2;
 
   double z_min = (1-sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
   double z_max = (1+sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
@@ -269,4 +282,5 @@ int main() {
     cout << "T sigma_error=" << sigma_error[i] << endl;
     cout << "T sigma_fit=" << sigma_fit[i] << endl << endl;
   }
+  cout << "max_sus_integrand=" << max_sus_integrand << endl;
 }

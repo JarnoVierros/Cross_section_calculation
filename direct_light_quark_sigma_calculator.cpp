@@ -43,10 +43,10 @@ const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
-const string filename_end = "_direct_1mil_20-50_xpom";
+const string filename_end = "_direct_1mil_51-226_xpom";
 
-const int i_start = 20; // number of data points to skip
-const int data_inclusion_count = 31;
+const int i_start = 51; // number of data points to skip
+const int data_inclusion_count = 226-51;
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
