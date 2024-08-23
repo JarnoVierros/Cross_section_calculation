@@ -37,6 +37,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make integration_tests
 	make dipole_amplitude_generator
 	make direct_J_differential_diffractive_sigma
+	make F2_light_sigma_calculator
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -200,6 +201,10 @@ dipole_amplitude_generator: dipole_amplitude_generator.cpp
 direct_J_differential_diffractive_sigma: direct_J_differential_diffractive_sigma.cpp
 	g++ -Wall -c direct_J_differential_diffractive_sigma.cpp $$(root-config --glibs --cflags --libs)
 	g++ direct_J_differential_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o direct_J_differential_diffractive_sigma.exe
+
+F2_light_sigma_calculator: F2_light_sigma_calculator.cpp
+	g++ -Wall -c F2_light_sigma_calculator.cpp $$(root-config --glibs --cflags --libs)
+	g++ F2_light_sigma_calculator.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o F2_light_sigma_calculator.exe
 
 clean:
 	-rm *.exe

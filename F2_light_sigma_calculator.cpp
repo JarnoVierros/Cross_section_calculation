@@ -11,6 +11,7 @@
 #include "TAxis.h"
 #include "TMultiGraph.h"
 #include "TText.h"
+#include "TLatex.h"
 
 #include <string>
 #include <iostream>
@@ -25,21 +26,21 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-const double e_f = 2.0/3;
-const double m_f = 1.27; //GeV
+static double e_f = sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3);
+static double m_f = 0; //GeV
 
 const double normalization = 8/M_PI*alpha_em*N_c*e_f*e_f;
 
 //35, 34, 33, 32, 30, 25, 20, 15, 10, 5, 4, 3, 2, 1, 0.5
 // 17, 16, 15, 10, 5, 1
 
-static double r_limit; // 34.64
-static double b_min_limit; // 17.32
+static double r_limit = 34.64; // 34.64
+static double b_min_limit = 17.32; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
-const string dipole_amp_type = "bfkl";
-const string nucleus_type = "Pb";
+const string dipole_amp_type = "bk";
+const string nucleus_type = "p";
 const string filename_end = "";
 
 const int warmup_calls = 10000;
@@ -219,18 +220,36 @@ int main() {
     Q2_values.push_back(stod(value));
     i++;
 
-    string part_1 = "";
-    while(line[i] != ' ') {
-      part_1 += line[i];
+    bool has_x = false;
+    for (long unsigned int j=0; j<size(line); j++) {
+      if (line[j] == 'x') {
+        has_x = true;
+        break;
+      }
+    }
+
+    if (has_x) {
+      string part_1 = "";
+      while(line[i] != ' ') {
+        part_1 += line[i];
+        i++;
+      }
+      i+=6;
+      char part_2 = line[i];
+      string x_string = part_1 + "e-" + part_2;
+      x_values.push_back(stod(x_string));
+
+      i+=2;
+    } else {
+      value = "";
+      while(line[i] != ' ') {
+        value += line[i];
+        i++;
+      }
+      x_values.push_back(stod(value));
       i++;
     }
-    i+=6;
-    char part_2 = line[i];
 
-    string x_string = part_1 + "e-" + part_2;
-    x_values.push_back(stod(x_string));
-
-    i++;
 
     value = "";
     while(line[i] != ' ') {
@@ -256,13 +275,17 @@ int main() {
     }
 
     value = "";
-    while(i<line.length()) {
+    while(line[i] != ' ') {
       value += line[i];
       i++;
     }
     relative_measurement_errors.push_back(stod(value));
   }
-
+  /*
+  for (long unsigned int i=0; i<Q2_values.size(); i++) {
+    cout << "Q2=" << Q2_values[i] << ", x=" << x_values[i] << ", y=" << y_values[i] << ", sigma=" << measured_sigma_values[i] << ", error=" << relative_measurement_errors[i] << endl;
+  }
+  */
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
@@ -279,19 +302,46 @@ int main() {
   double predicted_L_sigmas[Q2_values.size()], predicted_T_sigmas[Q2_values.size()], predicted_L_errors[Q2_values.size()], predicted_T_errors[Q2_values.size()];
   thread L_threads[Q2_values.size()], T_threads[Q2_values.size()];
 
-  for (int i=0; i<Q2_values.size(); i++) {
+  for (long unsigned int i=0; i<Q2_values.size(); i++) {
     thread_par_struct L_par(Q2_values[i], x_values[i], predicted_L_sigmas[i], predicted_L_errors[i]);
     L_threads[i] = thread(integrate_for_L_sigma, L_par);
 
     thread_par_struct T_par(Q2_values[i], x_values[i], predicted_T_sigmas[i], predicted_T_errors[i]);
-    T_threads[i] = thread(integrate_for_L_sigma, T_par);
+    T_threads[i] = thread(integrate_for_T_sigma, T_par);
   }
+
+  for (long unsigned int i=0; i<Q2_values.size(); i++) {
+    L_threads[i].join();
+
+    T_threads[i].join();
+  }
+
+  e_f = 2.0/3;
+  m_f = 1.27;
+
+  double c_predicted_L_sigmas[Q2_values.size()], c_predicted_T_sigmas[Q2_values.size()], c_predicted_L_errors[Q2_values.size()], c_predicted_T_errors[Q2_values.size()];
+  thread c_L_threads[Q2_values.size()], c_T_threads[Q2_values.size()];
+
+  for (long unsigned int i=0; i<Q2_values.size(); i++) {
+    thread_par_struct L_par(Q2_values[i], x_values[i], c_predicted_L_sigmas[i], c_predicted_L_errors[i]);
+    c_L_threads[i] = thread(integrate_for_L_sigma, L_par);
+
+    thread_par_struct T_par(Q2_values[i], x_values[i], c_predicted_T_sigmas[i], c_predicted_T_errors[i]);
+    c_T_threads[i] = thread(integrate_for_T_sigma, T_par);
+  }
+
+  for (long unsigned int i=0; i<Q2_values.size(); i++) {
+    c_L_threads[i].join();
+
+    c_T_threads[i].join();
+  }
+  
 
   double predicted_sigma_r[Q2_values.size()];
 
-  for (int i=0; i<Q2_values.size(); i++) {
-    double FL = Q2_values[i]/(4*M_PI*M_PI*alpha_em)*predicted_L_sigmas[i];
-    double FT = Q2_values[i]/(4*M_PI*M_PI*alpha_em)*predicted_T_sigmas[i];
+  for (long unsigned int i=0; i<Q2_values.size(); i++) {
+    double FL = Q2_values[i]/(4*M_PI*M_PI*alpha_em)*(predicted_L_sigmas[i] + c_predicted_L_sigmas[i]);
+    double FT = Q2_values[i]/(4*M_PI*M_PI*alpha_em)*(predicted_T_sigmas[i] + c_predicted_T_sigmas[i]);
     double F2 = FL + FT;
     predicted_sigma_r[i] = F2 - y_values[i]*y_values[i]/(1+gsl_pow_2(1-y_values[i]))*FL;
   }
@@ -300,12 +350,12 @@ int main() {
   vector<double> unique_Q2_values;
   vector<double> x, x_error, measurement, measurement_error, prediction;
 
-  double x_limits[2] = {1, 2};
-  double y_limits[2] = {1, 2};
+  double x_limits[2] = {1e-7, 1};
+  double y_limits[2] = {0, 1.5};
 
   double previous_Q2 = Q2_values[0];
   unique_Q2_values.push_back(Q2_values[0]);
-  for (int i=0; i<Q2_values.size(); i++) {
+  for (long unsigned int i=0; i<Q2_values.size(); i++) {
     if (Q2_values[i] != previous_Q2) {
 
       double* x_arr = &x[0];
@@ -319,14 +369,24 @@ int main() {
       TGraph* prediction_graph = new TGraph(x.size(), x_arr, prediction_arr);
 
       TMultiGraph* comparison_graph = new TMultiGraph();
-      comparison_graph->GetXaxis()->SetLimits(x_limits[0], x_limits[1]);
-      comparison_graph->GetYaxis()->SetRangeUser(y_limits[0], y_limits[1]);
+
+      comparison_graph->Add(measurement_graph, "P");
+      comparison_graph->Add(prediction_graph, "C");
+      bool huh = previous_Q2 < 0.2;
+      cout << "Q2=" << previous_Q2 << ", bool=" << huh << endl;
+      if (previous_Q2 < 0.2) {
+        comparison_graph->GetXaxis()->SetLimits(1e-7, 1e-5);
+        comparison_graph->GetYaxis()->SetRangeUser(0, 0.25);
+      } else {
+        comparison_graph->GetXaxis()->SetLimits(x_limits[0], x_limits[1]);
+        comparison_graph->GetYaxis()->SetRangeUser(y_limits[0], y_limits[1]);
+      }
       
       comparison_graph->GetXaxis()->SetLabelSize(0.05);
       comparison_graph->GetYaxis()->SetLabelSize(0.05);
 
-      comparison_graph->GetXaxis()->SetTitle("x");
-      comparison_graph->GetYaxis()->SetTitle("#sigma_{r}");
+      //comparison_graph->GetXaxis()->SetTitle("x");
+      //comparison_graph->GetYaxis()->SetTitle("#sigma_{r}");
 
       comparison_graphs.push_back(comparison_graph);
 
@@ -340,11 +400,10 @@ int main() {
       unique_Q2_values.push_back(Q2_values[i]);
 
     }
-
     x.push_back(x_values[i]);
     x_error.push_back(0);
-    measurement.push_back(measurement[i]);
-    measurement_error.push_back(measurement_error[i]);
+    measurement.push_back(measured_sigma_values[i]);
+    measurement_error.push_back(relative_measurement_errors[i]/100*measured_sigma_values[i]);
     prediction.push_back(predicted_sigma_r[i]);
 
   }
@@ -360,24 +419,34 @@ int main() {
   TGraph* prediction_graph = new TGraph(x.size(), x_arr, prediction_arr);
 
   TMultiGraph* comparison_graph = new TMultiGraph();
+
+  comparison_graph->Add(measurement_graph, "P");
+  comparison_graph->Add(prediction_graph, "C");
+
   comparison_graph->GetXaxis()->SetLimits(x_limits[0], x_limits[1]);
   comparison_graph->GetYaxis()->SetRangeUser(y_limits[0], y_limits[1]);
   
   comparison_graph->GetXaxis()->SetLabelSize(0.05);
   comparison_graph->GetYaxis()->SetLabelSize(0.05);
 
-  comparison_graph->GetXaxis()->SetTitle("x");
-  comparison_graph->GetYaxis()->SetTitle("#sigma_{r}");
+  //comparison_graph->GetXaxis()->SetTitle("x");
+  //comparison_graph->GetYaxis()->SetTitle("#sigma_{r}");
 
   comparison_graphs.push_back(comparison_graph);
 
 
-  int figure_width = 6;
-  int figure_height = unique_Q2_values.size()/6+1; //8
+  int figure_width = 5;
+  int figure_height;
+  if (unique_Q2_values.size()-(unique_Q2_values.size()/5)*5 == 0) {
+    figure_height = unique_Q2_values.size()/5;
+  } else {
+    figure_height = unique_Q2_values.size()/5 + 1;
+  }
+  
   TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*10000, figure_height*10000);
   multicanvas->Divide(figure_width, figure_height, 0, 0);
-
-  for (int i=0; i<comparison_graphs.size(); i++) {
+  cout << "size=" << comparison_graphs.size() << endl;
+  for (long unsigned int i=0; i<comparison_graphs.size(); i++) {
 
     multicanvas->cd(i+1);
 
@@ -387,13 +456,31 @@ int main() {
 
     stringstream Q2_stream;
     Q2_stream << setprecision(2) << unique_Q2_values[i];
-    TString Q2_string = "Q2=" + Q2_stream.str();
-    TText* Q2_text = new TText(1e-2, 0.09, Q2_string);
+    TString Q2_string = "Q^{2}=" + Q2_stream.str();
+    TLatex* Q2_text;
+    if (unique_Q2_values[i] < 0.2) {
+      Q2_text = new TLatex(2e-7, 0.2, Q2_string);
+    } else {
+      Q2_text = new TLatex(1e-6, 1.4, Q2_string);
+    }
     Q2_text->Draw("Same");
+
+    if (unique_Q2_values[i] < 0.2) {
+      TLatex* axis_tick = new TLatex(8e-7, 0.02, "10^{-6}");
+      axis_tick->Draw("Same");
+    }
 
   }
 
   multicanvas->cd(0);
+
+  TLatex* y_axis_label = new TLatex(0.005, 0.98, "#sigma_{r}");
+  y_axis_label->SetTextSize(0.02);
+  y_axis_label->Draw("Same");
+
+  TLatex* x_axis_label = new TLatex(0.985, 0.02, "x");
+  x_axis_label->SetTextSize(0.02);
+  x_axis_label->Draw("Same");
 
   TString figure_filename = "figures/F2_data_comparison.pdf";
   multicanvas->Print(figure_filename);

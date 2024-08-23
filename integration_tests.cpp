@@ -28,7 +28,7 @@ const int N_c = 3;
 const double e_f = 2.0/3;
 const double m_f = 1.27; //GeV 1.27
 
-const double radius = 100;
+const double radius = 200;
 const double width = radius;
 
 const double Q2 = 1;
@@ -94,8 +94,8 @@ int calc_theta_bar(double return_values[4], double r, double b_min, double phi, 
     cout << "b2=" << b2 << endl;
     cout << "A'=" << j*j + 4*h*(b1*b1-gsl_pow_2(j/(2*b2))) << endl;
     cout << endl;
-
   }
+  
   double acos_arg_plus_type = (A+j)/(2*h);
   if (acos_arg_plus_type > 1) {
     cout << "acos arg of type plus changed: " << setprecision(debug_precision) << acos_arg_plus_type << "->1" << endl;
@@ -179,8 +179,8 @@ double trans_integral_2(double r, double b_min, double phi, double r_bar, double
         }
         double b_min_bar = calc_b_bar(r, b_min, phi, r_bar, phi_bar, theta_bar[i], z);
 
-        double sub_integrand = 1/abs(cos(theta_bar[i]))*1/abs(b_min_bar*cos(theta_bar[i])+(1-z)*r_bar*cos(theta_bar[i]+phi_bar))
-        *r*b_min*r_bar*b_min_bar*4*2*M_PI*exp(-1*(r + sqrt(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r) + r_bar));
+        double sub_integrand = 1///abs(cos(theta_bar[i]))*1/abs(b_min_bar*cos(theta_bar[i])+(1-z)*r_bar*cos(theta_bar[i]+phi_bar))
+        *r*b_min*r_bar*4*2*M_PI*exp(-1*(r + sqrt(b_min*b_min+2*(1-z)*r*b_min*cos(phi)+gsl_pow_2(1-z)*r*r) + r_bar));
         if (gsl_isnan(sub_integrand)) {
             cout << "T sub_integrand " << i << " is nan" << endl;
             sub_integrand = 0;
@@ -375,17 +375,17 @@ int main() {
     orig_integrate(res, err, fit, orig_integral_0_wrap, 1e4, 2);
     cout << "orig integral 0: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     */
-    /*
-    trans_integrate(res, err, fit, trans_integral_1_wrap, 1e9, 4);
+    ///*
+    trans_integrate(res, err, fit, trans_integral_1_wrap, 1e6, 4);
     cout << "trans integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
     //trans integral 1: res=2819.87, err=78.2318, fit=6.22363
 
-    orig_integrate(res, err, fit, orig_integral_1_wrap, 1e9, 5);
+    orig_integrate(res, err, fit, orig_integral_1_wrap, 1e6, 5);
     cout << "orig integral 1: res=" << res << ", err=" << err << ", fit=" << fit << endl;
-    */
+    //*/
     trans_integrate(res, err, fit, trans_integral_2_wrap, 1e7, 5);
     cout << "trans integral 2: res=" << res << ", err=" << err << ", fit=" << fit << endl;
 
-    orig_integrate(res, err, fit, orig_integral_2_wrap, 1e6, 6);
+    orig_integrate(res, err, fit, orig_integral_2_wrap, 1e7, 6);
     cout << "orig integral 2: res=" << res << ", err=" << err << ", fit=" << fit << endl;
 }
