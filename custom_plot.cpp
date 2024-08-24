@@ -26,9 +26,12 @@ int main() {
     double measurement_error[array_size] = {relative_measurement_error[0]/100*measurement_values[0], relative_measurement_error[1]/100*measurement_values[1], relative_measurement_error[2]/100*measurement_values[2]};
     double predicted_T[prediction_array_size] = {3.16e-8, 1.3e-8, 3.87e-9, 1.94e-9, 6.4e-10};
     double predicted_L[prediction_array_size] = {5.3e-10, 2e-10, 6e-11, 3e-11, 1.95696e-11};
+    double bfkl_predicted_T[prediction_array_size] = {3.16e-8, 1.3e-8, 3.87e-9, 1.94e-9, 6.4e-10};
+    double bfkl_predicted_L[prediction_array_size] = {5.3e-10, 2e-10, 6e-11, 3e-11, 1.95696e-11};
     double x_errors[array_size] = {0, 0, 0};
 
     double prediction[prediction_array_size];
+    double bfkl_prediction[prediction_array_size];
     for (int i=0; i<prediction_array_size; i++) {
         double FL = 1/prediction_x_pom[i]*Q2/(pow(2*M_PI, 2)*alpha_em)*Q2/prediction_beta[i]*predicted_L[i];
         double FT = 1/prediction_x_pom[i]*Q2/(pow(2*M_PI, 2)*alpha_em)*Q2/prediction_beta[i]*predicted_T[i];
@@ -39,6 +42,16 @@ int main() {
         double correction = 12;
         prediction[i] = correction*sigma_r;
         cout << sigma_r << endl;
+
+        FL = 1/prediction_x_pom[i]*Q2/(pow(2*M_PI, 2)*alpha_em)*Q2/prediction_beta[i]*bfkl_predicted_L[i];
+        FT = 1/prediction_x_pom[i]*Q2/(pow(2*M_PI, 2)*alpha_em)*Q2/prediction_beta[i]*bfkl_predicted_T[i];
+        F2 = FL + FT;
+        M_X2 = Q2*(1/prediction_beta[i]-1);
+        y = (Q2 + M_X2)/(s*prediction_x_pom[i]);
+        sigma_r = F2 - y*y/(1+pow(1-y, 2))*FL;
+
+        bfkl_prediction[i] = correction*sigma_r;
+        cout << sigma_r << endl;
     }
 
     TMultiGraph* multigraph = new TMultiGraph();
@@ -47,9 +60,13 @@ int main() {
     mesurement_data->SetMarkerStyle(7);
 
     TGraph* prediction_graph = new TGraph(prediction_array_size, prediction_x_pom, prediction);
+
+    TGraph* bfkl_prediction_graph = new TGraph(prediction_array_size, prediction_x_pom, bfkl_prediction);
+    bfkl_prediction_graph->SetLineStyle(2);
     
     multigraph->Add(mesurement_data, "P");
     multigraph->Add(prediction_graph, "C");
+    multigraph->Add(bfkl_prediction_graph, "C");
 
     multigraph->SetTitle("Diffractive reduced c#bar{c} cross section #tilde{#sigma}_{D}^{c#bar{c}}(x_{pom}, #beta, Q^{2})");  
 

@@ -45,7 +45,7 @@ const int integration_iterations = 1;
 
 const int debug_precision = 10;
 
-const string dipole_amp_type = "bk";
+const string dipole_amp_type = "bfkl";
 const string nucleus_type = "p";
 const string filename_end = "_special_1";
 
@@ -350,8 +350,8 @@ int main() {
   }
 
   double Q2 = 35;
-  double beta = 0.04;
-  double x = 0.019;
+  double beta = 0.25;
+  double x = 0.004;
 
   double z_min = (1-sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
   double z_max = (1+sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
