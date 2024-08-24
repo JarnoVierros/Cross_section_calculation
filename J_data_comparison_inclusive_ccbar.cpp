@@ -11,6 +11,7 @@
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
 #include "TText.h"
+#include "TLatex.h"
 
 #include <string>
 #include <iostream>
@@ -45,7 +46,7 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b, double phi, double x) {
-  return get_dipole_amplitude(current_table, r, b, phi, x);
+  return get_p_dipole_amplitude(current_table, r, b, phi, x);
 }
 
 double shifted_x(double x, double Q2) {
@@ -89,29 +90,30 @@ int main() {
   //const double Q2_selection = 2000;
 
   //const double integration_radius = 100;
-  const int warmup_calls = 10000;
-  const int integration_calls = 100000;
+  const int warmup_calls = 100000; //10000
+  const int integration_calls = 300000; //100000
   const int integration_iterations = 1;
 
   const string data_filename = "data/HERA_data.dat";
 
   string bk_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bk_p.csv";
-  load_dipole_amplitudes(bk_table, bk_dipamp_filename);
+  load_p_dipole_amplitudes(bk_table, bk_dipamp_filename);
 
   string bfkl_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bfkl_p.csv";
-  load_dipole_amplitudes(bfkl_table, bfkl_dipamp_filename);
+  load_p_dipole_amplitudes(bfkl_table, bfkl_dipamp_filename);
 
   current_table = bk_table;
 
   double chisq = 0;
   int ndf = 0;
 
-  double Q2_selections[12] = {2.5, 5, 7, 12, 18, 32, 60, 120, 200, 350, 650, 2000};
+  double Q2_selections[8] = {2.5, 5, 7, 12, 18, 32, 60, 120};
   
   TMultiGraph* comparison_graphs[size(Q2_selections)];
   TGraphErrors* measurement_datas[size(Q2_selections)];
   TGraph* bk_model_fits[size(Q2_selections)];
   TGraph* bfkl_model_fits[size(Q2_selections)];
+
   
   for (int n=0; n<12; n++) {
 
@@ -125,6 +127,8 @@ int main() {
 
     ifstream data_file(data_filename);
 
+    double max_Q2 = 120;
+
     cout << "Reading: " << data_filename << endl;
     string line;
     while(getline (data_file, line)) {
@@ -135,6 +139,9 @@ int main() {
         i++;
       }
       if (stod(value) != Q2_selection) {continue;}
+      if (stod(value) > max_Q2) {
+        continue;
+      }
       Q2_values.push_back(stod(value));
       i++;
 
@@ -176,7 +183,7 @@ int main() {
       }
       relative_measurement_errors.push_back(stod(value));
     }
-
+    /*
     if (n == 11) {
       Q2_values.push_back(2000);
       x_values.push_back(0.04000);
@@ -190,6 +197,7 @@ int main() {
       measured_sigma_values.push_back(-1);
       relative_measurement_errors.push_back(0);
     }
+    */
 
     cout << "Finished reading file" << endl;
 
@@ -363,9 +371,11 @@ int main() {
   }
 
   TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 4*10000, 3*10000);
-  multicanvas->Divide(4, 3, 0, 0);
+  multicanvas->Divide(4, 2, 0, 0);
 
   for (long unsigned int i=0; i<size(Q2_selections); i++) {
+
+    cout << "Q2=" << Q2_selections[i] << endl;
 
     multicanvas->cd(i+1);
 
@@ -382,33 +392,37 @@ int main() {
     TString Q2_string = "Q2=" + Q2_stream.str();
     TText* Q2_text = new TText(2e-5, 0.6, Q2_string);
     Q2_text->Draw("Same");
+    
+    if (i == 0) {
+      double dummy_arr[1] = {0};
+      TGraphErrors* dummy_measurement = new TGraphErrors(1, dummy_arr, dummy_arr, dummy_arr, dummy_arr);
+      dummy_measurement->SetMarkerStyle(7);
 
-    /*
-    float location[4];
-    if (Q2_selection < 60) {
-      location[0] = 0.65;
-      location[1] = 0.7;
-      location[2] = 0.9;
-      location[3] = 0.9;
-    } else {
-      location[0] = 0.15;
-      location[1] = 0.7;
-      location[2] = 0.4;
-      location[3] = 0.9;
+      TGraph* dummy_bk_prediction = new TGraph(1, dummy_arr, dummy_arr);
+
+      TGraph* dummy_bfkl_prediction = new TGraph(1, dummy_arr, dummy_arr);
+      dummy_bfkl_prediction->SetLineStyle(2);
+
+      float location[4] = {0.3, 0.4, 0.95, 0.8};
+      TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
+
+      legend->AddEntry(dummy_measurement,"H1 and ZEUS data", "PE");
+      legend->AddEntry(dummy_bk_prediction,"BK prediction", "L");
+      legend->AddEntry(dummy_bfkl_prediction,"BFKL prediction", "L");
+      legend->SetTextSize(0.06);
+      legend->Draw();
     }
-    TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
-    legend->AddEntry(measurement_data,"Measurement data");
-    legend->AddEntry(model_fit,"Model fit", "P");
-    legend->SetTextSize(0.04);
-    legend->Draw();
-    */
   }
   multicanvas->cd(0);
-
   
 
-  //TText* title = new TText(0.48, 0.9, "Title");
-  //title->Draw("Same");
+  TLatex* x_title = new TLatex(0.94, 0.023, "x");
+  x_title->SetTextSize(0.03);
+  x_title->Draw("Same");
+
+  TLatex* y_title = new TLatex(0.001, 0.91, "#sigma_{r}^{c#bar{c}}");
+  y_title->SetTextSize(0.025);
+  y_title->Draw("Same");
 
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
   //top_pad->Draw();

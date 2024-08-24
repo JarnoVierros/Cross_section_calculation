@@ -39,7 +39,7 @@ const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bfkl";
-const string nucleus_type = "p";
+const string nucleus_type = "Pb";
 const string filename_end = "";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -201,13 +201,6 @@ int main() {
   const double W_start = 3e1;
   const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
-  
-  /*
-  const int W_steps = 30;
-  const double W_start = 1e-5;
-  const double W_stop = 0.01;
-  const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
-  */
 
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
   if (nucleus_type == "p") {

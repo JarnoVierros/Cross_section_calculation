@@ -36,7 +36,7 @@ int main() {
         double M_X2 = Q2*(1/prediction_beta[i]-1);
         double y = (Q2 + M_X2)/(s*prediction_x_pom[i]);
         double sigma_r = F2 - y*y/(1+pow(1-y, 2))*FL;
-        double correction = 1;
+        double correction = 12;
         prediction[i] = correction*sigma_r;
         cout << sigma_r << endl;
     }
@@ -63,7 +63,7 @@ int main() {
 
     TLegend* legend = new TLegend(0.6, 0.6, 0.9, 0.9);
     legend->SetTextSize(0.045);
-    legend->AddEntry(mesurement_data,"Measurement data");
+    legend->AddEntry(mesurement_data,"H1 data");
     legend->AddEntry(prediction_graph,"BK prediction");
     legend->Draw();
 
@@ -82,6 +82,6 @@ int main() {
     TLatex* Q2_text_3 = new TLatex(0.0155, 1.1, "Q^{2}=35 GeV^{2}");
     Q2_text_3->Draw("Same");
 
-    MC->Print("figures/F2Dcharm_data_comparison.pdf");
+    MC->Print("figures/corrected_F2Dcharm_data_comparison.pdf");
 
 }

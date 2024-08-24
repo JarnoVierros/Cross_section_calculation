@@ -32,28 +32,28 @@ void zero_array(double array[], int size) {
 int main() {
   /*
   string filenames[] = {
-    "data/J_LHC_T_exclusive_bk_Pb.txt",
-    "data/J_LHC_T_exclusive_bfkl_Pb.txt",
-    "data/J_LHC_T_exclusive_bk_p.txt",
-    "data/J_LHC_T_exclusive_bfkl_p.txt",
+    "archive/data/LHC/exclusive/J_LHC_T_exclusive_bk_Pb.txt",
+    "archive/data/LHC/exclusive/J_LHC_T_exclusive_bfkl_Pb.txt",
+    "archive/data/LHC/exclusive/J_LHC_T_exclusive_bk_p.txt",
+    "archive/data/LHC/exclusive/J_LHC_T_exclusive_bfkl_p.txt",
+  };
+  */
+  /*
+  string filenames[] = {
+    "archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_Pb.txt",
+    "archive/data/LHC/inclusive/J_LHC_T_inclusive_bfkl_Pb.txt",
+    "archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_p.txt",
+    "archive/data/LHC/inclusive/J_LHC_T_inclusive_bfkl_p.txt",
   };
   */
   ///*
   string filenames[] = {
-    "data/J_LHC_T_inclusive_bk_Pb.txt",
-    "data/J_LHC_T_inclusive_bfkl_Pb.txt",
-    "data/J_LHC_T_inclusive_bk_p.txt",
-    "data/J_LHC_T_inclusive_bfkl_p.txt",
+    "archive/data/LHC/diffractive/diff_LHC_T_sigma_W_bk_Pb.txt",
+    "archive/data/LHC/diffractive/diff_LHC_T_sigma_W_bfkl_Pb.txt",
+    "archive/data/LHC/diffractive/diff_LHC_T_sigma_W_bk_p.txt",
+    "archive/data/LHC/diffractive/diff_LHC_T_sigma_W_bfkl_p.txt",
   };
   //*/
-  /*
-  string filenames[] = {
-    "data/diff_LHC_T_sigma_W_bk_Pb.txt",
-    "data/diff_LHC_T_sigma_W_bfkl_Pb.txt",
-    "data/diff_LHC_T_sigma_W_bk_p.txt",
-    "data/diff_LHC_T_sigma_W_bfkl_p.txt",
-  };
-  */
   int filecount = size(filenames);
 
   vector<double> x[filecount], sigma[filecount], sigma_error[filecount];
@@ -65,21 +65,23 @@ int main() {
 
   double BK_sigma_tot_Pb_Q20[x[0].size()], BFKL_sigma_tot_Pb_Q20[x[0].size()], BK_sigma_tot_p_Q20[x[0].size()], BFKL_sigma_tot_p_Q20[x[0].size()];
 
+  const double GeV_to_nb_conversion = 1000*0.389379;
+
   for (int i=0; i<x[0].size(); i++) {
-    BK_sigma_tot_Pb_Q20[i] = sigma[0][i];
-    BFKL_sigma_tot_Pb_Q20[i] = sigma[1][i];
-    BK_sigma_tot_p_Q20[i] = sigma[2][i];
-    BFKL_sigma_tot_p_Q20[i] = sigma[3][i];
+    BK_sigma_tot_Pb_Q20[i] = GeV_to_nb_conversion*sigma[0][i];
+    BFKL_sigma_tot_Pb_Q20[i] = GeV_to_nb_conversion*sigma[1][i];
+    BK_sigma_tot_p_Q20[i] = GeV_to_nb_conversion*sigma[2][i];
+    BFKL_sigma_tot_p_Q20[i] = GeV_to_nb_conversion*sigma[3][i];
   }
 
   TMultiGraph* comparison_graph = new TMultiGraph();
-  comparison_graph->SetTitle("Inclusive cross section comparison between BK and BFKL");
+  comparison_graph->SetTitle("c#bar{c} production cross section in diffractive #gamma nucleus scattering");
 
   double BK_Pb_Q20_x_arr[x[0].size()];
   vector_to_array(BK_Pb_Q20_x_arr, x[0]);
 
   TGraph* BK_Q20_graph = new TGraph(x[0].size(), BK_Pb_Q20_x_arr, BK_sigma_tot_Pb_Q20);
-  BK_Q20_graph->SetTitle("Pb BK");
+  BK_Q20_graph->SetTitle("Pb BK"); //Pb BK
   BK_Q20_graph->SetLineColor(4);
   comparison_graph->Add(BK_Q20_graph);
 
@@ -87,7 +89,7 @@ int main() {
   vector_to_array(BFKL_Pb_Q20_x_arr, x[2]);
 
   TGraph* BFKL_Q20_graph = new TGraph(x[2].size(), BFKL_Pb_Q20_x_arr, BFKL_sigma_tot_Pb_Q20);
-  BFKL_Q20_graph->SetTitle("Pb BFKL");
+  BFKL_Q20_graph->SetTitle("Pb BFKL"); //Pb BFKL
   BFKL_Q20_graph->SetLineColor(4);
   BFKL_Q20_graph->SetLineStyle(2);
   comparison_graph->Add(BFKL_Q20_graph);
@@ -96,18 +98,18 @@ int main() {
   vector_to_array(BK_p_Q20_x_arr, x[0]);
 
   TGraph* BK_p_Q20_graph = new TGraph(x[0].size(), BK_p_Q20_x_arr, BK_sigma_tot_p_Q20);
-  BK_p_Q20_graph->SetTitle("p BK");
+  BK_p_Q20_graph->SetTitle("p BK"); //p BK
   BK_p_Q20_graph->SetLineColor(2);
-  //comparison_graph->Add(BK_p_Q20_graph);
+  comparison_graph->Add(BK_p_Q20_graph);
 
   double BFKL_p_Q20_x_arr[x[2].size()];
   vector_to_array(BFKL_p_Q20_x_arr, x[2]);
 
   TGraph* BFKL_p_Q20_graph = new TGraph(x[2].size(), BFKL_p_Q20_x_arr, BFKL_sigma_tot_p_Q20);
-  BFKL_p_Q20_graph->SetTitle("p BFKL");
+  BFKL_p_Q20_graph->SetTitle("p BFKL"); //p BFKL
   BFKL_p_Q20_graph->SetLineColor(2);
   BFKL_p_Q20_graph->SetLineStyle(2);
-  //comparison_graph->Add(BFKL_p_Q20_graph);
+  comparison_graph->Add(BFKL_p_Q20_graph);
 
 
   TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
@@ -116,7 +118,7 @@ int main() {
   gPad->SetLogx();
   gPad->SetLogy();
   comparison_graph->GetXaxis()->SetTitle("W (GeV)");
-  comparison_graph->GetYaxis()->SetTitle("#sigma_{T} (GeV^{-2})");
+  comparison_graph->GetYaxis()->SetTitle("#sigma^{#gammaN#rightarrowc#bar{c}X} (nb)");
 
   if (false) {
     comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
@@ -124,22 +126,22 @@ int main() {
     comparison_canvas->BuildLegend(0.2, 0.7, 0.35, 0.9);
   }
 
-  if (false) {
-    TLatex* Q2_text = new TLatex(2e3, 1e-4, "Q^{2} = 0 GeV^{2}");
+  if (true) {
+    TLatex* Q2_text = new TLatex(3e3, 20, "Q^{2} = 0 GeV^{2}");
     Q2_text->Draw("same");
-  } else if (false) {
-    TLatex* Q2_text = new TLatex(5e3, 6e-3, "Q^{2} = 0 GeV^{2}");
+  } else if (true) {
+    TLatex* Q2_text = new TLatex(3e3, 5e-2, "Q^{2} = 0 GeV^{2}");
     Q2_text->Draw("same");
   } else if (false) {
     TLatex* Q2_text = new TLatex(2e3, 7e-2, "Q^{2} = 0 GeV^{2}");
     Q2_text->Draw("same");
   } else {
-    TLatex* Q2_text = new TLatex(1e3, 1, "Q^{2} = 0 GeV^{2}");
+    TLatex* Q2_text = new TLatex(3e3, 2, "Q^{2} = 0 GeV^{2}");
     Q2_text->Draw("same");
   }
   
 
-  comparison_canvas->Print("figures/LHC_inclusive_Pb_prediction.pdf");
+  comparison_canvas->Print("figures/LHC_exclusive_combined_prediction.pdf");
   
   return 0;
 }

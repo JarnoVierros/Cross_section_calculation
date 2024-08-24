@@ -37,7 +37,7 @@ static double b_min_limit; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 const string dipole_amp_type = "bfkl";
-const string nucleus_type = "Pb";
+const string nucleus_type = "p";
 const string filename_end = "";
 
 const int warmup_calls = 100000;
