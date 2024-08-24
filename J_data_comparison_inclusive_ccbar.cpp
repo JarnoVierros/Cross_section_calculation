@@ -427,7 +427,7 @@ int main() {
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
   //top_pad->Draw();
 
-  TString figure_filename = "figures/J_inclusive_sigma_r_data_comparison_sifted_x.pdf";
+  TString figure_filename = "figures/J_inclusive_sigma_r_data_comparison_shifted_x.pdf";
   multicanvas->Print(figure_filename);
 
   cout << "chisq=" << chisq << ", ndf=" << ndf << ", chisq/ndf=" << chisq/ndf << endl;
