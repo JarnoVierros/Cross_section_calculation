@@ -14,6 +14,9 @@ int main() {
     double measurement_values[] = {1.5, 0.63, 0.62};
     double relative_measurement_error[] = {25+27, 23+29, 18+47};
     double measurement_error[] = {relative_measurement_error[0]/100*measurement_values[0], relative_measurement_error[1]/100*measurement_values[1], relative_measurement_error[2]/100*measurement_values[2]};
+    
+    double predicted_T = {};
+    double predicted_L = {};
     double prediction[] = {1.441945751106215, 0.234253640879954, 0.05283514645762909};
     double x_errors[] = {0, 0, 0};
 
