@@ -6,19 +6,33 @@
 #include "TGraphErrors.h"
 #include "TLatex.h"
 
+using namespace std;
+
+const double alpha_em = 1/137;
+const double s = 320;
+
 int main() {
+    int array_size = 3;
     double Q2 =35;
-    double x_pom[] = {0.004, 0.010, 0.018};
-    double beta[] = {0.25, 0.10, 0.04};
-    double x[] = {x_pom[0]*beta[0], x_pom[1]*beta[1], x_pom[2]*beta[2]};
-    double measurement_values[] = {1.5, 0.63, 0.62};
-    double relative_measurement_error[] = {25+27, 23+29, 18+47};
-    double measurement_error[] = {relative_measurement_error[0]/100*measurement_values[0], relative_measurement_error[1]/100*measurement_values[1], relative_measurement_error[2]/100*measurement_values[2]};
-    
-    double predicted_T = {};
-    double predicted_L = {};
-    double prediction[] = {1.441945751106215, 0.234253640879954, 0.05283514645762909};
-    double x_errors[] = {0, 0, 0};
+    double x_pom[array_size] = {0.004, 0.010, 0.018};
+    double beta[array_size] = {0.25, 0.10, 0.04};
+    double measurement_values[array_size] = {1.5, 0.63, 0.62};
+    double relative_measurement_error[array_size] = {25+27, 23+29, 18+47};
+    double measurement_error[array_size] = {relative_measurement_error[0]/100*measurement_values[0], relative_measurement_error[1]/100*measurement_values[1], relative_measurement_error[2]/100*measurement_values[2]};
+    double predicted_T[array_size] = {};
+    double predicted_L[array_size] = {};
+    double x_errors[array_size] = {0, 0, 0};
+
+    double prediction[array_size];
+    for (int i=0; i<array_size; i++) {
+        double FL = 1/x_pom[i]*Q2/(pow(2*M_PI, 2)*alpha_em)*Q2/beta[i]*predicted_L[i];
+        double FT = 1/x_pom[i]*Q2/(pow(2*M_PI, 2)*alpha_em)*Q2/beta[i]*predicted_T[i];
+        double F2 = FL + FT;
+        double M_X2 = Q2*(1/beta[i]-1);
+        double y = (Q2 + M_X2)/(s*x_pom[i]);
+        double sigma_r = F2 - y*y/(1+pow(1-y, 2))*FL;
+        prediction[i] = sigma_r;
+    }
 
     TMultiGraph* multigraph = new TMultiGraph();
 
