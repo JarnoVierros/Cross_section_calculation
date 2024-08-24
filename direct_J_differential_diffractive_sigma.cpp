@@ -124,7 +124,7 @@ double L_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar)
-  *dipole_amplitude(r, bmin, phi, x/beta)*dipole_amplitude(rbar, bminbar, phibar, x/beta);
+  *dipole_amplitude(r, bmin, phi, x)*dipole_amplitude(rbar, bminbar, phibar, x);
 
 }
 
@@ -177,7 +177,7 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   double integrand =  gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(r1*r1bar+r2*r2bar)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))
-  *dipole_amplitude(r, bmin, phi, x/beta)*dipole_amplitude(rbar, bminbar, phibar, x/beta);
+  *dipole_amplitude(r, bmin, phi, x)*dipole_amplitude(rbar, bminbar, phibar, x);
 
   if (r > r_limit||rbar > r_limit||bmin > b_min_limit||bminbar > b_min_limit) {
     if (integrand > max_sus_integrand) {
@@ -240,7 +240,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
 
     T = gsl_rng_default;
     rng = gsl_rng_alloc(T);
-    gsl_rng_set(rng, 1);
+    gsl_rng_set(rng, par.seed);
 
     gsl_monte_vegas_state *L_s = gsl_monte_vegas_alloc(dim);
     status = gsl_monte_vegas_integrate(&L_G, xl, xu, dim, warmup_calls, rng, L_s, &res, &err);
@@ -260,7 +260,7 @@ void integrate_for_L_sigma(thread_par_struct par) {
     sigma = res;
     sigma_error = err;
     sigma_fit = gsl_monte_vegas_chisq(L_s);
-    cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
+    //cout << "L, Q²=" << params.Q2 << ", x=" << params.x << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(L_s) << endl;
 
     gsl_monte_vegas_free(L_s);
 }
@@ -343,15 +343,15 @@ int main() {
     r_limit = 34.64;
     b_min_limit = 17.32;
     warmup_calls = 100000;
-    integration_calls = 1000000;
+    integration_calls = 3000000;
   } else {
     cout << "invalid nucleus type" << endl;
     throw 1;
   }
 
-  double Q2 = 18;
-  double beta = 0.4;
-  double x = 1e-2;
+  double Q2 = 35;
+  double beta = 0.04;
+  double x = 0.019;
 
   double z_min = (1-sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
   double z_max = (1+sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
@@ -361,7 +361,7 @@ int main() {
   cout << "beta=" << beta << endl;
   cout << z_min << " < z < " << z_max << endl;
 
-  int thread_count = 5;
+  int thread_count = 3;
   double T_sigma[thread_count];
   double T_sigma_error[thread_count];
   double T_sigma_fit[thread_count];

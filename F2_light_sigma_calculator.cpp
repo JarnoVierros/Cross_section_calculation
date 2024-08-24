@@ -43,8 +43,8 @@ const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
 const string filename_end = "";
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int warmup_calls = 10000;//
+const int integration_calls = 300000;//
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -474,11 +474,11 @@ int main() {
 
   multicanvas->cd(0);
 
-  TLatex* y_axis_label = new TLatex(0.005, 0.98, "#sigma_{r}");
-  y_axis_label->SetTextSize(0.02);
+  TLatex* y_axis_label = new TLatex(0.005, 0.97, "#sigma_{r}");
+  y_axis_label->SetTextSize(0.015);
   y_axis_label->Draw("Same");
 
-  TLatex* x_axis_label = new TLatex(0.985, 0.02, "x");
+  TLatex* x_axis_label = new TLatex(0.985, 0.005, "x");
   x_axis_label->SetTextSize(0.02);
   x_axis_label->Draw("Same");
 
