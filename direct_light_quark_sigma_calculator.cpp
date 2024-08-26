@@ -45,8 +45,8 @@ const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
 const string filename_end = "_direct_1mil_51-226_xpom";
 
-const int i_start = 51; // number of data points to skip
-const int data_inclusion_count = 226-51;
+const int i_start = 20; // number of data points to skip
+const int data_inclusion_count = 31;
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
@@ -133,19 +133,45 @@ double dipole_amplitude(double r, double b_min, double phi, double x) {
 }
 
 double calc_phi(double r1, double r2, double b1, double b2, double z) {
+  double r = sqrt(r1*r1 + r2*r2);
+  double b = sqrt(b1*b1 + b2*b2);
+  double X = sqrt(gsl_pow_2(1-z)*r*r+2*(1-z)*(r1*b1+r2*b2)+b*b);
+  double Y = sqrt(z*z*r*r-2*z*(b1*r1+b2*r2)+b*b);
   double phi;
-  double raw_phi = atan2(-r2, -r1) - atan2((b2+(1-z)*r2), (b1+(1-z)*r1));
-  if (M_PI < raw_phi) {
-    phi = 2*M_PI - raw_phi;
-  } else if (-M_PI <= raw_phi && raw_phi < 0) {
-    phi = -raw_phi;
-  } else if (raw_phi < -M_PI) {
-    phi = 2*M_PI + raw_phi;
+  if (X <= Y) {
+    double raw_phi = abs(atan2(r2, r1) - atan2(b2+(1-z)*r2, b1+(1-z)*r1) + M_PI);
+    if (raw_phi > M_PI) {
+      phi = 2*M_PI - raw_phi;
+    } else {
+      phi = raw_phi;
+    }
   } else {
-    phi = raw_phi;
+    double raw_phi = abs(atan2(-r2, -r1)-atan2(b2-z*r2, b1-z*r1)+M_PI);
+    if (raw_phi > M_PI) {
+      phi = 2*M_PI - raw_phi;
+    } else {
+      phi = raw_phi;
+    }
   }
+  phi = abs(phi);
   return phi;
 }
+
+double calc_bmin(double r1, double r2, double b1, double b2, double z) {
+  double r = sqrt(r1*r1 + r2*r2);
+  double b = sqrt(b1*b1 + b2*b2);
+  double X = sqrt(gsl_pow_2(1-z)*r*r+2*(1-z)*(r1*b1+r2*b2)+b*b);
+  double Y = sqrt(z*z*r*r-2*z*(b1*r1+b2*r2)+b*b);
+  double bmin;
+  if (X < Y) {
+    bmin = sqrt(gsl_pow_2(b1 + (1-z)*r1) + gsl_pow_2(b2 + (1-z)*r2));
+  } else {
+    bmin = sqrt(gsl_pow_2(b1-z*r1) + gsl_pow_2(b2-z*r2));
+  }
+  return bmin;
+}
+
+double max_sus_integrand = 0;
 
 double L_integrand(double r1, double r2, double b1, double b2, double r1bar, double r2bar, double z, double Q2, double x, double beta) {
   if (z*(1-z)*Q2*(1/beta-1)-m_f*m_f < 0) {
@@ -155,36 +181,17 @@ double L_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   
   double r = sqrt(r1*r1 + r2*r2);
   double rbar = sqrt(r1bar*r1bar + r2bar*r2bar);
-  double b = sqrt(b1*b1 + b2*b2);
 
-  double x2 = gsl_pow_2(1-z)*r*r + 2*(1-z)*(r1*b1+r2*b2) + b*b;
-  double y2 = z*z*r*r + 2*z*(r1*b1+r2*b2) + b*b;
+  double bmin = calc_bmin(r1, r2, b1, b2, z);
+  double bminbar = calc_bmin(r1bar, r2bar, b1, b2, z);
 
-  double x2bar = gsl_pow_2(1-z)*rbar*rbar + 2*(1-z)*(r1bar*b1+r2bar*b2) + b*b;
-  double y2bar = z*z*rbar*rbar + 2*z*(r1bar*b1+r2bar*b2) + b*b;
-
-  double bmin, bminbar, phi, phibar;
-  
-  if (x2 < y2) {
-    bmin = sqrt(gsl_pow_2(b1+(1-z)*r1) + gsl_pow_2(b2+(1-z)*r2));
-    phi = calc_phi(r1, r2, b1, b2, z);
-  } else {
-    bmin = sqrt(gsl_pow_2(b1-(1-z)*r1) + gsl_pow_2(b2-(1-z)*r2));
-    phi = calc_phi(-r1, -r2, b1, b2, z);
-  }
-
-  if (x2bar < y2bar) {
-    bminbar = sqrt(gsl_pow_2(b1+(1-z)*r1bar) + gsl_pow_2(b2+(1-z)*r2bar));
-    phibar = calc_phi(r1bar, r2bar, b1, b2, z);
-  } else {
-    bminbar = sqrt(gsl_pow_2(b1-(1-z)*r1bar) + gsl_pow_2(b2-(1-z)*r2bar));
-    phibar = calc_phi(-r1bar, -r2bar, b1, b2, z);
-  }
+  double phi = calc_phi(r1, r2, b1, b2, z);
+  double phibar = calc_phi(r1bar, r2bar, b1, b2, z);
 
   return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar)
-  *dipole_amplitude(r, bmin, phi, x/beta)*dipole_amplitude(rbar, bminbar, phibar, x/beta);
+  *dipole_amplitude(r, bmin, phi, x)*dipole_amplitude(rbar, bminbar, phibar, x);
 
 }
 
@@ -196,36 +203,24 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   
   double r = sqrt(r1*r1 + r2*r2);
   double rbar = sqrt(r1bar*r1bar + r2bar*r2bar);
-  double b = sqrt(b1*b1 + b2*b2);
 
-  double x2 = gsl_pow_2(1-z)*r*r + 2*(1-z)*(r1*b1+r2*b2) + b*b;
-  double y2 = z*z*r*r + 2*z*(r1*b1+r2*b2) + b*b;
+  double bmin = calc_bmin(r1, r2, b1, b2, z);
+  double bminbar = calc_bmin(r1bar, r2bar, b1, b2, z);
 
-  double x2bar = gsl_pow_2(1-z)*rbar*rbar + 2*(1-z)*(r1bar*b1+r2bar*b2) + b*b;
-  double y2bar = z*z*rbar*rbar + 2*z*(r1bar*b1+r2bar*b2) + b*b;
+  double phi = calc_phi(r1, r2, b1, b2, z);
+  double phibar = calc_phi(r1bar, r2bar, b1, b2, z);
 
-  double bmin, bminbar, phi, phibar;
-  
-  if (x2 < y2) {
-    bmin = sqrt(gsl_pow_2(b1+(1-z)*r1) + gsl_pow_2(b2+(1-z)*r2));
-    phi = calc_phi(r1, r2, b1, b2, z);
-  } else {
-    bmin = sqrt(gsl_pow_2(b1-(1-z)*r1) + gsl_pow_2(b2-(1-z)*r2));
-    phi = calc_phi(-r1, -r2, b1, b2, z);
-  }
-
-  if (x2bar < y2bar) {
-    bminbar = sqrt(gsl_pow_2(b1+(1-z)*r1bar) + gsl_pow_2(b2+(1-z)*r2bar));
-    phibar = calc_phi(r1bar, r2bar, b1, b2, z);
-  } else {
-    bminbar = sqrt(gsl_pow_2(b1-(1-z)*r1bar) + gsl_pow_2(b2-(1-z)*r2bar));
-    phibar = calc_phi(-r1bar, -r2bar, b1, b2, z);
-  }
-
-  return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
+  double integrand =  gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(r1*r1bar+r2*r2bar)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))
-  *dipole_amplitude(r, bmin, phi, x/beta)*dipole_amplitude(rbar, bminbar, phibar, x/beta);
+  *dipole_amplitude(r, bmin, phi, x)*dipole_amplitude(rbar, bminbar, phibar, x);
+
+  if (r > r_limit||rbar > r_limit||bmin > b_min_limit||bminbar > b_min_limit) {
+    if (integrand > max_sus_integrand) {
+      max_sus_integrand = integrand;
+    }
+  }
+  return integrand;
 }
 
 struct parameters {double Q2; double x; double beta;};

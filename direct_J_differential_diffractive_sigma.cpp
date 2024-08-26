@@ -128,7 +128,7 @@ double L_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   //double x2bar = gsl_pow_2(1-z)*rbar*rbar + 2*(1-z)*(r1bar*b1+r2bar*b2) + b*b;
   //double y2bar = z*z*rbar*rbar + 2*z*(r1bar*b1+r2bar*b2) + b*b;
 
-  double bmin, bminbar, phi, phibar;
+  //double bmin, bminbar, phi, phibar;
 
   double bmin = calc_bmin(r1, r2, b1, b2, z);
   double bminbar = calc_bmin(r1bar, r2bar, b1, b2, z);
@@ -159,7 +159,7 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   //double x2bar = gsl_pow_2(1-z)*rbar*rbar + 2*(1-z)*(r1bar*b1+r2bar*b2) + b*b;
   //double y2bar = z*z*rbar*rbar + 2*z*(r1bar*b1+r2bar*b2) + b*b;
 
-  double bmin, bminbar, phi, phibar;
+  //double bmin, bminbar, phi, phibar;
 
   double bmin = calc_bmin(r1, r2, b1, b2, z);
   double bminbar = calc_bmin(r1bar, r2bar, b1, b2, z);
@@ -342,9 +342,15 @@ int main() {
     throw 1;
   }
 
+  int prediction_array_size = 5;
+  double prediction_x_pom[prediction_array_size] = {0.004, 0.007, 0.010, 0.014, 0.018};
+  double prediction_beta[prediction_array_size] = {0.25, 0.175, 0.10, 0.07, 0.04};
+
+  int selection = 0;
+
   double Q2 = 35;
-  double beta = 0.25;
-  double x = 0.004;
+  double beta = prediction_beta[selection];
+  double x = prediction_x_pom[selection];
 
   double z_min = (1-sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
   double z_max = (1+sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
@@ -364,14 +370,6 @@ int main() {
     thread_par_struct parameters(Q2, x, beta, T_sigma[i], T_sigma_error[i], T_sigma_fit[i], i);
     T_threads[i] = thread(integrate_for_T_sigma, parameters);
   }
-  
-  for (int i=0; i<thread_count; i++) {
-    T_threads[i].join();
-    cout << "seed=" << i << endl;
-    cout << "T sigma=" << T_sigma[i] << endl;
-    cout << "T sigma_error=" << T_sigma_error[i] << endl;
-    cout << "T sigma_fit=" << T_sigma_fit[i] << endl << endl;
-  }
 
   double L_sigma[thread_count];
   double L_sigma_error[thread_count];
@@ -381,6 +379,14 @@ int main() {
   for (int i=0; i < thread_count; i++){
     thread_par_struct parameters(Q2, x, beta, L_sigma[i], L_sigma_error[i], L_sigma_fit[i], i);
     T_threads[i] = thread(integrate_for_L_sigma, parameters);
+  }
+
+  for (int i=0; i<thread_count; i++) {
+    T_threads[i].join();
+    cout << "seed=" << i << endl;
+    cout << "T sigma=" << T_sigma[i] << endl;
+    cout << "T sigma_error=" << T_sigma_error[i] << endl;
+    cout << "T sigma_fit=" << T_sigma_fit[i] << endl << endl;
   }
   
   for (int i=0; i<thread_count; i++) {
@@ -393,3 +399,41 @@ int main() {
 
   cout << "max_sus_integrand=" << max_sus_integrand << endl;
 }
+/*
+Reading data/dipole_amplitude_with_IP_dependence_bfkl_p.csv
+Data read successfully
+Table ready
+Q2=35
+x=0.004
+beta=0.25
+0.0156045 < z < 0.984396
+seed=0
+T sigma=3.19896e-08
+T sigma_error=7.97615e-11
+T sigma_fit=0.456688
+
+seed=1
+T sigma=3.21791e-08
+T sigma_error=9.98432e-11
+T sigma_fit=1.15493
+
+seed=2
+T sigma=3.22405e-08
+T sigma_error=1.06621e-10
+T sigma_fit=1.33178
+
+seed=0
+L sigma=5.94437e-10
+L sigma_error=3.30699e-11
+L sigma_fit=1.36673
+
+seed=1
+L sigma=5.71637e-10
+L sigma_error=3.92486e-11
+L sigma_fit=0.514941
+
+seed=2
+L sigma=5.90421e-10
+L sigma_error=3.07546e-11
+L sigma_fit=0.627446
+*/
