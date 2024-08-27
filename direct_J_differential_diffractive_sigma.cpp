@@ -39,15 +39,15 @@ const bool print_b_min_limit = false;
 
 static int warmup_calls;
 static int integration_calls;
-const int integration_iterations = 1;
+const int integration_iterations = 2;
 
 //const string filename_end = "_20mil_85-225";//
 
 const int debug_precision = 10;
 
-const string dipole_amp_type = "bfkl";
+const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
-const string filename_end = "_special_1";
+//const string filename_end = "_special_1";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
@@ -60,11 +60,13 @@ double epsilon(double z, double Q2) {
   return sqrt(epsilon2(z, Q2));
 }
 
-double dipole_amplitude(double r, double b_min, double phi, double x) {
+double dipole_amplitude(double r, double b_min, double phi, double x, double beta) {
+  //double x_pom = x/beta;
+  double x_pom = x;
   if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, x, false);
+    return get_p_dipole_amplitude(p_table, r, b_min, phi, x_pom, false);
   } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x, false);
+    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x_pom, false);
   } else {
     throw 1;
   }
@@ -120,15 +122,6 @@ double L_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   
   double r = sqrt(r1*r1 + r2*r2);
   double rbar = sqrt(r1bar*r1bar + r2bar*r2bar);
-  //double b = sqrt(b1*b1 + b2*b2);
-
-  //double x2 = gsl_pow_2(1-z)*r*r + 2*(1-z)*(r1*b1+r2*b2) + b*b;
-  //double y2 = z*z*r*r + 2*z*(r1*b1+r2*b2) + b*b;
-
-  //double x2bar = gsl_pow_2(1-z)*rbar*rbar + 2*(1-z)*(r1bar*b1+r2bar*b2) + b*b;
-  //double y2bar = z*z*rbar*rbar + 2*z*(r1bar*b1+r2bar*b2) + b*b;
-
-  //double bmin, bminbar, phi, phibar;
 
   double bmin = calc_bmin(r1, r2, b1, b2, z);
   double bminbar = calc_bmin(r1bar, r2bar, b1, b2, z);
@@ -139,7 +132,7 @@ double L_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar)
-  *dipole_amplitude(r, bmin, phi, x)*dipole_amplitude(rbar, bminbar, phibar, x);
+  *dipole_amplitude(r, bmin, phi, x, beta)*dipole_amplitude(rbar, bminbar, phibar, x, beta);
 
 }
 
@@ -151,15 +144,6 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   
   double r = sqrt(r1*r1 + r2*r2);
   double rbar = sqrt(r1bar*r1bar + r2bar*r2bar);
-  //double b = sqrt(b1*b1 + b2*b2);
-
-  //double x2 = gsl_pow_2(1-z)*r*r + 2*(1-z)*(r1*b1+r2*b2) + b*b;
-  //double y2 = z*z*r*r + 2*z*(r1*b1+r2*b2) + b*b;
-
-  //double x2bar = gsl_pow_2(1-z)*rbar*rbar + 2*(1-z)*(r1bar*b1+r2bar*b2) + b*b;
-  //double y2bar = z*z*rbar*rbar + 2*z*(r1bar*b1+r2bar*b2) + b*b;
-
-  //double bmin, bminbar, phi, phibar;
 
   double bmin = calc_bmin(r1, r2, b1, b2, z);
   double bminbar = calc_bmin(r1bar, r2bar, b1, b2, z);
@@ -167,17 +151,10 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   double phi = calc_phi(r1, r2, b1, b2, z);
   double phibar = calc_phi(r1bar, r2bar, b1, b2, z);
 
-  double integrand =  gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
+  return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(r1*r1bar+r2*r2bar)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))
-  *dipole_amplitude(r, bmin, phi, x)*dipole_amplitude(rbar, bminbar, phibar, x);
-
-  if (r > r_limit||rbar > r_limit||bmin > b_min_limit||bminbar > b_min_limit) {
-    if (integrand > max_sus_integrand) {
-      max_sus_integrand = integrand;
-    }
-  }
-  return integrand;
+  *dipole_amplitude(r, bmin, phi, x, beta)*dipole_amplitude(rbar, bminbar, phibar, x, beta);
 }
 
 struct parameters {double Q2; double x; double beta;};
@@ -343,60 +320,165 @@ int main() {
   }
   
   int prediction_array_size = 5;
-  double prediction_x_pom[prediction_array_size] = {0.004, 0.007, 0.010, 0.014, 0.018};
-  double prediction_beta[prediction_array_size] = {0.25, 0.175, 0.10, 0.07, 0.04};
 
-  int selection = 0;
+  for (int k=0; k<prediction_array_size; k++) {
 
-  double Q2 = 35;
-  double beta = prediction_beta[selection];
-  double x = prediction_x_pom[selection];
+    
+    double prediction_x_pom[prediction_array_size] = {0.004, 0.007, 0.010, 0.014, 0.018};
+    double prediction_beta[prediction_array_size] = {0.25, 0.175, 0.10, 0.07, 0.04};
 
-  double z_min = (1-sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
-  double z_max = (1+sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
+    int selection = k;
 
-  cout << "Q2=" << Q2 << endl;
-  cout << "x=" << x << endl;
-  cout << "beta=" << beta << endl;
-  cout << z_min << " < z < " << z_max << endl;
+    double Q2 = 35;
+    double beta = prediction_beta[selection];
+    double x = prediction_x_pom[selection];
 
-  int thread_count = 3;
-  double T_sigma[thread_count];
-  double T_sigma_error[thread_count];
-  double T_sigma_fit[thread_count];
-  thread T_threads[thread_count];
+    double z_min = (1-sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
+    double z_max = (1+sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
 
-  for (int i=0; i < thread_count; i++){
-    thread_par_struct parameters(Q2, x, beta, T_sigma[i], T_sigma_error[i], T_sigma_fit[i], i);
-    T_threads[i] = thread(integrate_for_T_sigma, parameters);
+    cout << "Q2=" << Q2 << endl;
+    cout << "x=" << x << endl;
+    cout << "beta=" << beta << endl;
+    cout << z_min << " < z < " << z_max << endl;
+
+    int thread_count = 1;
+    double T_sigma[thread_count];
+    double T_sigma_error[thread_count];
+    double T_sigma_fit[thread_count];
+    thread T_threads[thread_count];
+
+    for (int i=0; i < thread_count; i++){
+      thread_par_struct parameters(Q2, x, beta, T_sigma[i], T_sigma_error[i], T_sigma_fit[i], i);
+      T_threads[i] = thread(integrate_for_T_sigma, parameters);
+    }
+
+    double L_sigma[thread_count];
+    double L_sigma_error[thread_count];
+    double L_sigma_fit[thread_count];
+    thread L_threads[thread_count];
+
+    for (int i=0; i < thread_count; i++){
+      thread_par_struct parameters(Q2, x, beta, L_sigma[i], L_sigma_error[i], L_sigma_fit[i], i);
+      L_threads[i] = thread(integrate_for_L_sigma, parameters);
+    }
+
+    for (int i=0; i<thread_count; i++) {
+      T_threads[i].join();
+      cout << "seed=" << i << endl;
+      cout << "T sigma=" << T_sigma[i] << endl;
+      cout << "T sigma_error=" << T_sigma_error[i] << endl;
+      cout << "T sigma_fit=" << T_sigma_fit[i] << endl << endl;
+    }
+
+    for (int i=0; i<thread_count; i++) {
+      L_threads[i].join();
+      cout << "seed=" << i << endl;
+      cout << "L sigma=" << L_sigma[i] << endl;
+      cout << "L sigma_error=" << L_sigma_error[i] << endl;
+      cout << "L sigma_fit=" << L_sigma_fit[i] << endl << endl;
+    }
+
+    cout << "max_sus_integrand=" << max_sus_integrand << endl;
+
   }
-
-  double L_sigma[thread_count];
-  double L_sigma_error[thread_count];
-  double L_sigma_fit[thread_count];
-  thread L_threads[thread_count];
-
-  for (int i=0; i < thread_count; i++){
-    thread_par_struct parameters(Q2, x, beta, L_sigma[i], L_sigma_error[i], L_sigma_fit[i], i);
-    T_threads[i] = thread(integrate_for_L_sigma, parameters);
-  }
-
-  for (int i=0; i<thread_count; i++) {
-    T_threads[i].join();
-    cout << "seed=" << i << endl;
-    cout << "T sigma=" << T_sigma[i] << endl;
-    cout << "T sigma_error=" << T_sigma_error[i] << endl;
-    cout << "T sigma_fit=" << T_sigma_fit[i] << endl << endl;
-  }
-  
-  for (int i=0; i<thread_count; i++) {
-    T_threads[i].join();
-    cout << "seed=" << i << endl;
-    cout << "L sigma=" << L_sigma[i] << endl;
-    cout << "L sigma_error=" << L_sigma_error[i] << endl;
-    cout << "L sigma_fit=" << L_sigma_fit[i] << endl << endl;
-  }
-
-  cout << "max_sus_integrand=" << max_sus_integrand << endl;
 
 }
+
+/*
+int main() {
+
+  gsl_set_error_handler_off();
+
+  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  if (nucleus_type == "p") {
+    load_p_dipole_amplitudes(p_table, filename);
+  } else if (nucleus_type == "Pb") {
+    load_Pb_dipole_amplitudes(Pb_table, filename);
+  } else {
+    throw 1;
+  }
+
+  if (nucleus_type == "Pb") {
+    r_limit = 657; // 34.64, 657
+    b_min_limit = 328; // 17.32, 328
+    warmup_calls = 100000;
+    integration_calls = 5000000;
+  } else if (nucleus_type == "p") {
+    r_limit = 34.64;
+    b_min_limit = 17.32;
+    warmup_calls = 100000;
+    integration_calls = 3000000;
+  } else {
+    cout << "invalid nucleus type" << endl;
+    throw 1;
+  }
+  
+  int prediction_array_size = 1;
+
+  for (int k=0; k<prediction_array_size; k++) {
+
+    
+    //double prediction_x_pom[prediction_array_size] = {0.004, 0.007, 0.010, 0.014, 0.018};
+    //double prediction_beta[prediction_array_size] = {0.25, 0.175, 0.10, 0.07, 0.04};
+//Q²=28, x=0.0237, beta=0.9
+    double prediction_x_pom[prediction_array_size] = {0.0237};
+    double prediction_beta[prediction_array_size] = {0.9};
+
+    int selection = k;
+
+    //double Q2 = 35;
+    double Q2 = 28;
+    double beta = prediction_beta[selection];
+    double x = prediction_x_pom[selection];
+
+    double z_min = (1-sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
+    double z_max = (1+sqrt(1-4*m_f*m_f/(Q2*(1/beta-1))))/2;
+
+    cout << "Q2=" << Q2 << endl;
+    cout << "x=" << x << endl;
+    cout << "beta=" << beta << endl;
+    cout << z_min << " < z < " << z_max << endl;
+
+    int thread_count = 1;
+    double T_sigma[thread_count];
+    double T_sigma_error[thread_count];
+    double T_sigma_fit[thread_count];
+    thread T_threads[thread_count];
+
+    for (int i=0; i < thread_count; i++){
+      thread_par_struct parameters(Q2, x, beta, T_sigma[i], T_sigma_error[i], T_sigma_fit[i], i);
+      T_threads[i] = thread(integrate_for_T_sigma, parameters);
+    }
+
+    double L_sigma[thread_count];
+    double L_sigma_error[thread_count];
+    double L_sigma_fit[thread_count];
+    thread L_threads[thread_count];
+
+    for (int i=0; i < thread_count; i++){
+      thread_par_struct parameters(Q2, x, beta, L_sigma[i], L_sigma_error[i], L_sigma_fit[i], i);
+      L_threads[i] = thread(integrate_for_L_sigma, parameters);
+    }
+
+    for (int i=0; i<thread_count; i++) {
+      T_threads[i].join();
+      cout << "seed=" << i << endl;
+      cout << "T sigma=" << T_sigma[i] << endl;
+      cout << "T sigma_error=" << T_sigma_error[i] << endl;
+      cout << "T sigma_fit=" << T_sigma_fit[i] << endl << endl;
+    }
+
+    for (int i=0; i<thread_count; i++) {
+      L_threads[i].join();
+      cout << "seed=" << i << endl;
+      cout << "L sigma=" << L_sigma[i] << endl;
+      cout << "L sigma_error=" << L_sigma_error[i] << endl;
+      cout << "L sigma_fit=" << L_sigma_fit[i] << endl << endl;
+    }
+
+    cout << "max_sus_integrand=" << max_sus_integrand << endl;
+
+  }
+
+}
+*/

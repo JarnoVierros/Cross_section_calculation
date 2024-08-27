@@ -26,8 +26,8 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-const double e_f = sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3); //2.0/3, sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3)
-const double m_f = 0; //GeV 1.27
+const double e_f = 2.0/3; //2.0/3, sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3)
+const double m_f = 1.27; //GeV 1.27
 
 const double normalization = 1.0/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
@@ -43,10 +43,10 @@ const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
-const string filename_end = "_direct_1mil_51-226_xpom";
+const string filename_end = "_charm_all";
 
-const int i_start = 20+31; // number of data points to skip
-const int data_inclusion_count = 226-20-31;
+const int i_start = 0; // number of data points to skip
+const int data_inclusion_count = 226;
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
@@ -122,11 +122,12 @@ double epsilon(double z, double Q2) {
   return sqrt(epsilon2(z, Q2));
 }
 
-double dipole_amplitude(double r, double b_min, double phi, double x) {
+double dipole_amplitude(double r, double b_min, double phi, double x, double beta) {
+  double x_pom = x/beta;
   if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, x, false);
+    return get_p_dipole_amplitude(p_table, r, b_min, phi, x_pom, false);
   } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x, false);
+    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x_pom, false);
   } else {
     throw 1;
   }
@@ -191,7 +192,7 @@ double L_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar)
-  *dipole_amplitude(r, bmin, phi, x)*dipole_amplitude(rbar, bminbar, phibar, x);
+  *dipole_amplitude(r, bmin, phi, x, beta)*dipole_amplitude(rbar, bminbar, phibar, x, beta);
 
 }
 
@@ -213,7 +214,7 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   double integrand =  gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(r1*r1bar+r2*r2bar)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))
-  *dipole_amplitude(r, bmin, phi, x)*dipole_amplitude(rbar, bminbar, phibar, x);
+  *dipole_amplitude(r, bmin, phi, x, beta)*dipole_amplitude(rbar, bminbar, phibar, x, beta);
 
   if (r > r_limit||rbar > r_limit||bmin > b_min_limit||bminbar > b_min_limit) {
     if (integrand > max_sus_integrand) {

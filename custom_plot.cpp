@@ -24,8 +24,8 @@ int main() {
     double measurement_values[array_size] = {1.5, 0.63, 0.62};
     double relative_measurement_error[array_size] = {25+27, 23+29, 18+47};
     double measurement_error[array_size] = {relative_measurement_error[0]/100*measurement_values[0], relative_measurement_error[1]/100*measurement_values[1], relative_measurement_error[2]/100*measurement_values[2]};
-    double predicted_T[prediction_array_size] = {3.16e-8, 1.3e-8, 3.87e-9, 1.94e-9, 6.4e-10};
-    double predicted_L[prediction_array_size] = {5.3e-10, 2e-10, 6e-11, 3e-11, 1.95696e-11};
+    double predicted_T[prediction_array_size] = {3.88345e-08, 1.60189e-08, 4.77151e-09, 2.30101e-09, 8.13191e-10};
+    double predicted_L[prediction_array_size] = {7.24124e-10, 2.8645e-10, 8.4623e-11, 2.89597e-11, 1.6577e-11};
     double bfkl_predicted_T[prediction_array_size] = {3.16e-8, 1.3e-8, 3.87e-9, 1.94e-9, 6.4e-10};
     double bfkl_predicted_L[prediction_array_size] = {5.3e-10, 2e-10, 6e-11, 3e-11, 1.95696e-11};
     double x_errors[array_size] = {0, 0, 0};
@@ -39,7 +39,7 @@ int main() {
         double M_X2 = Q2*(1/prediction_beta[i]-1);
         double y = (Q2 + M_X2)/(s*prediction_x_pom[i]);
         double sigma_r = F2 - y*y/(1+pow(1-y, 2))*FL;
-        double correction = 12;
+        double correction = 6;
         prediction[i] = correction*sigma_r;
         cout << sigma_r << endl;
 
@@ -66,7 +66,7 @@ int main() {
     
     multigraph->Add(mesurement_data, "P");
     multigraph->Add(prediction_graph, "C");
-    multigraph->Add(bfkl_prediction_graph, "C");
+    //multigraph->Add(bfkl_prediction_graph, "C");
 
     multigraph->SetTitle("Diffractive reduced c#bar{c} cross section #tilde{#sigma}_{D}^{c#bar{c}}(x_{pom}, #beta, Q^{2})");  
 
