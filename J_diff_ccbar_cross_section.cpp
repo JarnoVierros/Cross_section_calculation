@@ -41,7 +41,7 @@ const int warmup_calls = 10000;
 const int integration_calls = 100000;
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bfkl";
+const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
 const string filename_end = "";
 
@@ -59,16 +59,18 @@ double epsilon(double z, double Q2) {
 double dipole_amplitude(double r, double b_min, double phi, double x, double Q2) {
   double shifted_x = x*(1+4*m_f*m_f/Q2);
   if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, shifted_x, false);
+    return get_p_dipole_amplitude(p_table, r, b_min, phi, shifted_x, true);
   } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, shifted_x, false);
+    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, shifted_x, true);
   } else {
     throw 1;
   }
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*gsl_pow_2(dipole_amplitude(r, b_min, phi, x, Q2));
+  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)
+  *gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))
+  *gsl_pow_2(dipole_amplitude(r, b_min, phi, x, Q2));
 }
 
 double T_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
@@ -250,7 +252,7 @@ int main() {
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  TString title = "figures/transform_diff_L_sigma_"+dipole_amp_type+"_"+nucleus_type+".txt";
+  TString title = "figures/transform_diff_L_sigma_"+dipole_amp_type+"_"+nucleus_type+".pdf";
   L_sigma_canvas->Print(title);
  
 

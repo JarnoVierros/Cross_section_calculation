@@ -45,9 +45,9 @@ const int integration_iterations = 1;
 
 const int debug_precision = 10;
 
-const string dipole_amp_type = "bfkl";
+const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
-const string filename_end = "_special_1";
+const string filename_end = "";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
@@ -63,9 +63,9 @@ double epsilon(double z, double Q2) {
 double dipole_amplitude(double r, double b_min, double phi, double x, double Q2) {
   double shifted_x = x*(1+4*m_f*m_f/Q2);
   if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, x, false);
+    return get_p_dipole_amplitude(p_table, r, b_min, phi, shifted_x, false);
   } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x, false);
+    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, shifted_x, false);
   } else {
     throw 1;
   }
@@ -275,13 +275,13 @@ int main() {
   if (nucleus_type == "Pb") {
     r_limit = 657; // 34.64, 657
     b_min_limit = 328; // 17.32, 328
-    warmup_calls = 100000;
-    integration_calls = 5000000;
+    warmup_calls = 10000;
+    integration_calls = 100000;
   } else if (nucleus_type == "p") {
     r_limit = 34.64;
     b_min_limit = 17.32;
-    warmup_calls = 100000;
-    integration_calls = 3000000;
+    warmup_calls = 10000;
+    integration_calls = 100000;
   } else {
     cout << "invalid nucleus type" << endl;
     throw 1;
@@ -342,7 +342,7 @@ int main() {
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  TString title = "figures/direct_diff_L_sigma_"+dipole_amp_type+"_"+nucleus_type+".txt";
+  TString title = "figures/direct_diff_L_sigma_"+dipole_amp_type+"_"+nucleus_type+".pdf";
   L_sigma_canvas->Print(title);
  
 
