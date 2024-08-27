@@ -39,7 +39,7 @@ int main() {
         double M_X2 = Q2*(1/prediction_beta[i]-1);
         double y = (Q2 + M_X2)/(s*prediction_x_pom[i]);
         double sigma_r = F2 - y*y/(1+pow(1-y, 2))*FL;
-        double correction = 6;
+        double correction = 1;
         prediction[i] = correction*sigma_r;
         cout << sigma_r << endl;
 
