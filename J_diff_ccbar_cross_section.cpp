@@ -41,7 +41,12 @@ const int warmup_calls = 10000;
 const int integration_calls = 100000;
 const int integration_iterations = 1;
 
-static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
+const string dipole_amp_type = "bfkl";
+const string nucleus_type = "p";
+const string filename_end = "";
+
+static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
+static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -51,16 +56,23 @@ double epsilon(double z, double Q2) {
   return sqrt(epsilon2(z, Q2));
 }
 
-double dipole_amplitude(double r, double b_min, double phi, double x) {
-  return get_dipole_amplitude(table, r, b_min, phi, x);
+double dipole_amplitude(double r, double b_min, double phi, double x, double Q2) {
+  double shifted_x = x*(1+4*m_f*m_f/Q2);
+  if (nucleus_type == "p") {
+    return get_p_dipole_amplitude(p_table, r, b_min, phi, shifted_x, false);
+  } else if (nucleus_type == "Pb") {
+    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, shifted_x, false);
+  } else {
+    throw 1;
+  }
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*gsl_pow_2(dipole_amplitude(r, b_min, phi, x));;
+  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*gsl_pow_2(dipole_amplitude(r, b_min, phi, x, Q2));
 }
 
 double T_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*gsl_pow_2(dipole_amplitude(r, b_min, phi, x));
+  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*gsl_pow_2(dipole_amplitude(r, b_min, phi, x, Q2));
 }
 
 struct parameters {double Q2; double x;};
@@ -181,13 +193,19 @@ int main() {
   const double x_stop = 0.01;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
-  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
-  load_dipole_amplitudes(table, filename);
+  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  if (nucleus_type == "p") {
+    load_p_dipole_amplitudes(p_table, filename);
+  } else if (nucleus_type == "Pb") {
+    load_Pb_dipole_amplitudes(Pb_table, filename);
+  } else {
+    throw 1;
+  }
 
   TMultiGraph* L_graphs = new TMultiGraph();
   L_graphs->SetTitle("Diffractive longitudinal cross section;x;cross section (mb)");
 
-  ofstream L_output_file("data/diff_L_sigma_x.txt");
+  ofstream L_output_file("data/transform_diff_L_sigma_"+dipole_amp_type+"_"+nucleus_type+".txt");
   L_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting L integration" << endl;
@@ -232,13 +250,14 @@ int main() {
 
   L_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  L_sigma_canvas->Print("figures/diff_L_sigma_x_distribution.pdf");
+  TString title = "figures/transform_diff_L_sigma_"+dipole_amp_type+"_"+nucleus_type+".txt";
+  L_sigma_canvas->Print(title);
  
 
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Diffractive transverse cross section;x;cross section (mb)");
 
-  ofstream T_output_file("data/diff_T_sigma_x.txt");
+  ofstream T_output_file("data/transform_diff_T_sigma_"+dipole_amp_type+"_"+nucleus_type+".txt");
   T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
@@ -285,7 +304,8 @@ int main() {
 
   T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
-  T_sigma_canvas->Print("figures/diff_T_sigma_x_distribution.pdf");
+  title = "figures/transform_diff_T_sigma_"+dipole_amp_type+"_"+nucleus_type+".pdf";
+  T_sigma_canvas->Print(title);
 
   return 0;
 }
