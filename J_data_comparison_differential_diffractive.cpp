@@ -97,7 +97,8 @@ int main() {
   vector<double> L_prediction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit;
   string L_prediction_filenames[] = {
       "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_direct_1mil_0-19.txt",
-      "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_direct_1mil_20-50.txt"
+      "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_direct_1mil_20-50.txt",
+      "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_direct_1mil_51-226_xpom.txt"
     };
 
   for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -113,7 +114,8 @@ int main() {
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
   string T_prediction_filenames[] = {
     "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_direct_1mil_0-19.txt",
-    "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_direct_1mil_20-50.txt"
+    "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_direct_1mil_20-50.txt",
+    "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_direct_1mil_51-226_xpom.txt"
   };
 
   for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -151,13 +153,25 @@ int main() {
 */
 
   double Q2_selections[] = {
-    4.5, 4.5, 4.5, 4.5, 4.5, 4.5,
+    4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 
     7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 
+    9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 
+    12, 12, 12, 12, 12, 12, 
+    18, 18, 18, 18, 18, 18, 
+    28, 28, 28, 28, 28, 28, 
+    45, 45, 45, 45, 45, 45, 
+        75, 75, 75, 75, 75
     };
 
   double beta_selections[] = {
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
     0.04, 0.1, 0.2, 0.4, 0.65, 0.9,
     0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+          0.1, 0.2, 0.4, 0.65, 0.9
     };
 
   if (size(Q2_selections) != size(beta_selections)) {
@@ -311,7 +325,7 @@ struct plot {
   }
 
   int figure_width = 6;
-  int figure_height = 2; //8
+  int figure_height = 8; //8
   TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*10000, figure_height*10000);
   multicanvas->Divide(figure_width, figure_height, 0, 0);
 

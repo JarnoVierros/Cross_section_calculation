@@ -61,7 +61,7 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double x, double Q2) {
-  double shifted_x = x*(1+4*m_f*m_f/Q2);
+  double shifted_x = x;//*(1+4*m_f*m_f/Q2);
   if (nucleus_type == "p") {
     return get_p_dipole_amplitude(p_table, r, b_min, phi, shifted_x, false);
   } else if (nucleus_type == "Pb") {
@@ -287,7 +287,7 @@ int main() {
     throw 1;
   }
 
-  const int Q2_values[] = {1, 3, 5, 8, 10};
+  const int Q2_values[] = {0, 1, 3, 5, 8, 10};
 
   const int x_steps = 30;
   const double x_start = 1e-5;
