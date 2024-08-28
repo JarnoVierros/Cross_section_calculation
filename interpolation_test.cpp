@@ -31,27 +31,28 @@ int main() {
 
     double r = table[20][0][0][0][0];
     double b_min = table[0][25][0][0][1];
-    //double phi = table[0][0][6][0][2];
-    double x_pom = table[0][0][0][50][3];
+    double phi = table[0][0][6][0][2];
+    //double x_pom = table[0][0][0][50][3];
 
     cout << "r=" << r << endl;
     cout << "b_min=" << b_min << endl;
-    //cout << "phi=" << phi << endl;
-    cout << "x_pom=" << x_pom << endl;
+    cout << "phi=" << phi << endl;
+    //cout << "x_pom=" << x_pom << endl;
 
-    TString title = "Dipole amplitude with r="+to_string(r)+", b_min="+to_string(b_min)+", x="+to_string(x_pom)+";phi (rad);N";
+    TString title = "Dipole amplitude with phi=, b_min=, x=;b_min;N";
     multigraph->SetTitle(title);
 
-    const int x_steps = 10000;
+    const int x_steps = 1000;
 
     //r, b_min
     /*
-    const double x_start = 1e-5;
+    const double x_start = 1e-5;//1e-5
     const double x_stop = 100;
     const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
     */
 
     //x
+    
     const double x_start = 1e-10;
     const double x_stop = 0.1;
     const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
@@ -60,15 +61,15 @@ int main() {
     double raw_x[x_steps], raw_y[x_steps], interpolated_x[x_steps], interpolated_y[x_steps];
 
     for (int i=0; i<x_steps; i++) {
-        //double x = pow(10, log10(x_start) + i*x_step);
-        double x = 1.0*i/x_steps*M_PI;
-        double phi = x;
+        double x = pow(10, log10(x_start) + i*x_step);
+        //double x = 1.0*i/x_steps*M_PI;
+        double x_pom = x;
         raw_x[i] = x;
         raw_y[i] = get_raw_p_dipole_amplitude(table, r, b_min, phi, x_pom);
-        cout << "x=" << x << ", raw=" << raw_y[i];
+        cout << "x=" << x << ", raw=" << raw_y[i] << endl;
         interpolated_x[i] = x;
         interpolated_y[i] = get_p_dipole_amplitude(table, r, b_min, phi, x_pom);
-        cout << ", interpolated=" << interpolated_y[i] << endl;
+        //cout << ", interpolated=" << interpolated_y[i] << endl;
     }
 
     TGraph* raw_graph = new TGraph(x_steps, raw_x, raw_y);
@@ -80,9 +81,9 @@ int main() {
     multigraph->Add(interpolated_graph, "L");
 
     TCanvas* canvas = new TCanvas("canvas1", "", 1000, 800);
-    //gPad->SetLogx();
-    //gPad->SetLogy();
-    multigraph->GetYaxis()->SetRangeUser(0.024, 0.036);
+    gPad->SetLogx();
+    gPad->SetLogy();
+    //multigraph->GetYaxis()->SetRangeUser(0.024, 0.036);
     multigraph->Draw("A PMC PLC");
     canvas->BuildLegend(0.7, 0.7, 0.9, 0.9);
     canvas->Print("figures/interpolation_test.pdf");

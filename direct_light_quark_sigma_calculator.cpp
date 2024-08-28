@@ -26,10 +26,11 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-const double e_f = 2.0/3; //2.0/3, sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3)
-const double m_f = 1.27; //GeV 1.27
 
-const double normalization = 1.0/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f;
+static double e_f, m_f;
+const bool charm = false;
+
+static double normalization;
 
 static double r_limit; // 34.64
 static double b_min_limit; // 17.32
@@ -41,9 +42,9 @@ const int warmup_calls = 100000;
 const int integration_calls = 1000000;//20 000 000
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bk";
+const string dipole_amp_type = "vector";
 const string nucleus_type = "p";
-const string filename_end = "_charm_all";
+string filename_end = "_all";
 
 const int i_start = 0; // number of data points to skip
 const int data_inclusion_count = 226;
@@ -189,10 +190,12 @@ double L_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   double phi = calc_phi(r1, r2, b1, b2, z);
   double phibar = calc_phi(r1bar, r2bar, b1, b2, z);
 
-  return gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
+  double integrand = gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(gsl_pow_2(r1-r1bar)+gsl_pow_2(r2-r2bar)))
   *z*(1-z)
   *4*Q2*z*z*gsl_pow_2(1-z)*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar)
   *dipole_amplitude(r, bmin, phi, x, beta)*dipole_amplitude(rbar, bminbar, phibar, x, beta);
+
+  return integrand;
 
 }
 
@@ -363,7 +366,23 @@ int main() {
 
   read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
 
-  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  if (charm) {
+    e_f = 2.0/3;
+    m_f = 1.27;
+    filename_end = "_charm" + filename_end;
+  } else {
+    e_f = sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3);
+    m_f = 0;
+  }
+  normalization = 1.0/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f;
+
+  string filename;
+  if (dipole_amp_type == "vector") {
+    filename = "data/bk_p_mu02_0.66.csv";
+    filename_end = "_vector" + filename_end;
+  } else {
+    filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  }
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
   } else if (nucleus_type == "Pb") {

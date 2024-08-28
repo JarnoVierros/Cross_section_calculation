@@ -29,8 +29,8 @@ void zero_array(double array[], int size) {
   }
 }
 
-const string nucleus = "p";
-const bool diffractive = false;
+const string nucleus = "Pb";
+const bool diffractive = true;
 
 int main() {
 
@@ -45,15 +45,21 @@ int main() {
   */
 
   if (diffractive) {
-    filenames[0] = "archive/data/LHC/diffractive/diff_LHC_T_sigma_W_bk_Pb.txt";
-    filenames[1] = "archive/data/LHC/diffractive/diff_LHC_T_sigma_W_bfkl_Pb.txt";
-    filenames[2] = "archive/data/LHC/diffractive/diff_LHC_T_sigma_W_bk_p.txt";
-    filenames[3] = "archive/data/LHC/diffractive/diff_LHC_T_sigma_W_bfkl_p.txt";
+    filenames[0] = "data/diff_LHC_T_sigma_W_bk_Pb.txt";
+    filenames[1] = "data/diff_LHC_T_sigma_W_bfkl_Pb.txt";
+    filenames[2] = "data/diff_LHC_T_sigma_W_bk_p.txt";
+    filenames[3] = "data/diff_LHC_T_sigma_W_bfkl_p.txt";
   } else {
+    /*
     filenames[0] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_Pb.txt";
     filenames[1] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bfkl_Pb.txt";
     filenames[2] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_p.txt";
     filenames[3] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bfkl_p.txt";
+    */
+    filenames[0] = "data/J_LHC_T_inclusive_bk_Pb.txt";
+    filenames[1] = "data/J_LHC_T_inclusive_bfkl_Pb.txt";
+    filenames[2] = "data/J_LHC_T_inclusive_bk_p.txt";
+    filenames[3] = "data/J_LHC_T_inclusive_bfkl_p.txt";
   }
 
   int filecount = size(filenames);

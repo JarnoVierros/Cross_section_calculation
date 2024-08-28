@@ -38,8 +38,8 @@ const int warmup_calls = 100000;
 const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bfkl";
-const string nucleus_type = "Pb";
+const string dipole_amp_type = "vector";
+const string nucleus_type = "p";
 const string filename_end = "";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -202,7 +202,12 @@ int main() {
   const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
 
-  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  string filename;
+  if (dipole_amp_type == "vector") {
+    filename = "data/bk_p_mu02_0.66.csv";
+  } else {
+    filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  }
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
   } else if (nucleus_type == "Pb") {

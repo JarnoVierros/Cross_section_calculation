@@ -16,8 +16,8 @@ using namespace std;
 
 int main() {
 
-  string numerator_filename("/home/jarno/Cross_section_calculation/data/transform_diff_L_sigma_bk_p.txt");
-  string denominator_filename("/home/jarno/Cross_section_calculation/data/direct_diff_L_sigma_bk_p.txt");
+  string numerator_filename("/home/jarno/Cross_section_calculation/data/J_LHC_T_inclusive_bk_p.txt");
+  string denominator_filename("/home/jarno/Cross_section_calculation/archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_p.txt");
 
   vector<double> initial_numerator_Q2, initial_denominator_Q2, initial_numerator_x, initial_numerator_sigma, initial_numerator_sigma_error, initial_denominator_x, initial_denominator_sigma, initial_denominator_sigma_error;
 
@@ -55,7 +55,7 @@ int main() {
     comparison_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
   }
 
-  comparison_canvas->Print("figures/L_transform_direct_ratio.pdf");
+  comparison_canvas->Print("figures/ratio_plot.pdf");
   
   return 0;
 }
