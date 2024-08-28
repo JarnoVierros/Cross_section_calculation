@@ -29,7 +29,7 @@ double calc_x(double Y) {
 
 void create_p_interpolator(array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> &table, InterpMultilinear<4, double>* return_interp_ML) {
     cout << "test 3" << endl;
-    vector<double> r_vec, b_min_vec, phi_vec, x_vec, N_vec;
+    vector<double> r_vec, b_min_vec, phi_vec, x_vec;
 
     vector<vector<double>::iterator> grid_iter_list;
     grid_iter_list.push_back(r_vec.begin());
@@ -44,6 +44,8 @@ void create_p_interpolator(array<array<array<array<array<double, 5>, 81>, 30>, 3
     grid_sizes[3] = 81;
     
     int num_elements = grid_sizes[0]*grid_sizes[1]*grid_sizes[2]*grid_sizes[3];
+
+    vector<double> N_vec(num_elements);
 
     for (int i=0; i<grid_sizes[0]; i++) {
         r_vec.push_back(table[0][0][0][0][0]);
