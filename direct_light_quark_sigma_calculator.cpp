@@ -28,7 +28,7 @@ const double alpha_em = 1.0/137;
 const int N_c = 3;
 
 static double e_f, m_f;
-const bool charm = false;
+const bool charm = true;
 
 static double normalization;
 
