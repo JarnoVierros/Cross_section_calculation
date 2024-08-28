@@ -67,7 +67,7 @@ void create_p_interpolator(array<array<array<array<array<double, 5>, 81>, 30>, 3
         for (int j=0; j<grid_sizes[1]; j++) {
             for (int k=0; k<grid_sizes[2]; k++) {
                 for (int l=0; l<grid_sizes[3]; l++) {
-                    N_vec.push_back(table[i][j][k][l][4]);
+                    N_vec[i*grid_sizes[1]*grid_sizes[2]*grid_sizes[3] + j*grid_sizes[2]*grid_sizes[3] + k*grid_sizes[3] + l] = table[i][j][k][l][4];
                 }
             }
         }
