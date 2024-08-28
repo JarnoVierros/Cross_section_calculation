@@ -56,7 +56,7 @@ double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>
         if (table[i][0][0][0][0] == r) {
             i_closer = i;
             exact_r = true;
-        }else if (table[i][0][0][0][0] - r < r - table[i-1][0][0][0][0]) {
+        }else if (log(table[i][0][0][0][0]) - log(r) < log(r) - log(table[i-1][0][0][0][0])) {
             i_closer = i;
         } else {
             i_closer = i-1;
@@ -84,7 +84,7 @@ double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>
         if (table[i_closer][j][0][0][1] == b) {
             j_closer = j;
             exact_b = true;
-        }else if (table[i_closer][j][0][0][1] - b < b - table[i_closer][j-1][0][0][1]) {
+        }else if (log(table[i_closer][j][0][0][1]) - log(b) < log(b) - log(table[i_closer][j-1][0][0][1])) {
             j_closer = j;
         } else {
             j_closer = j-1;
@@ -141,7 +141,7 @@ double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>
         if (table[i_closer][j_closer][k_closer][l][3] == x) {
             l_closer = l;
             exact_x = true;
-        }else if (table[i_closer][j_closer][k_closer][l][3] - x < x - table[i_closer][j_closer][k_closer][l-1][3]) {
+        }else if (log(table[i_closer][j_closer][k_closer][l][3]) - log(x) < log(x) - log(table[i_closer][j_closer][k_closer][l-1][3])) {
             l_closer = l;
         } else {
             l_closer = l-1;
@@ -154,9 +154,9 @@ double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>
         r_corr = 0;
     } else {
         if (i_closer == i) {
-            r_corr = -1*(table[i][j_closer][k_closer][l_closer][4] - table[i-1][j_closer][k_closer][l_closer][4])*(1-(r - table[i-1][0][0][0][0])/(table[i][0][0][0][0] - table[i-1][0][0][0][0]));
+            r_corr = -1*(log(table[i][j_closer][k_closer][l_closer][4]) - log(table[i-1][j_closer][k_closer][l_closer][4]))*(1-(log(r) - log(table[i-1][0][0][0][0]))/(log(table[i][0][0][0][0]) - log(table[i-1][0][0][0][0])));
         } else {
-            r_corr = (r - table[i-1][0][0][0][0])/(table[i][0][0][0][0] - table[i-1][0][0][0][0])*(table[i][j_closer][k_closer][l_closer][4] - table[i-1][j_closer][k_closer][l_closer][4]);
+            r_corr = (log(r) - log(table[i-1][0][0][0][0]))/(log(table[i][0][0][0][0]) - log(table[i-1][0][0][0][0]))*(log(table[i][j_closer][k_closer][l_closer][4]) - log(table[i-1][j_closer][k_closer][l_closer][4]));
         }
         /*
         cout << endl;
@@ -170,9 +170,9 @@ double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>
         b_corr = 0;
     } else {
         if (j_closer == j) {
-            b_corr = -1*(table[i_closer][j][k_closer][l_closer][4] - table[i_closer][j-1][k_closer][l_closer][4])*(1-(b - table[i_closer][j-1][0][0][1])/(table[i_closer][j][0][0][1] - table[i_closer][j-1][0][0][1]));
+            b_corr = -1*(log(table[i_closer][j][k_closer][l_closer][4]) - log(table[i_closer][j-1][k_closer][l_closer][4]))*(1-(log(b) - log(table[i_closer][j-1][0][0][1]))/(log(table[i_closer][j][0][0][1]) - log(table[i_closer][j-1][0][0][1])));
         } else {
-            b_corr = (b - table[i_closer][j-1][0][0][1])/(table[i_closer][j][0][0][1] - table[i_closer][j-1][0][0][1])*(table[i_closer][j][k_closer][l_closer][4] - table[i_closer][j-1][k_closer][l_closer][4]);
+            b_corr = (log(b) - log(table[i_closer][j-1][0][0][1]))/(log(table[i_closer][j][0][0][1]) - log(table[i_closer][j-1][0][0][1]))*(log(table[i_closer][j][k_closer][l_closer][4]) - log(table[i_closer][j-1][k_closer][l_closer][4]));
         }
         /*
         cout << endl;
@@ -189,9 +189,9 @@ double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>
         phi_corr = 0;
     } else {
         if (k_closer == k) {
-            phi_corr = -1*(table[i_closer][j_closer][k][l_closer][4] - table[i_closer][j_closer][k-1][l_closer][4])*(1-(phi - table[i_closer][j_closer][k-1][0][2])/(table[i_closer][j_closer][k][0][2] - table[i_closer][j_closer][k-1][0][2]));
+            phi_corr = -1*(log(table[i_closer][j_closer][k][l_closer][4]) - log(table[i_closer][j_closer][k-1][l_closer][4]))*(1-(phi - table[i_closer][j_closer][k-1][0][2])/(table[i_closer][j_closer][k][0][2] - table[i_closer][j_closer][k-1][0][2]));
         } else {
-            phi_corr = (phi - table[i_closer][j_closer][k-1][0][2])/(table[i_closer][j_closer][k][0][2] - table[i_closer][j_closer][k-1][0][2])*(table[i_closer][j_closer][k][l_closer][4] - table[i_closer][j_closer][k-1][l_closer][4]);
+            phi_corr = (phi - table[i_closer][j_closer][k-1][0][2])/(table[i_closer][j_closer][k][0][2] - table[i_closer][j_closer][k-1][0][2])*(log(table[i_closer][j_closer][k][l_closer][4]) - log(table[i_closer][j_closer][k-1][l_closer][4]));
         }
     }
 
@@ -200,9 +200,9 @@ double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>
         //cout << "exact" << endl;
     } else {
         if (l_closer == l) {
-            x_corr = -1*(table[i_closer][j_closer][k_closer][l][4] - table[i_closer][j_closer][k_closer][l-1][4])*(1-(x - table[i_closer][j_closer][k_closer][l-1][3])/(table[i_closer][j_closer][k_closer][l][3] - table[i_closer][j_closer][k_closer][l-1][3]));
+            x_corr = -1*(log(table[i_closer][j_closer][k_closer][l][4]) - log(table[i_closer][j_closer][k_closer][l-1][4]))*(1-(log(x) - log(table[i_closer][j_closer][k_closer][l-1][3]))/(log(table[i_closer][j_closer][k_closer][l][3]) - log(table[i_closer][j_closer][k_closer][l-1][3])));
         } else {
-            x_corr = (x - table[i_closer][j_closer][k_closer][l-1][3])/(table[i_closer][j_closer][k_closer][l][3] - table[i_closer][j_closer][k_closer][l-1][3])*(table[i_closer][j_closer][k_closer][l][4] - table[i_closer][j_closer][k_closer][l-1][4]);
+            x_corr = (log(x) - log(table[i_closer][j_closer][k_closer][l-1][3]))/(log(table[i_closer][j_closer][k_closer][l][3]) - log(table[i_closer][j_closer][k_closer][l-1][3]))*(log(table[i_closer][j_closer][k_closer][l][4]) - log(table[i_closer][j_closer][k_closer][l-1][4]));
         }
         /*
         cout << endl;
@@ -221,7 +221,7 @@ double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>
     }
     */
 
-    return table[i_closer][j_closer][k_closer][l_closer][4] + r_corr + b_corr + phi_corr + x_corr;
+    return table[i_closer][j_closer][k_closer][l_closer][4] + exp(r_corr) + exp(b_corr) + exp(phi_corr) + exp(x_corr);
 }
 
 double get_Pb_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> &table, double r, double b, double phi, double x, bool limit_phi=true) {

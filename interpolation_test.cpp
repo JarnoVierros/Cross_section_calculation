@@ -23,7 +23,7 @@ int main() {
     string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
     static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> table;
     
-    load_dipole_amplitudes(table, filename);
+    load_p_dipole_amplitudes(table, filename);
     int data_size = table.size();
 
     TMultiGraph* multigraph = new TMultiGraph();
@@ -64,10 +64,10 @@ int main() {
         double x = 1.0*i/x_steps*M_PI;
         double phi = x;
         raw_x[i] = x;
-        raw_y[i] = get_raw_dipole_amplitude(table, r, b_min, phi, x_pom);
+        raw_y[i] = get_raw_p_dipole_amplitude(table, r, b_min, phi, x_pom);
         cout << "x=" << x << ", raw=" << raw_y[i];
         interpolated_x[i] = x;
-        interpolated_y[i] = get_dipole_amplitude(table, r, b_min, phi, x_pom);
+        interpolated_y[i] = get_p_dipole_amplitude(table, r, b_min, phi, x_pom);
         cout << ", interpolated=" << interpolated_y[i] << endl;
     }
 
