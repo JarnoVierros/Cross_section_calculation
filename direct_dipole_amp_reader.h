@@ -9,6 +9,8 @@
 #include "TAxis.h"
 #include "TLine.h"
 
+#include <linterp.h>
+
 using namespace std;
 
 const double x_0 = 0.01;
@@ -23,6 +25,55 @@ double calc_max_phi(double r, double b_min) {
 
 double calc_x(double Y) {
     return exp(-Y)*x_0;
+}
+
+InterpMultilinear<4, double> create_p_interpolator(array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> &table) {
+
+    vector<double> r_vec, b_min_vec, phi_vec, x_vec, N_vec;
+
+    vector<vector<double>::iterator> grid_iter_list;
+    grid_iter_list.push_back(r_vec.begin());
+    grid_iter_list.push_back(b_min_vec.begin());
+    grid_iter_list.push_back(phi_vec.begin());
+    grid_iter_list.push_back(x_vec.begin());
+
+    array<int, 4> grid_sizes;
+    grid_sizes[0] = 30;
+    grid_sizes[1] = 30;
+    grid_sizes[2] = 30;
+    grid_sizes[3] = 81;
+    
+    int num_elements = grid_sizes[0]*grid_sizes[1]*grid_sizes[2]*grid_sizes[3];
+
+    for (int i=0; i<grid_sizes[0]; i++) {
+        r_vec.push_back(table[0][0][0][0][0]);
+    }
+
+    for (int i=0; i<grid_sizes[1]; i++) {
+        b_min_vec.push_back(table[0][i][0][0][1]);
+    }
+
+    for (int i=0; i<grid_sizes[2]; i++) {
+        phi_vec.push_back(table[0][0][i][0][2]);
+    }
+
+    for (int i=0; i<grid_sizes[3]; i++) {
+        x_vec.push_back(table[0][0][0][i][3]);
+    }
+
+    for (int i=0; i<grid_sizes[0]; i++) {
+        for (int j=0; j<grid_sizes[1]; j++) {
+            for (int k=0; k<grid_sizes[2]; k++) {
+                for (int l=0; l<grid_sizes[3]; l++) {
+                    N_vec.push_back(table[i][j][k][l][4]);
+                }
+            }
+        }
+    }
+
+    InterpMultilinear<4, double> interp_ML(grid_iter_list.begin(), grid_sizes.begin(), N_vec.data(), N_vec.data() + num_elements);
+
+    return interp_ML;
 }
 
 double get_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> &table, double r, double b, double phi, double x, bool limit_phi=true) {

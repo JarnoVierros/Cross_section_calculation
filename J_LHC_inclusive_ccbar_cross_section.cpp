@@ -4,6 +4,8 @@
 #include <gsl/gsl_monte_vegas.h>
 #include <gsl/gsl_sf_bessel.h>
 
+#include <linterp.h>
+
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
@@ -47,6 +49,8 @@ const int integration_iterations = 1;
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 
+static InterpMultilinear<4, double> interpolator;
+
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
 }
@@ -56,13 +60,26 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double x) {
+
+  double custom_dipamp, linterp_dipamp;
+
   if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, x);
+    custom_dipamp = get_p_dipole_amplitude(p_table, r, b_min, phi, x);
   } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x);
+    custom_dipamp = get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x);
   } else {
     throw 1;
   }
+
+  if (calc_max_phi(r, b_min) < phi) {
+    linterp_dipamp = 0;
+  } else {
+    array<double, 4> args = {r, b_min, phi, x};
+    linterp_dipamp = interpolator.interp(args.begin());
+  }
+
+  cout << "diff=" << custom_dipamp-linterp_dipamp << ", custom=" << custom_dipamp << ", linterp=" << linterp_dipamp << endl;
+  return linterp_dipamp;
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
@@ -185,6 +202,7 @@ int main() {
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
+    interpolator = create_p_interpolator(p_table);
   } else if (nucleus_type == "Pb") {
     load_Pb_dipole_amplitudes(Pb_table, filename);
   } else {
