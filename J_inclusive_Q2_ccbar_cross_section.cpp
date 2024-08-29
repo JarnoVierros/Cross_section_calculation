@@ -248,7 +248,7 @@ int main() {
   }
 
   ofstream L_output_file(outfile_name);
-  L_output_file << "Q2 (GeV);W (GeV);sigma (GeV^-2);sigma error (GeV^-2)" << endl;
+  L_output_file << "W (GeV);Q2 (GeV^2);sigma (GeV^-2);sigma error (GeV^-2)" << endl;
 
   cout << "Starting L integration" << endl;
   for (long unsigned int j=0; j<size(W_values); j++) {
@@ -327,7 +327,7 @@ int main() {
     outfile_name = "data/J_T_inclusive_Q2_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
   }
   ofstream T_output_file(outfile_name);
-  T_output_file << "Q2 (GeV);W (GeV);sigma (GeV^-2);sigma error (GeV^-2)" << endl;
+  T_output_file << "W (GeV);Q2 (GeV^2);sigma (GeV^-2);sigma error (GeV^-2)" << endl;
 
   cout << "Starting T integration" << endl;
   
