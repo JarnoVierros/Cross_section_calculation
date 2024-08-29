@@ -99,7 +99,7 @@ int main() {
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
   vector<double> charm_T_prediction_Q2, charm_T_prediction_beta, charm_T_prediction_x, charm_T_prediction_sigma, charm_T_prediction_sigma_error, charm_T_prediction_fit;
 
-  bool vector_dipamp = true;
+  bool vector_dipamp = false;
   if (vector_dipamp) {
     string L_prediction_filenames[] = {
         "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_vector_all.txt"
@@ -198,10 +198,24 @@ int main() {
 
   double Q2_selections[] = {
     4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 
+    7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 
+    9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 
+    12, 12, 12, 12, 12, 12, 
+    18, 18, 18, 18, 18, 18, 
+    28, 28, 28, 28, 28, 28, 
+    45, 45, 45, 45, 45, 45, 
+        75, 75, 75, 75, 75
     };
 
   double beta_selections[] = {
     0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9,
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
+          0.1, 0.2, 0.4, 0.65, 0.9
     };
 
   if (size(Q2_selections) != size(beta_selections)) {
@@ -277,7 +291,7 @@ int main() {
         cout << "Warning: T prediction not found" << endl;
         T_sigma = 0;
       }
-      const double correction = 1;//12
+      const double correction = 6;//12
       chosen_prediction_xpomF2.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma));
       chosen_prediction_xpomFL.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
       chosen_prediction_xpomFT.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
@@ -355,7 +369,7 @@ struct plot {
   }
 
   int figure_width = 6;
-  int figure_height = 1; //8
+  int figure_height = 8; //8
   TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*10000, figure_height*10000);
   multicanvas->Divide(figure_width, figure_height, 0, 0);
 
