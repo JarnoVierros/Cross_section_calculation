@@ -45,7 +45,7 @@ Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ Jb_inclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lgsl -lgslcblas -lm -o Jb_inclusive_ccbar_cross_section.exe
 	
 J_inclusive_ccbar_cross_section: J_inclusive_ccbar_cross_section.cpp
-	g++ -Wall -c J_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
+	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c J_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_inclusive_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lgsl -lgslcblas -lm -o J_inclusive_ccbar_cross_section.exe
 
 inclusive_ccbar_cross_section: inclusive_ccbar_cross_section.cpp

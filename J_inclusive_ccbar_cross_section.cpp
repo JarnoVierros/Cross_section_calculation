@@ -24,8 +24,8 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-static double e_f;
-static double m_f; //GeV
+static double e_f = 2.0/3;
+static double m_f = 1.27; //GeV
 
 const double normalization = 8/M_PI*alpha_em*N_c*e_f*e_f;
 
@@ -38,8 +38,8 @@ const string dipole_amp_type = "bfkl";
 const string nucleus_type = "Pb";
 const string filename_end = "";
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int warmup_calls = 100000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -192,7 +192,7 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const double Q2_values[] = {0};
+  const double Q2_values[] = {1, 3, 5, 8, 10};
 
   const int x_steps = 50;
   const double x_start = 1e-5;
