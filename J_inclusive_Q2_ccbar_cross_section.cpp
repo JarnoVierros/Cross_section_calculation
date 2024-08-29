@@ -38,8 +38,8 @@ const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
 const string filename_end = "";
 
-const int warmup_calls = 100000;
-const int integration_calls = 1000000;
+const int warmup_calls = 10000;
+const int integration_calls = 100000;
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -186,11 +186,11 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const double W_values[] = {1, 3, 5, 8, 10};
+  const double W_values[] = {60, 90, 120};
 
   const int Q2_steps = 50;
-  const double Q2_start = 1e-5;
-  const double Q2_stop = 0.01;
+  const double Q2_start = 1e-1;
+  const double Q2_stop = 1e2;
   const double Q2_step = 1.0/(Q2_steps-1)*log10(Q2_stop/Q2_start);
 
   stringstream r_limit_stream;
@@ -259,7 +259,7 @@ int main() {
       double Q2 = pow(10, log10(Q2_start) + i*Q2_step);
       L_Q2_values[i] = Q2;
       L_Q2_errors[i] = 0;
-      thread_par_struct par(W_values[j], Q2, L_sigma_values[i], L_sigma_errors[i]);
+      thread_par_struct par(Q2, W_values[j], L_sigma_values[i], L_sigma_errors[i]);
       L_threads[i] = thread(integrate_for_L_sigma, par);
     }
 
@@ -339,7 +339,7 @@ int main() {
       double Q2 = pow(10, log10(Q2_start) + i*Q2_step);
       T_Q2_values[i] = Q2;
       T_Q2_errors[i] = 0;
-      thread_par_struct par(W_values[j], Q2, T_sigma_values[i], T_sigma_errors[i]);
+      thread_par_struct par(Q2, W_values[j], T_sigma_values[i], T_sigma_errors[i]);
       T_threads[i] = thread(integrate_for_T_sigma, par);
       //this_thread::sleep_for(30s);
     }

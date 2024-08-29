@@ -38,8 +38,8 @@ const string dipole_amp_type = "bfkl";
 const string nucleus_type = "Pb";
 const string filename_end = "";
 
-const int warmup_calls = 100000;
-const int integration_calls = 1000000;
+const int warmup_calls = 10000;
+const int integration_calls = 500000;
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -55,11 +55,6 @@ double epsilon(double z, double Q2) {
   return sqrt(epsilon2(z, Q2));
 }
 
-double shifted_x(double x, double Q2) {
-  //return x;
-  return x*(1+(4*m_f*m_f)/Q2);
-}
-
 
 double dipole_amplitude(double r, double b_min, double phi, double x, double Q2) {
   double shifted_x = x*(1+4*m_f*m_f/Q2);
@@ -73,11 +68,11 @@ double dipole_amplitude(double r, double b_min, double phi, double x, double Q2)
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b_min, phi, shifted_x(x, Q2), Q2);
+  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b_min, phi, x, Q2);
 }
 
 double T_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b_min, phi, shifted_x(x, Q2), Q2);
+  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b_min, phi, x, Q2);
 }
 
 struct parameters {double Q2; double x;};
