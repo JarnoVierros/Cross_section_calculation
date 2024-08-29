@@ -24,13 +24,10 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-const double e_f = 2.0/3;
-const double m_f = 1.27; //GeV
+static double e_f;
+static double m_f; //GeV
 
 const double normalization = 8/M_PI*alpha_em*N_c*e_f*e_f;
-
-//35, 34, 33, 32, 30, 25, 20, 15, 10, 5, 4, 3, 2, 1, 0.5
-// 17, 16, 15, 10, 5, 1
 
 static double r_limit; // 34.64
 static double b_min_limit; // 17.32
@@ -48,6 +45,8 @@ const int integration_iterations = 1;
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 
+static InterpMultilinear<4, double>* interpolator;
+
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
 }
@@ -61,22 +60,24 @@ double shifted_x(double x, double Q2) {
   return x*(1+(4*m_f*m_f)/Q2);
 }
 
-double dipole_amplitude(double r, double b_min, double phi, double x) {
-  if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, x);
-  } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x);
+
+double dipole_amplitude(double r, double b_min, double phi, double x, double Q2) {
+  double shifted_x = x*(1+4*m_f*m_f/Q2);
+
+  if (calc_max_phi(r, b_min) < phi) {
+    return 0;
   } else {
-    throw 1;
+    array<double, 4> args = {log(r), log(b_min), phi, log(shifted_x)};
+    return exp(interpolator->interp(args.begin()));
   }
 }
 
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b_min, phi, shifted_x(x, Q2));
+  return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*dipole_amplitude(r, b_min, phi, shifted_x(x, Q2), Q2);
 }
 
 double T_integrand(double r, double b_min, double phi, double z, double Q2, double x) {
-  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b_min, phi, shifted_x(x, Q2));
+  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*dipole_amplitude(r, b_min, phi, shifted_x(x, Q2), Q2);
 }
 
 struct parameters {double Q2; double x;};
@@ -216,9 +217,22 @@ int main() {
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
+    create_p_interpolator(p_table, interpolator);
   } else if (nucleus_type == "Pb") {
     load_Pb_dipole_amplitudes(Pb_table, filename);
+    create_Pb_interpolator(Pb_table, interpolator);
   } else {
+    throw 1;
+  }
+  
+  if (nucleus_type == "Pb") {
+    r_limit = 657; // 34.64, 657
+    b_min_limit = 328; // 17.32, 328
+  } else if (nucleus_type == "p") {
+    r_limit = 34.64;
+    b_min_limit = 17.32;
+  } else {
+    cout << "invalid nucleus type" << endl;
     throw 1;
   }
 
