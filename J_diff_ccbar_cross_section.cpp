@@ -41,7 +41,7 @@ const int warmup_calls = 10000;
 const int integration_calls = 100000;
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bk";
+const string dipole_amp_type = "vector";
 const string nucleus_type = "p";
 const string filename_end = "";
 
@@ -197,7 +197,13 @@ int main() {
   const double x_stop = 0.01;
   const double x_step = 1.0/(x_steps-1)*log10(x_stop/x_start);
 
-  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  string filename;
+  if (dipole_amp_type == "vector") {
+    filename = "data/bk_p_mu02_0.66.csv";
+  } else {
+    filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  }
+
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
     create_p_interpolator(p_table, interpolator);
@@ -309,7 +315,7 @@ int main() {
   gPad->SetLogx();
 
   T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
-
+  
   title = "figures/transform_diff_T_sigma_"+dipole_amp_type+"_"+nucleus_type+".pdf";
   T_sigma_canvas->Print(title);
 

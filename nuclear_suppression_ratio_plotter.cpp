@@ -14,14 +14,27 @@ using namespace std;
 
 #include "cross_section_file_reader.h"
 
-const double c = 1.0;
+const double c = 1;//0.18;
 //const double A = pow(208, 4.0/3);
-const double A = pow(208, 1); 
+static double A;
 
 int main() {
 
-  string numerator_filename("data/J_T_inclusive_Q2_bk_Pb.txt");
-  string denominator_filename("data/J_T_inclusive_Q2_bk_p.txt");
+  string polarization = "L";
+  bool inclusive = false;
+  
+  string numerator_filename, denominator_filename;
+  
+  if (inclusive) {
+    numerator_filename = "data/J_"+polarization+"_inclusive_Q2_bk_Pb.txt";
+    denominator_filename = "data/J_"+polarization+"_inclusive_Q2_bk_p.txt";
+    A = pow(208, 1);
+  } else {
+    numerator_filename = "data/diff_Q2_"+polarization+"_sigma_bk_Pb.txt";
+    denominator_filename = "data/diff_Q2_"+polarization+"_sigma_bk_p.txt";
+    A = pow(208, 4.0/3);
+  }
+
 
   vector<double> initial_numerator_Q2, initial_denominator_Q2, initial_numerator_W, initial_numerator_sigma, initial_numerator_sigma_error, initial_denominator_W, initial_denominator_sigma, initial_denominator_sigma_error;
 
@@ -35,7 +48,21 @@ int main() {
   split_by_Q2(denominator_W, denominator_Q2, denominator_sigma, denominator_sigma_error, initial_denominator_W, initial_denominator_Q2, initial_denominator_sigma, initial_denominator_sigma_error);
 
   TMultiGraph* comparison_graphs = new TMultiGraph();
-  comparison_graphs->SetTitle("Ratio between different integration methods in longitudinal case");
+  TString title;
+  if (inclusive) {
+    if (polarization == "L") {
+      title = "Nuclear suppression ration for longitudinal inclusive cross section; Q^{2} (GeV^{2})";
+    } else {
+      title = "Nuclear suppression ration for transverse inclusive cross section; Q^{2} (GeV^{2})";
+    }
+  } else {
+    if (polarization == "L") {
+      title = "Nuclear suppression ration for longitudinal diffractive cross section; Q^{2} (GeV^{2})";
+    } else {
+      title = "Nuclear suppression ration for transverse diffractive cross section; Q^{2} (GeV^{2})";
+    }
+  }
+  comparison_graphs->SetTitle(title);
   for (long unsigned int i=0; i < numerator_W.size(); i++) {
     double ratio[numerator_Q2[i].size()];
     double x[numerator_Q2[i].size()];
@@ -56,12 +83,17 @@ int main() {
 
   gPad->SetLogx();
   if (true) {
-    comparison_canvas->BuildLegend(0.75, 0.25, 0.9, 0.6);
+    comparison_canvas->BuildLegend(0.75, 0.2, 0.9, 0.55);
   } else {
     comparison_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
   }
 
-  comparison_canvas->Print("figures/nuclear_suppression_ratio.pdf");
+  if (inclusive) {
+    title = "figures/"+polarization+"_inclusive_nuclear_suppression_ratio.pdf";
+  } else {
+    title = "figures/"+polarization+"_diffractive_nuclear_suppression_ratio.pdf";
+  }
+  comparison_canvas->Print(title);
   
   return 0;
 }
