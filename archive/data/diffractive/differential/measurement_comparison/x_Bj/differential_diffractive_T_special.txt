@@ -1,2 +1,0 @@
-Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit
-9;0.9;0.0075;3.12906e-05;8.68802e-09;0.556875
