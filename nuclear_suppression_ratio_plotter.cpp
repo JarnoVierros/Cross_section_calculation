@@ -21,7 +21,7 @@ static double A;
 int main() {
 
   string polarization = "L";
-  bool inclusive = false;
+  bool inclusive = true;
   
   string numerator_filename, denominator_filename;
   
@@ -51,15 +51,15 @@ int main() {
   TString title;
   if (inclusive) {
     if (polarization == "L") {
-      title = "Nuclear suppression ration for longitudinal inclusive cross section; Q^{2} (GeV^{2})";
+      title = "Nuclear suppression ratio for longitudinal inclusive cross section; Q^{2} (GeV^{2})";
     } else {
-      title = "Nuclear suppression ration for transverse inclusive cross section; Q^{2} (GeV^{2})";
+      title = "Nuclear suppression ratio for transverse inclusive cross section; Q^{2} (GeV^{2})";
     }
   } else {
     if (polarization == "L") {
-      title = "Nuclear suppression ration for longitudinal diffractive cross section; Q^{2} (GeV^{2})";
+      title = "Nuclear suppression ratio for longitudinal diffractive cross section; Q^{2} (GeV^{2})";
     } else {
-      title = "Nuclear suppression ration for transverse diffractive cross section; Q^{2} (GeV^{2})";
+      title = "Nuclear suppression ratio for transverse diffractive cross section; Q^{2} (GeV^{2})";
     }
   }
   comparison_graphs->SetTitle(title);
