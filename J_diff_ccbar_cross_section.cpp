@@ -48,6 +48,8 @@ const string filename_end = "";
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 
+static InterpMultilinear<4, double>* interpolator;
+
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
 }
@@ -57,13 +59,13 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double x, double Q2) {
-  double shifted_x = x;//*(1+4*m_f*m_f/Q2);
-  if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, shifted_x, true);
-  } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, shifted_x, true);
+  double shifted_x = x*(1+4*m_f*m_f/Q2);
+
+  if (calc_max_phi(r, b_min) < phi) {
+    return 0;
   } else {
-    throw 1;
+    array<double, 4> args = {log(r), log(b_min), phi, log(shifted_x)};
+    return exp(interpolator->interp(args.begin()));
   }
 }
 
@@ -198,8 +200,10 @@ int main() {
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
+    create_p_interpolator(p_table, interpolator);
   } else if (nucleus_type == "Pb") {
     load_Pb_dipole_amplitudes(Pb_table, filename);
+    create_Pb_interpolator(Pb_table, interpolator);
   } else {
     throw 1;
   }

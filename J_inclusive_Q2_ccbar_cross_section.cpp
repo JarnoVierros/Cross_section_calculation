@@ -38,8 +38,8 @@ const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
 const string filename_end = "";
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int warmup_calls = 100000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -186,9 +186,9 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  const double W_values[] = {60, 90, 120};
+  const double W_values[] = {60, 90, 120}; //{60, 90, 120};
 
-  const int Q2_steps = 50;
+  const int Q2_steps = 20;
   const double Q2_start = 1e-1;
   const double Q2_stop = 1e2;
   const double Q2_step = 1.0/(Q2_steps-1)*log10(Q2_stop/Q2_start);

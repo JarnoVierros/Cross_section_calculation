@@ -16,6 +16,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make alternative_exclusive_ccbar_cross_section
 	make ratio_plotter
 	make LHC_ratio_plotter
+	make nuclear_suppression_ratio_plotter
 	make dipole_amp_reader
 	make plot_comparator
 	make J_diff_ccbar_cross_section
@@ -116,6 +117,10 @@ ratio_plotter: ratio_plotter.cpp
 LHC_ratio_plotter: LHC_ratio_plotter.cpp
 	g++ -Wall -c LHC_ratio_plotter.cpp $$(root-config --glibs --cflags --libs)
 	g++ LHC_ratio_plotter.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o LHC_ratio_plotter.exe
+
+nuclear_suppression_ratio_plotter: nuclear_suppression_ratio_plotter.cpp
+	g++ -Wall -c nuclear_suppression_ratio_plotter.cpp $$(root-config --glibs --cflags --libs)
+	g++ nuclear_suppression_ratio_plotter.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o nuclear_suppression_ratio_plotter.exe
 
 dipole_amp_reader: dipole_amp_reader.cpp
 	g++ dipole_amp_reader.cpp -o dipole_amp_reader.exe

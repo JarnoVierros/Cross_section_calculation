@@ -6,6 +6,7 @@
 
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <ostream>
 #include <sstream>
@@ -14,12 +15,13 @@ using namespace std;
 #include "cross_section_file_reader.h"
 
 const double c = 1.0;
-const double A = pow(208, 4.0/3); 
+//const double A = pow(208, 4.0/3);
+const double A = pow(208, 1); 
 
 int main() {
 
-  string numerator_filename("/home/jarno/Cross_section_calculation/data/J_LHC_T_inclusive_bk_p.txt");
-  string denominator_filename("/home/jarno/Cross_section_calculation/archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_p.txt");
+  string numerator_filename("data/J_T_inclusive_Q2_bk_Pb.txt");
+  string denominator_filename("data/J_T_inclusive_Q2_bk_p.txt");
 
   vector<double> initial_numerator_Q2, initial_denominator_Q2, initial_numerator_W, initial_numerator_sigma, initial_numerator_sigma_error, initial_denominator_W, initial_denominator_sigma, initial_denominator_sigma_error;
 
@@ -29,8 +31,8 @@ int main() {
   vector<double> numerator_W, denominator_W;
   vector<vector<double>> numerator_Q2, numerator_sigma, numerator_sigma_error, denominator_Q2, denominator_sigma, denominator_sigma_error;
 
-  split_by_Q2(numerator_W, numerator_Q2, numerator_sigma, numerator_sigma_error, initial_numerator_Q2, initial_numerator_W, initial_numerator_sigma, initial_numerator_sigma_error);
-  split_by_Q2(denominator_W, denominator_Q2, denominator_sigma, denominator_sigma_error, initial_denominator_Q2, initial_denominator_W, initial_denominator_sigma, initial_denominator_sigma_error);
+  split_by_Q2(numerator_W, numerator_Q2, numerator_sigma, numerator_sigma_error, initial_numerator_W, initial_numerator_Q2, initial_numerator_sigma, initial_numerator_sigma_error);
+  split_by_Q2(denominator_W, denominator_Q2, denominator_sigma, denominator_sigma_error, initial_denominator_W, initial_denominator_Q2, initial_denominator_sigma, initial_denominator_sigma_error);
 
   TMultiGraph* comparison_graphs = new TMultiGraph();
   comparison_graphs->SetTitle("Ratio between different integration methods in longitudinal case");
@@ -42,7 +44,9 @@ int main() {
       x[j] = numerator_Q2[i][j];
     }
     TGraph* subgraph = new TGraph(numerator_Q2[i].size(), x, ratio);
-    TString subgraph_name = "W=" + to_string(numerator_W[i]) + " GeV";
+    stringstream W_stream;
+    W_stream << fixed << setprecision(0) << numerator_W[i];
+    TString subgraph_name = "W=" + W_stream.str() + " GeV";
     subgraph->SetTitle(subgraph_name);
     comparison_graphs->Add(subgraph, "C");
   }
@@ -52,7 +56,7 @@ int main() {
 
   gPad->SetLogx();
   if (true) {
-    comparison_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+    comparison_canvas->BuildLegend(0.75, 0.25, 0.9, 0.6);
   } else {
     comparison_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
   }
