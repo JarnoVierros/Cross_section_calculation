@@ -35,15 +35,17 @@ static double r_limit; // 34.64
 static double b_min_limit; // 17.32
 
 const int warmup_calls = 100000;
-const int integration_calls = 1000000;
+const int integration_calls = 200000;
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "vector";
-const string nucleus_type = "p";
+const string dipole_amp_type = "bk";
+const string nucleus_type = "Pb";
 const string filename_end = "";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
+
+static InterpMultilinear<4, double>* interpolator;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -54,13 +56,13 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double W, double Q2) {
-  double shifted_x = Q2/(W*W+Q2) + 4*m_f*m_f/(W*W+Q2);
-  if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, shifted_x);
-  } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, shifted_x);
+  double shifted_x = (Q2+4*m_f*m_f)/(W*W+Q2);
+
+  if (calc_max_phi(r, b_min) < phi) {
+    return 0;
   } else {
-    throw 1;
+    array<double, 4> args = {log(r), log(b_min), phi, log(shifted_x)};
+    return exp(interpolator->interp(args.begin()));
   }
 }
 
@@ -210,8 +212,10 @@ int main() {
   }
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
+    create_p_interpolator(p_table, interpolator);
   } else if (nucleus_type == "Pb") {
     load_Pb_dipole_amplitudes(Pb_table, filename);
+    create_Pb_interpolator(Pb_table, interpolator);
   } else {
     throw 1;
   }

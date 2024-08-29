@@ -211,6 +211,9 @@ direct_integrated_diffractive_sigma: direct_integrated_diffractive_sigma.cpp
 	g++ -Wall -c direct_integrated_diffractive_sigma.cpp $$(root-config --glibs --cflags --libs)
 	g++ direct_integrated_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o direct_integrated_diffractive_sigma.exe
 
+linterp_test: linterp_test.cpp
+	g++ linterp_test.cpp -o linterp_test.exe
+
 clean:
 	-rm *.exe
 	-rm *.o

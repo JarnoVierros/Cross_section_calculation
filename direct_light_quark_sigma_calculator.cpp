@@ -28,7 +28,7 @@ const double alpha_em = 1.0/137;
 const int N_c = 3;
 
 static double e_f, m_f;
-const bool charm = true;
+const bool charm = false;
 
 static double normalization;
 
@@ -39,10 +39,10 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 100000;
-const int integration_calls = 1000000;//20 000 000
+const int integration_calls = 300000;//20 000 000
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "vector";
+const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
 string filename_end = "_all";
 
@@ -54,6 +54,8 @@ const double max_theta_root_excess = 1e-6;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
+
+static InterpMultilinear<4, double>* interpolator;
 
 void read_data_file(string filename, vector<double> &Q2_values, vector<double> &beta_values, vector<double> &x_values, vector<double> &x_pom_F2_values, vector<double> &delta_stat_values, vector<double> &delta_sys_values) {
   ifstream data_file(filename);
@@ -125,12 +127,11 @@ double epsilon(double z, double Q2) {
 
 double dipole_amplitude(double r, double b_min, double phi, double x, double beta) {
   double x_pom = x/beta;
-  if (nucleus_type == "p") {
-    return get_p_dipole_amplitude(p_table, r, b_min, phi, x_pom, false);
-  } else if (nucleus_type == "Pb") {
-    return get_Pb_dipole_amplitude(Pb_table, r, b_min, phi, x_pom, false);
+  if (calc_max_phi(r, b_min) < phi) {
+    return 0;
   } else {
-    throw 1;
+    array<double, 4> args = {log(r), log(b_min), phi, log(x_pom)};
+    return exp(interpolator->interp(args.begin()));
   }
 }
 
@@ -219,11 +220,6 @@ double T_integrand(double r1, double r2, double b1, double b2, double r1bar, dou
   *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*(r1*r1bar+r2*r2bar)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))
   *dipole_amplitude(r, bmin, phi, x, beta)*dipole_amplitude(rbar, bminbar, phibar, x, beta);
 
-  if (r > r_limit||rbar > r_limit||bmin > b_min_limit||bminbar > b_min_limit) {
-    if (integrand > max_sus_integrand) {
-      max_sus_integrand = integrand;
-    }
-  }
   return integrand;
 }
 
@@ -385,8 +381,10 @@ int main() {
   }
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
+    create_p_interpolator(p_table, interpolator);
   } else if (nucleus_type == "Pb") {
     load_Pb_dipole_amplitudes(Pb_table, filename);
+    create_Pb_interpolator(Pb_table, interpolator);
   } else {
     throw 1;
   }

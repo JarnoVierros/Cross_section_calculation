@@ -30,7 +30,7 @@ void zero_array(double array[], int size) {
 }
 
 const string nucleus = "Pb";
-const bool diffractive = true;
+const bool diffractive = false;
 
 int main() {
 

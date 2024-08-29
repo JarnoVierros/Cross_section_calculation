@@ -24,8 +24,10 @@ int main() {
     double measurement_values[array_size] = {1.5, 0.63, 0.62};
     double relative_measurement_error[array_size] = {25+27, 23+29, 18+47};
     double measurement_error[array_size] = {relative_measurement_error[0]/100*measurement_values[0], relative_measurement_error[1]/100*measurement_values[1], relative_measurement_error[2]/100*measurement_values[2]};
-    double predicted_T[prediction_array_size] = {3.88345e-08, 1.60189e-08, 4.77151e-09, 2.30101e-09, 8.13191e-10};
-    double predicted_L[prediction_array_size] = {7.24124e-10, 2.8645e-10, 8.4623e-11, 2.89597e-11, 1.6577e-11};
+    //double predicted_T[prediction_array_size] = {3.52301e-08, 1.4552e-08, 4.21303e-09, 2.11146e-09, 6.94843e-10};
+    double predicted_T[prediction_array_size] = {2.30444e-07, 9.50491e-08, 2.76407e-08, 1.47054e-08, 4.72278e-09};
+    //double predicted_L[prediction_array_size] = {7.02351e-10, 2.51051e-10, 7.257e-11, 3.17289e-11, 0};
+    double predicted_L[prediction_array_size] = {4.16901e-09, 1.89436e-09, 3.79442e-10, 1.12333e-10, 8.72485e-11};
     double bfkl_predicted_T[prediction_array_size] = {3.16e-8, 1.3e-8, 3.87e-9, 1.94e-9, 6.4e-10};
     double bfkl_predicted_L[prediction_array_size] = {5.3e-10, 2e-10, 6e-11, 3e-11, 1.95696e-11};
     double x_errors[array_size] = {0, 0, 0};
@@ -99,6 +101,6 @@ int main() {
     TLatex* Q2_text_3 = new TLatex(0.0155, 1.1, "Q^{2}=35 GeV^{2}");
     Q2_text_3->Draw("Same");
 
-    MC->Print("figures/corrected_F2Dcharm_data_comparison.pdf");
+    MC->Print("figures/alternative_F2Dcharm_data_comparison.pdf");
 
 }
