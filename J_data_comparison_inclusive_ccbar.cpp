@@ -37,6 +37,8 @@ static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> current_tabl
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bk_table;
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bfkl_table;
 
+static InterpMultilinear<4, double>* interpolator;
+
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
 }
@@ -45,8 +47,14 @@ double epsilon(double z, double Q2) {
   return sqrt(m_f*m_f + z*(1-z)*Q2);
 }
 
-double dipole_amplitude(double r, double b, double phi, double x) {
-  return get_p_dipole_amplitude(current_table, r, b, phi, x);
+double dipole_amplitude(double r, double b_min, double phi, double x) {
+
+  if (calc_max_phi(r, b_min) < phi) {
+    return 0;
+  } else {
+    array<double, 4> args = {log(r), log(b_min), phi, log(x)};
+    return exp(interpolator->interp(args.begin()));
+  }
 }
 
 double shifted_x(double x, double Q2) {
@@ -97,10 +105,10 @@ int main() {
   const string data_filename = "data/HERA_data.dat";
 
   string bk_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bk_p.csv";
-  load_p_dipole_amplitudes(bk_table, bk_dipamp_filename);
+  create_p_interpolator(bk_table, interpolator);
 
   string bfkl_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bfkl_p.csv";
-  load_p_dipole_amplitudes(bfkl_table, bfkl_dipamp_filename);
+  create_p_interpolator(bfkl_table, interpolator);
 
   current_table = bk_table;
 
