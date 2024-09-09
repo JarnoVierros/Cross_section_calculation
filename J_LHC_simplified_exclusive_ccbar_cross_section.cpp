@@ -39,7 +39,8 @@ const int integration_calls = 200000;
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
-const string nucleus_type = "Pb";
+const string nucleus_type = "p";
+const string diffraction = "_diffraction";
 const string filename_end = "";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -208,7 +209,7 @@ int main() {
   if (dipole_amp_type == "vector") {
     filename = "data/bk_p_mu02_0.66.csv";
   } else {
-    filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+    filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+diffraction+".csv";
   }
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
@@ -223,7 +224,7 @@ int main() {
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Diffractive transverse cross section;W (GeV);cross section (mb)");
 
-  ofstream T_output_file("data/diff_LHC_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".txt");
+  ofstream T_output_file("data/diff_LHC_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+diffraction+".txt");
   T_output_file << "W (GeV);sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
@@ -271,7 +272,7 @@ int main() {
 
   T_sigma_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
 
-  TString fig_filename = "figures/diff_LHC_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+".pdf";
+  TString fig_filename = "figures/diff_LHC_T_sigma_W_"+dipole_amp_type+"_"+nucleus_type+diffraction+".pdf";
   T_sigma_canvas->Print(fig_filename);
 
   return 0;

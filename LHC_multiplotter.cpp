@@ -30,7 +30,8 @@ void zero_array(double array[], int size) {
 }
 
 const string nucleus = "Pb";
-const bool diffractive = false;
+const bool diffractive = true;
+const string diff_dipole = "_diffraction";
 
 int main() {
 
@@ -45,10 +46,10 @@ int main() {
   */
 
   if (diffractive) {
-    filenames[0] = "data/diff_LHC_T_sigma_W_bk_Pb.txt";
-    filenames[1] = "data/diff_LHC_T_sigma_W_bfkl_Pb.txt";
-    filenames[2] = "data/diff_LHC_T_sigma_W_bk_p.txt";
-    filenames[3] = "data/diff_LHC_T_sigma_W_bfkl_p.txt";
+    filenames[0] = "data/diff_LHC_T_sigma_W_bk_Pb"+diff_dipole+".txt";
+    filenames[1] = "data/diff_LHC_T_sigma_W_bfkl_Pb"+diff_dipole+".txt";
+    filenames[2] = "data/diff_LHC_T_sigma_W_bk_p"+diff_dipole+".txt";
+    filenames[3] = "data/diff_LHC_T_sigma_W_bfkl_p"+diff_dipole+".txt";
   } else {
     /*
     filenames[0] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_Pb.txt";
@@ -56,10 +57,10 @@ int main() {
     filenames[2] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_p.txt";
     filenames[3] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bfkl_p.txt";
     */
-    filenames[0] = "data/J_LHC_T_inclusive_bk_Pb.txt";
-    filenames[1] = "data/J_LHC_T_inclusive_bfkl_Pb.txt";
-    filenames[2] = "data/J_LHC_T_inclusive_bk_p.txt";
-    filenames[3] = "data/J_LHC_T_inclusive_bfkl_p.txt";
+    filenames[0] = "data/J_LHC_T_inclusive_bk_Pb"+diff_dipole+".txt";
+    filenames[1] = "data/J_LHC_T_inclusive_bfkl_Pb"+diff_dipole+".txt";
+    filenames[2] = "data/J_LHC_T_inclusive_bk_p"+diff_dipole+".txt";
+    filenames[3] = "data/J_LHC_T_inclusive_bfkl_p"+diff_dipole+".txt";
   }
 
   int filecount = size(filenames);
@@ -193,11 +194,20 @@ int main() {
   }
   */
   
-  if (diffractive) {
-    title = "figures/LHC_diffractive_"+nucleus+"_prediction.pdf";
+  if (diff_dipole=="_diffraction") {
+    if (diffractive) {
+      title = "figures/LHC_diffractive_"+nucleus+"_prediction_diffractive_dipole.pdf";
+    } else {
+      title = "figures/LHC_inclusive_"+nucleus+"_prediction_diffractive_dipole.pdf";
+    }
   } else {
-    title = "figures/LHC_inclusive_"+nucleus+"_prediction.pdf";
+    if (diffractive) {
+      title = "figures/LHC_diffractive_"+nucleus+"_prediction.pdf";
+    } else {
+      title = "figures/LHC_inclusive_"+nucleus+"_prediction.pdf";
+    }
   }
+
 
   comparison_canvas->Print(title);
   

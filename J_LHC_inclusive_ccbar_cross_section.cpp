@@ -39,7 +39,8 @@ static double b_min_limit; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 const string dipole_amp_type = "bk";
-const string nucleus_type = "Pb";
+const string nucleus_type = "p";
+const string diffraction = "_diffraction";
 const string filename_end = "";
 
 const int warmup_calls = 100000;
@@ -187,7 +188,7 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
+  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+diffraction+".csv";
   if (nucleus_type == "p") {
     load_p_dipole_amplitudes(p_table, filename);
     create_p_interpolator(p_table, interpolator);
@@ -244,20 +245,20 @@ int main() {
 
   TString title, outfile_name;
   if (print_r_limit) {
-    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+" cross section with r limit: "+r_limit_string+" GeV^-1;W (GeV);cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+diffraction+" cross section with r limit: "+r_limit_string+" GeV^-1;W (GeV);cross section (mb)";
   } else if (print_b_min_limit) {
-    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+" cross section with b limit: "+b_limit_string+" GeV^-1;W (GeV);cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+diffraction+" cross section with b limit: "+b_limit_string+" GeV^-1;W (GeV);cross section (mb)";
   } else {
-    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+" cross section;W (GeV);cross section (mb)";
+    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+diffraction+" cross section;W (GeV);cross section (mb)";
   }
   T_graphs->SetTitle(title);
 
   if (print_r_limit) {
-    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".txt";
+    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_r_"+r_limit_filename_string+filename_end+".txt";
   } else if (print_b_min_limit) {
-    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".txt";
+    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_b_"+b_limit_filename_string+filename_end+".txt";
   } else {
-    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
+    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".txt";
   }
   ofstream T_output_file(outfile_name);
   T_output_file << "W;sigma (mb);sigma error (mb)" << endl;
@@ -305,11 +306,11 @@ int main() {
   //T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
 
   if (print_r_limit) {
-    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".pdf";
+    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_r_"+r_limit_filename_string+filename_end+".pdf";
   } else if (print_b_min_limit) {
-    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".pdf";
+    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_b_"+b_limit_filename_string+filename_end+".pdf";
   } else {
-    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".pdf";
+    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".pdf";
   }
   T_sigma_canvas->Print(outfile_name);
 
