@@ -160,24 +160,45 @@ int main() {
     comparison_canvas->BuildLegend(0.2, 0.7, 0.35, 0.9);
   }
 
-
-  if (diffractive) {
-    if (nucleus == "Pb") {
-      TLatex* Q2_text = new TLatex(3e3, 2e4, "Q^{2} = 0 GeV^{2}");
-      Q2_text->Draw("same");
+  if (diff_dipole=="_diffraction") {
+    if (diffractive) {
+      if (nucleus == "Pb") {
+        TLatex* Q2_text = new TLatex(3e3, 8e4, "Q^{2} = 0 GeV^{2}");
+        Q2_text->Draw("same");
+      } else {
+        TLatex* Q2_text = new TLatex(3e3, 2e2, "Q^{2} = 0 GeV^{2}");
+        Q2_text->Draw("same");
+      }
     } else {
-      TLatex* Q2_text = new TLatex(3e3, 100, "Q^{2} = 0 GeV^{2}");
-      Q2_text->Draw("same");
+      if (nucleus == "Pb") {
+        TLatex* Q2_text = new TLatex(3e3, 1e6, "Q^{2} = 0 GeV^{2}");
+        Q2_text->Draw("same");
+      } else {
+        TLatex* Q2_text = new TLatex(3e3, 1e4, "Q^{2} = 0 GeV^{2}");
+        Q2_text->Draw("same");
+      }
     }
   } else {
-    if (nucleus == "Pb") {
-      TLatex* Q2_text = new TLatex(3e3, 6e5, "Q^{2} = 0 GeV^{2}");
-      Q2_text->Draw("same");
+    if (diffractive) {
+      if (nucleus == "Pb") {
+        TLatex* Q2_text = new TLatex(3e3, 2e4, "Q^{2} = 0 GeV^{2}");
+        Q2_text->Draw("same");
+      } else {
+        TLatex* Q2_text = new TLatex(3e3, 100, "Q^{2} = 0 GeV^{2}");
+        Q2_text->Draw("same");
+      }
     } else {
-      TLatex* Q2_text = new TLatex(3e3, 4e3, "Q^{2} = 0 GeV^{2}");
-      Q2_text->Draw("same");
+      if (nucleus == "Pb") {
+        TLatex* Q2_text = new TLatex(3e3, 6e5, "Q^{2} = 0 GeV^{2}");
+        Q2_text->Draw("same");
+      } else {
+        TLatex* Q2_text = new TLatex(3e3, 4e3, "Q^{2} = 0 GeV^{2}");
+        Q2_text->Draw("same");
+      }
     }
   }
+
+
   /*
   if (true) {
     TLatex* Q2_text = new TLatex(3e3, 20, "Q^{2} = 0 GeV^{2}");
