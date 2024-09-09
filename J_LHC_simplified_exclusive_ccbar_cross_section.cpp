@@ -39,8 +39,8 @@ const int integration_calls = 200000;
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bfkl";
-const string nucleus_type = "p";
-const string diffraction = "_diffraction";
+const string nucleus_type = "Pb";
+const string diffraction = "_diffraction";//_diffraction
 const string filename_end = "";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -212,7 +212,7 @@ int main() {
     filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+diffraction+".csv";
   }
   if (nucleus_type == "p") {
-    if (dipole_amp_type == "bfkl") {
+    if (diffraction=="_diffraction" && dipole_amp_type == "bfkl") {
       load_Pb_dipole_amplitudes(Pb_table, filename);
       create_Pb_interpolator(Pb_table, interpolator);
     } else {

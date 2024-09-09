@@ -19,19 +19,11 @@ int main() {
   string numerator_filename, denominator_filename;
   TString title, outfile_name;
 
-  bool diffractive = false;
-
-  if (diffractive) {
-    numerator_filename = "data/diff_LHC_T_sigma_W_bk_Pb.txt";
-    denominator_filename = "data/diff_LHC_T_sigma_W_bk_p.txt";
-    title = "Diffractive BK Pb p cross section ratio; W (GeV); #sigma_{Pb}/#sigma_{p}";
-    outfile_name = "figures/diffractive_bk_Pb_p_ratio.pdf";
-  } else {
-    numerator_filename = "/home/jarno/Cross_section_calculation/data/J_LHC_T_inclusive_bk_p.txt";
-    denominator_filename = "/home/jarno/Cross_section_calculation/archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_p.txt";
-    title = "Inclusive BK Pb p cross section ratio; W (GeV); #sigma_{Pb}/#sigma_{p}";
-    outfile_name = "figures/inclusive_bk_Pb_p_ratio.pdf";
-  }
+  const string sigma_type = "Pb BFKL";
+  numerator_filename = "data/diff_LHC_T_sigma_W_bfkl_Pb_diffraction.txt";
+  denominator_filename = "data/J_LHC_T_inclusive_bfkl_Pb_diffraction.txt";
+  title = "Diffractive "+sigma_type+" cross section divided by non-diffractive "+sigma_type+" cross section";
+  outfile_name = "figures/Pb_BFKL_diff_inc_ratio.pdf";
   
   vector<double> numerator_W, numerator_sigma, numerator_sigma_error, denominator_W, denominator_sigma, denominator_sigma_error;
 
@@ -48,6 +40,8 @@ int main() {
 
   TGraph* comparison_graph = new TGraph(numerator_W.size(), W, ratio);
   comparison_graph->SetTitle(title);
+  comparison_graph->GetXaxis()->SetTitle("W (GeV)");
+  //comparison_graph->GetYaxis()->SetTitle("");
 
   TCanvas* comparison_canvas = new TCanvas("comparison_canvas", "", 1000, 600);
   comparison_graph->Draw("AL");

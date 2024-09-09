@@ -39,8 +39,8 @@ static double b_min_limit; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 const string dipole_amp_type = "bfkl";
-const string nucleus_type = "p";
-const string diffraction = "_diffraction";
+const string nucleus_type = "Pb";
+const string diffraction = "_diffraction";//_diffraction
 const string filename_end = "";
 
 const int warmup_calls = 100000;
@@ -190,7 +190,7 @@ int main() {
 
   string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+diffraction+".csv";
   if (nucleus_type == "p") {
-    if (dipole_amp_type == "bfkl") {
+    if (diffraction=="_diffraction" && dipole_amp_type == "bfkl") {
       load_Pb_dipole_amplitudes(Pb_table, filename);
       create_Pb_interpolator(Pb_table, interpolator);
     } else {
