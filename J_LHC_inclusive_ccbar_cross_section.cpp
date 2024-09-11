@@ -40,7 +40,7 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 const string dipole_amp_type = "bfkl";
 const string nucleus_type = "Pb";
-const string diffraction = "_diffraction";//_diffraction
+const string diffraction = "";//_diffraction
 const string filename_end = "";
 
 const int warmup_calls = 100000;

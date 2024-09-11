@@ -35,7 +35,7 @@ static double r_limit; // 34.64
 static double b_min_limit; // 17.32
 
 const int warmup_calls = 100000;
-const int integration_calls = 200000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bfkl";
