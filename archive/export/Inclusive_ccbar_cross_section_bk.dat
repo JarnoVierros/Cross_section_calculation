@@ -1,5 +1,5 @@
 #Inclusive ccbar production cross section in transverse polarized gamma Pb scattering using BK evolution and setting the photon virtuality to Q^2=0 GeV^2
-W;cross section (GeV^-2);cross section error (GeV^-2)
+W (GeV);cross section (GeV^-2);cross section error (GeV^-2)
 30;0.815191;0.00027495
 30.9964;0.827619;0.000204798
 32.026;0.840129;0.000147606
