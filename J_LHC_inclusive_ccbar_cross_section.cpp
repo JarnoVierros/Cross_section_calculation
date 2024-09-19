@@ -12,6 +12,7 @@
 #include "TLegend.h"
 #include "TAxis.h"
 #include "TMultiGraph.h"
+#include "TLatex.h"
 
 #include <string>
 #include <iostream>
@@ -41,7 +42,7 @@ const bool print_b_min_limit = false;
 const string dipole_amp_type = "bfkl";
 const string nucleus_type = "Pb";
 const string diffraction = "";//_diffraction
-const string filename_end = "";
+const string filename_end = "_1mil";
 
 const int warmup_calls = 100000;
 const int integration_calls = 1000000;
@@ -225,7 +226,7 @@ int main() {
   return 0;
   */
 
-  const int W_steps = 50;
+  const int W_steps = 200; //50
   const double W_start = 3e1;
   const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
@@ -254,7 +255,7 @@ int main() {
   } else if (print_b_min_limit) {
     title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+diffraction+" cross section with b limit: "+b_limit_string+" GeV^-1;W (GeV);cross section (mb)";
   } else {
-    title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+diffraction+" cross section;W (GeV);cross section (mb)";
+    title = "Inclusive c#bar{c} production in transverse #gamma "+nucleus_type+diffraction+" scattering using "+dipole_amp_type+" evolution;W (GeV);cross section (GeV^-2)";
   }
   T_graphs->SetTitle(title);
 
@@ -266,7 +267,7 @@ int main() {
     outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".txt";
   }
   ofstream T_output_file(outfile_name);
-  T_output_file << "W;sigma (mb);sigma error (mb)" << endl;
+  T_output_file << "W;cross section (GeV^-2);cross section error (GeV^-2)" << endl;
 
   cout << "Starting T integration" << endl;
   
@@ -309,6 +310,9 @@ int main() {
   gPad->SetLogy();
 
   //T_sigma_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
+
+  TLatex* Q2_text = new TLatex(1.5e0, 2e3, "Q^{2} = 0 GeV^{2}");
+  Q2_text->Draw("same");
 
   if (print_r_limit) {
     outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_r_"+r_limit_filename_string+filename_end+".pdf";
