@@ -27,8 +27,8 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-const double e_f = 2.0/3;
-const double m_f = 1.27; //GeV
+const double e_f = 1.0/3; //2.0/3
+const double m_f = 4.18; //1.27 GeV
 
 static const double global_Q2 = 0;
 
@@ -40,9 +40,10 @@ static double b_min_limit; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 const string dipole_amp_type = "bfkl";
-const string nucleus_type = "Pb";
+const string nucleus_type = "p";
 const string diffraction = "";//_diffraction
-const string filename_end = "_1mil";
+const string filename_end = "";//_1mil
+const string particle_name = "b";
 
 const int warmup_calls = 100000;
 const int integration_calls = 1000000;
@@ -226,7 +227,7 @@ int main() {
   return 0;
   */
 
-  const int W_steps = 200; //50
+  const int W_steps = 50; //50, 200 for export
   const double W_start = 3e1;
   const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
@@ -255,16 +256,16 @@ int main() {
   } else if (print_b_min_limit) {
     title = "Transverse inclusive "+dipole_amp_type+" "+nucleus_type+diffraction+" cross section with b limit: "+b_limit_string+" GeV^-1;W (GeV);cross section (mb)";
   } else {
-    title = "Inclusive c#bar{c} production in transverse #gamma "+nucleus_type+diffraction+" scattering using "+dipole_amp_type+" evolution;W (GeV);cross section (GeV^-2)";
+    title = "Inclusive "+particle_name+"#bar{"+particle_name+"} production in transverse #gamma "+nucleus_type+diffraction+" scattering using "+dipole_amp_type+" evolution;W (GeV);cross section (GeV^-2)";
   }
   T_graphs->SetTitle(title);
 
   if (print_r_limit) {
-    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_r_"+r_limit_filename_string+filename_end+".txt";
+    outfile_name = "data/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_r_"+r_limit_filename_string+filename_end+".txt";
   } else if (print_b_min_limit) {
-    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_b_"+b_limit_filename_string+filename_end+".txt";
+    outfile_name = "data/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_b_"+b_limit_filename_string+filename_end+".txt";
   } else {
-    outfile_name = "data/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".txt";
+    outfile_name = "data/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".txt";
   }
   ofstream T_output_file(outfile_name);
   T_output_file << "W;cross section (GeV^-2);cross section error (GeV^-2)" << endl;
@@ -315,11 +316,11 @@ int main() {
   Q2_text->Draw("same");
 
   if (print_r_limit) {
-    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_r_"+r_limit_filename_string+filename_end+".pdf";
+    outfile_name = "figures/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_r_"+r_limit_filename_string+filename_end+".pdf";
   } else if (print_b_min_limit) {
-    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_b_"+b_limit_filename_string+filename_end+".pdf";
+    outfile_name = "figures/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_b_"+b_limit_filename_string+filename_end+".pdf";
   } else {
-    outfile_name = "figures/J_LHC_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".pdf";
+    outfile_name = "figures/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".pdf";
   }
   T_sigma_canvas->Print(outfile_name);
 

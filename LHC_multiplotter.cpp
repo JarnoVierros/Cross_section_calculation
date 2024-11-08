@@ -29,9 +29,10 @@ void zero_array(double array[], int size) {
   }
 }
 
-const string nucleus = "Pb";
-const bool diffractive = true;
-const string diff_dipole = "_diffraction";
+const string nucleus = "p";
+const bool diffractive = false;
+const string diff_dipole = ""; //_diffraction
+const string particle_name = "b";
 
 int main() {
 
@@ -46,10 +47,10 @@ int main() {
   */
 
   if (diffractive) {
-    filenames[0] = "data/diff_LHC_T_sigma_W_bk_Pb"+diff_dipole+".txt";
-    filenames[1] = "data/diff_LHC_T_sigma_W_bfkl_Pb"+diff_dipole+".txt";
-    filenames[2] = "data/diff_LHC_T_sigma_W_bk_p"+diff_dipole+".txt";
-    filenames[3] = "data/diff_LHC_T_sigma_W_bfkl_p"+diff_dipole+".txt";
+    filenames[0] = "data/diff_LHC_T_sigma_W_"+particle_name+"_bk_Pb"+diff_dipole+".txt";
+    filenames[1] = "data/diff_LHC_T_sigma_W_"+particle_name+"_bfkl_Pb"+diff_dipole+".txt";
+    filenames[2] = "data/diff_LHC_T_sigma_W_"+particle_name+"_bk_p"+diff_dipole+".txt";
+    filenames[3] = "data/diff_LHC_T_sigma_W_"+particle_name+"_bfkl_p"+diff_dipole+".txt";
   } else {
     /*
     filenames[0] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_Pb.txt";
@@ -57,10 +58,10 @@ int main() {
     filenames[2] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bk_p.txt";
     filenames[3] = "archive/data/LHC/inclusive/J_LHC_T_inclusive_bfkl_p.txt";
     */
-    filenames[0] = "data/J_LHC_T_inclusive_bk_Pb"+diff_dipole+".txt";
-    filenames[1] = "data/J_LHC_T_inclusive_bfkl_Pb"+diff_dipole+".txt";
-    filenames[2] = "data/J_LHC_T_inclusive_bk_p"+diff_dipole+".txt";
-    filenames[3] = "data/J_LHC_T_inclusive_bfkl_p"+diff_dipole+".txt";
+    filenames[0] = "data/J_LHC_T_inclusive_"+particle_name+"_bk_Pb"+diff_dipole+".txt";
+    filenames[1] = "data/J_LHC_T_inclusive_"+particle_name+"_bfkl_Pb"+diff_dipole+".txt";
+    filenames[2] = "data/J_LHC_T_inclusive_"+particle_name+"_bk_p"+diff_dipole+".txt";
+    filenames[3] = "data/J_LHC_T_inclusive_"+particle_name+"_bfkl_p"+diff_dipole+".txt";
   }
 
   int filecount = size(filenames);
@@ -87,15 +88,15 @@ int main() {
   TString title;
   if (diffractive) {
     if (nucleus == "Pb") {
-      title = "c#bar{c} production cross section in diffractive #gamma lead scattering";
+      title = ""+particle_name+"#bar{"+particle_name+"} production cross section in diffractive #gamma lead scattering";
     } else {
-      title = "c#bar{c} production cross section in diffractive #gamma proton scattering";
+      title = ""+particle_name+"#bar{"+particle_name+"} production cross section in diffractive #gamma proton scattering";
     }
   } else {
     if (nucleus == "Pb") {
-      title = "c#bar{c} production cross section in inclusive #gamma lead scattering";
+      title = ""+particle_name+"#bar{"+particle_name+"} production cross section in inclusive #gamma lead scattering";
     } else {
-      title = "c#bar{c} production cross section in inclusive #gamma proton scattering";
+      title = ""+particle_name+"#bar{"+particle_name+"} production cross section in inclusive #gamma proton scattering";
     }
   }
   comparison_graph->SetTitle(title);
@@ -148,9 +149,9 @@ int main() {
   gPad->SetLogy();
   comparison_graph->GetXaxis()->SetTitle("W (GeV)");
   if (diffractive) {
-    title = "#sigma^{#gamma"+nucleus+"#rightarrowc#bar{c}"+nucleus+"X} (nb)";
+    title = "#sigma^{#gamma"+nucleus+"#rightarrow"+particle_name+"#bar{"+particle_name+"}"+nucleus+"X} (nb)";
   } else {
-    title = "#sigma^{#gamma"+nucleus+"#rightarrowc#bar{c}X} (nb)";
+    title = "#sigma^{#gamma"+nucleus+"#rightarrow"+particle_name+"#bar{"+particle_name+"}X} (nb)";
   }
   comparison_graph->GetYaxis()->SetTitle(title);
 
@@ -160,40 +161,80 @@ int main() {
     comparison_canvas->BuildLegend(0.2, 0.7, 0.35, 0.9);
   }
 
-  if (diff_dipole=="_diffraction") {
-    if (diffractive) {
-      if (nucleus == "Pb") {
-        TLatex* Q2_text = new TLatex(3e3, 8e4, "Q^{2} = 0 GeV^{2}");
-        Q2_text->Draw("same");
+  if (particle_name == "c") {
+    if (diff_dipole=="_diffraction") {
+      if (diffractive) {
+        if (nucleus == "Pb") {
+          TLatex* Q2_text = new TLatex(3e3, 8e4, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        } else {
+          TLatex* Q2_text = new TLatex(3e3, 2e2, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        }
       } else {
-        TLatex* Q2_text = new TLatex(3e3, 2e2, "Q^{2} = 0 GeV^{2}");
-        Q2_text->Draw("same");
+        if (nucleus == "Pb") {
+          TLatex* Q2_text = new TLatex(3e3, 1e6, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        } else {
+          TLatex* Q2_text = new TLatex(3e3, 1e4, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        }
       }
     } else {
-      if (nucleus == "Pb") {
-        TLatex* Q2_text = new TLatex(3e3, 1e6, "Q^{2} = 0 GeV^{2}");
-        Q2_text->Draw("same");
+      if (diffractive) {
+        if (nucleus == "Pb") {
+          TLatex* Q2_text = new TLatex(3e3, 2e4, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        } else {
+          TLatex* Q2_text = new TLatex(3e3, 100, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        }
       } else {
-        TLatex* Q2_text = new TLatex(3e3, 1e4, "Q^{2} = 0 GeV^{2}");
-        Q2_text->Draw("same");
+        if (nucleus == "Pb") {
+          TLatex* Q2_text = new TLatex(3e3, 6e5, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        } else {
+          TLatex* Q2_text = new TLatex(3e3, 4e3, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        }
       }
     }
-  } else {
-    if (diffractive) {
-      if (nucleus == "Pb") {
-        TLatex* Q2_text = new TLatex(3e3, 2e4, "Q^{2} = 0 GeV^{2}");
-        Q2_text->Draw("same");
+  } else if (particle_name == "b") {
+    if (diff_dipole=="_diffraction") {
+      if (diffractive) {
+        if (nucleus == "Pb") {
+          TLatex* Q2_text = new TLatex(3e3, 1e3, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        } else {
+          TLatex* Q2_text = new TLatex(3e3, 3e0, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        }
       } else {
-        TLatex* Q2_text = new TLatex(3e3, 100, "Q^{2} = 0 GeV^{2}");
-        Q2_text->Draw("same");
+        if (nucleus == "Pb") {
+          TLatex* Q2_text = new TLatex(3e3, 1e6, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        } else {
+          TLatex* Q2_text = new TLatex(3e3, 1e4, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        }
       }
     } else {
-      if (nucleus == "Pb") {
-        TLatex* Q2_text = new TLatex(3e3, 6e5, "Q^{2} = 0 GeV^{2}");
-        Q2_text->Draw("same");
+      if (diffractive) {
+        if (nucleus == "Pb") {
+          TLatex* Q2_text = new TLatex(3e3, 2e4, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        } else {
+          TLatex* Q2_text = new TLatex(3e3, 100, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        }
       } else {
-        TLatex* Q2_text = new TLatex(3e3, 4e3, "Q^{2} = 0 GeV^{2}");
-        Q2_text->Draw("same");
+        if (nucleus == "Pb") {
+          TLatex* Q2_text = new TLatex(3e3, 2e4, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        } else {
+          TLatex* Q2_text = new TLatex(3e3, 1e2, "Q^{2} = 0 GeV^{2}");
+          Q2_text->Draw("same");
+        }
       }
     }
   }
@@ -217,15 +258,15 @@ int main() {
   
   if (diff_dipole=="_diffraction") {
     if (diffractive) {
-      title = "figures/LHC_diffractive_"+nucleus+"_prediction_diffractive_dipole.pdf";
+      title = "figures/LHC_diffractive_"+particle_name+"_"+nucleus+"_prediction_diffractive_dipole.pdf";
     } else {
-      title = "figures/LHC_inclusive_"+nucleus+"_prediction_diffractive_dipole.pdf";
+      title = "figures/LHC_inclusive_"+particle_name+"_"+nucleus+"_prediction_diffractive_dipole.pdf";
     }
   } else {
     if (diffractive) {
-      title = "figures/LHC_diffractive_"+nucleus+"_prediction.pdf";
+      title = "figures/LHC_diffractive_"+particle_name+"_"+nucleus+"_prediction.pdf";
     } else {
-      title = "figures/LHC_inclusive_"+nucleus+"_prediction.pdf";
+      title = "figures/LHC_inclusive_"+particle_name+"_"+nucleus+"_prediction.pdf";
     }
   }
 
