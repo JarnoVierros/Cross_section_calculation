@@ -26,8 +26,10 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-const double e_f = 1.0/3; //2.0/3
-const double m_f = 4.18; //1.27 GeV
+//const double e_f = 1.0/3; //2.0/3
+//const double m_f = 4.18; //1.27 GeV
+const double e_f = 2.0/3; //
+const double m_f = 1.27; // GeV
 
 const double normalization = 8/(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
@@ -38,11 +40,11 @@ const int warmup_calls = 100000;
 const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bfkl";
-const string nucleus_type = "p";
-const string diffraction = "_diffraction";//_diffraction
+const string dipole_amp_type = "bk";
+const string nucleus_type = "Pb";
+const string diffraction = "_diffraction";//_diffraction this tells it to use diffractive dipole amplitude
 const string filename_end = "";
-const string particle_name = "b";
+const string particle_name = "c";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
