@@ -19,11 +19,11 @@ int main() {
   string numerator_filename, denominator_filename;
   TString title, outfile_name;
 
-  const string sigma_type = "Pb BFKL";
-  numerator_filename = "data/diff_LHC_T_sigma_W_bfkl_Pb_diffraction.txt";
-  denominator_filename = "data/J_LHC_T_inclusive_bfkl_Pb.txt";
-  title = "Diffractive "+sigma_type+" cross section divided by non-diffractive "+sigma_type+" cross section";
-  outfile_name = "figures/Pb_BFKL_mixed_dipamp_diff_inc_ratio.pdf";
+  const string sigma_type = "Pb BK";
+  numerator_filename = "data/diff_LHC_T_sigma_W_c_bk_Pb_diffraction.txt";
+  denominator_filename = "data/J_LHC_T_inclusive_c_bk_Pb.txt";
+  title = "Diffractive "+sigma_type+" cross section divided by inclusive "+sigma_type+" cross section";
+  outfile_name = "figures/Pb_BK_mixed_dipamp_diff_inc_ratio.pdf";
   
   vector<double> numerator_W, numerator_sigma, numerator_sigma_error, denominator_W, denominator_sigma, denominator_sigma_error;
 
