@@ -21,6 +21,9 @@
 #include <thread>
 using namespace std;
 
+#include <chrono>
+#include <ctime>
+
 #include "linterp.h"
 #include "direct_dipole_amp_reader.h"
 
@@ -44,11 +47,11 @@ const bool print_b_min_limit = false;
 const string dipole_amp_type = "bk";
 const string nucleus_type = "Pb";
 const string diffraction = "";//_diffraction
-const string filename_end = "_converging";//_1mil
+const string filename_end = "_converging_100k";//_1mil
 const string particle_name = "c";
 
 const int warmup_calls = 100000;
-const int integration_calls = 100000000;
+const int integration_calls = 100000; // 1000000000
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -265,6 +268,10 @@ int main() {
   T_output_file << "pT;y;cross section (GeV^-2);cross section error (GeV^-2)" << endl;
 
   cout << "Starting T integration" << endl;
+
+auto start = chrono::system_clock::now();
+time_t start_time = chrono::system_clock::to_time_t(start);
+cout << "start time: " << ctime(&start_time);
   
   double T_pT_values[pT_steps*y_steps], T_y_values[pT_steps*y_steps], T_sigma_values[pT_steps*y_steps], T_pT_errors[pT_steps*y_steps], T_y_errors[pT_steps*y_steps], T_sigma_errors[pT_steps*y_steps];
   thread T_threads[pT_steps*y_steps];
@@ -296,6 +303,13 @@ int main() {
   for (int k=0; k<active_threads; k++) {
     T_threads[pT_steps*y_steps-k-1].join();
   }
+  
+  auto stop = chrono::system_clock::now();
+  time_t stop_time = chrono::system_clock::to_time_t(stop);
+  cout << "stop time: " << ctime(&stop_time);
+  chrono::duration<double> elapsed_seconds = stop-start;
+  cout << "elapsed time: " << elapsed_seconds.count()/60.0 << " minutes" << endl;
+  
   /*
   for (int j=0; j<pT_steps*y_steps; j++) {
     T_threads[j].join();
