@@ -11,29 +11,22 @@
 int main() {
 
     string filenames[] = {
-        "data/J_T_inclusive_b_17.txt",
-        "data/J_T_inclusive_b_15.txt",
-        "data/J_T_inclusive_b_12.txt",
-        "data/J_T_inclusive_b_10.txt",
-        "data/J_T_inclusive_b_9.txt",
-        "data/J_T_inclusive_b_8.txt",
-        "data/J_T_inclusive_b_7.txt",
-        "data/J_T_inclusive_b_6.txt"
+        "output/rapidity_LHC_inclusive_D0_c_bfkl_Pb.txt",
+        "output/rapidity_LHC_inclusive_D0_c_bk_Pb.txt"
     };
 
     string titles[] {
-        "r limit=17",
-        "r limit=15",
-        "r limit=12",
-        "r limit=10",
-        "r limit=9",
-        "r limit=8",
-        "r limit=7",
-        "r limit=6"
+        "bfkl",
+        "bk"
+    };
+
+    Color_t colors[] {
+        kBlue,
+        kRed
     };
 
     TMultiGraph* multigraph = new TMultiGraph();
-    multigraph->SetTitle("Transverse cross sections with different b_min integration limits at Q=2.5 GeV;x;sigma (mb)");
+    multigraph->SetTitle("inclusive charm cross section at pT=0 and Q^2=0;y;sigma");
 
     for (int i=0; i<size(filenames); i++) {
         vector<double> Q2, x, sigma, sigma_error;
@@ -51,12 +44,13 @@ int main() {
         TGraphErrors* subgraph = new TGraphErrors(x.size(), x_arr, sigma_arr, x_error);
         TString subgraph_name = titles[i];
         subgraph->SetTitle(subgraph_name);
+        subgraph->SetLineColor(colors[i]);
         multigraph->Add(subgraph);
     }
 
     TCanvas* multigraph_canvas = new TCanvas("multigraph_canvas", "", 1100, 600);
-    gPad->SetLogx();
-    multigraph->Draw("A PMC PLC");
-    multigraph_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
-    multigraph_canvas->Print("figures/transverse_b_limit_comparison.pdf");
+    //gPad->SetLogx();
+    multigraph->Draw("A"); //"A PMC PLC"
+    multigraph_canvas->BuildLegend(0.55, 0.55, 0.7, 0.9);
+    multigraph_canvas->Print("figures/inclusive_charm_cross_section_comparison.pdf");
 }

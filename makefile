@@ -42,6 +42,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make F2_light_sigma_calculator
 	make direct_integrated_diffractive_sigma
 	make double_plot
+	make rapidity_LHC_inclusive_D0
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
 	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c Jb_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
@@ -133,6 +134,9 @@ test: test.cpp
 plot_comparator: plot_comparator.cpp
 	g++ plot_comparator.cpp $$(root-config --glibs --cflags --libs) -o plot_comparator.exe
 
+rapidity_plot_comparator: rapidity_plot_comparator.cpp
+	g++ rapidity_plot_comparator.cpp $$(root-config --glibs --cflags --libs) -o rapidity_plot_comparator.exe
+
 J_diff_ccbar_cross_section: J_diff_ccbar_cross_section.cpp
 	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c J_diff_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs)
 	g++ J_diff_ccbar_cross_section.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_diff_ccbar_cross_section.exe
@@ -219,7 +223,19 @@ dipole_amplitude_generator: dipole_amplitude_generator.cpp
 
 direct_J_differential_diffractive_sigma: direct_J_differential_diffractive_sigma.cpp
 	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c direct_J_differential_diffractive_sigma.cpp $$(root-config --glibs --cflags --libs)
-	g++ direct_J_differential_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o direct_J_differential_diffractive_sigma.exe
+	g++ direct_J_differential_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o direct_J_differential_diffractive_sigma.exe	
+
+rapidity_LHC_inclusive_D0: rapidity_LHC_inclusive_D0.cpp
+	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c rapidity_LHC_inclusive_D0.cpp $$(root-config --glibs --cflags --libs)
+	g++ rapidity_LHC_inclusive_D0.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o rapidity_LHC_inclusive_D0.exe
+	
+rapidity_xyxbar_LHC_inclusive_D0: rapidity_xyxbar_LHC_inclusive_D0.cpp
+	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c rapidity_xyxbar_LHC_inclusive_D0.cpp $$(root-config --glibs --cflags --libs)
+	g++ rapidity_xyxbar_LHC_inclusive_D0.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o rapidity_xyxbar_LHC_inclusive_D0.exe
+
+rapidity_polar_xyxbar_LHC_inclusive_D0: rapidity_polar_xyxbar_LHC_inclusive_D0.cpp
+	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c rapidity_polar_xyxbar_LHC_inclusive_D0.cpp $$(root-config --glibs --cflags --libs)
+	g++ rapidity_polar_xyxbar_LHC_inclusive_D0.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o rapidity_polar_xyxbar_LHC_inclusive_D0.exe
 
 F2_light_sigma_calculator: F2_light_sigma_calculator.cpp
 	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c F2_light_sigma_calculator.cpp $$(root-config --glibs --cflags --libs)

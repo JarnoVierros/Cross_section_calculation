@@ -1,7 +1,6 @@
 
 #include <iostream>
 #include <vector>
-#include <rapidcsv.h>
 #include <math.h>
 
 #include "TGraph.h"
@@ -10,7 +9,8 @@
 #include "TLine.h"
 
 #include <ctime>
-#include <linterp.h>
+#include "linterp.h"
+#include "rapidcsv.h"
 
 using namespace std;
 
