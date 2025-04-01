@@ -47,11 +47,11 @@ const bool print_b_min_limit = false;
 const string dipole_amp_type = "bk";
 const string nucleus_type = "Pb";
 const string diffraction = "";//_diffraction
-const string filename_end = "_converging_100k";//_1mil
+const string filename_end = "_testing";//_1mil
 const string particle_name = "c";
 
 const int warmup_calls = 100000;
-const int integration_calls = 100000; // 1000000000
+const int integration_calls = 1000000; // 1000000000
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -73,7 +73,8 @@ double shifted_x_at_Q2_0(double z, double pT, double y, double Q2) {
     throw 1;
   }
 
-  double p_gamma = m_f/(z*sqrt(2))*(sqrt(exp(2*y)+1) + sqrt(exp(2*y)-1-2*pT*pT/(m_f*m_f)));
+  //double p_gamma = m_f/(z*sqrt(2))*(sqrt(exp(2*y)+1) + sqrt(exp(2*y)-1-2*pT*pT/(m_f*m_f)));
+  double p_gamma = m_f/(2*z)*(cosh(y)+sqrt(gsl_pow_2(sinh(y)-pT*pT/(m_f*m_f))) + (z*z*Q2/(m_f*m_f))/(cosh(y)+sqrt(gsl_pow_2(sinh(y))-pT*pT/(m_f*m_f))));
   double shifted_x = 2*m_f*m_f/(p_gamma*(sqrt(m_Pb*m_Pb+p_Pb*p_Pb) - p_Pb));
   return shifted_x;
 }
@@ -219,11 +220,11 @@ int main() {
 
   const int y_steps = 7;
   const double y_start = 0;
-  const double y_stop = 20;
+  const double y_stop = 2;
   const double y_step = (y_stop-y_start)/y_steps;
 
   const int pT_steps = 1;
-  double pT_values[pT_steps] = {0};
+  double pT_values[pT_steps] = {10};
   /*
   const double pT_start = 1e0;
   const double pT_stop = 1e3;
