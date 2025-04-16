@@ -11,6 +11,7 @@
 #include "TAxis.h"
 #include "TMultiGraph.h"
 #include "TLatex.h"
+#include "TH2D.h"
 
 #include <string>
 #include <iostream>
@@ -19,6 +20,7 @@
 #include <ostream>
 #include <sstream>
 #include <thread>
+#include <vector>
 using namespace std;
 
 #include <chrono>
@@ -47,11 +49,11 @@ const bool print_b_min_limit = false;
 const string dipole_amp_type = "bk";
 const string nucleus_type = "Pb";
 const string diffraction = "";//_diffraction
-const string filename_end = "_100M";//_1mil
+const string filename_end = "_testing";//_1mil
 const string particle_name = "c";
 
-const int warmup_calls = 100000;
-const int integration_calls = 100000000; // 1000000000
+const int warmup_calls = 1000;
+const int integration_calls = 100000; // 1000000000
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -105,6 +107,9 @@ double dipole_amplitude_from_xy(double rx, double Tx, double ry, double Ty, doub
   return dipole_amplitude(z, dip_r, dip_bmin, dip_phi, pT, rapidity, Q2);
 }
 
+static vector<double> integrand_values;
+static vector<double> integrand_radiuses;
+
 double T_integrand(double rx, double Tx, double ry, double Ty, double rxbar, double Txbar, double z, double Q2, double pT, double rapidity) {
   double r = sqrt(rx*rx-2*rx*ry*cos(Tx-Ty)+ry*ry);
   double rbar = sqrt(rxbar*rxbar-2*rxbar*ry*cos(Txbar-Ty)+ry*ry);
@@ -112,7 +117,13 @@ double T_integrand(double rx, double Tx, double ry, double Ty, double rxbar, dou
   dip_amp_1 = dipole_amplitude_from_xy(rx, Tx, ry, Ty, z, pT, rapidity, Q2);
   dip_amp_2 = dipole_amplitude_from_xy(ry, Ty, rxbar, Txbar, z, pT, rapidity, Q2);
   dip_amp_3 = dipole_amplitude_from_xy(rx, Tx, rxbar, Txbar, z, pT, rapidity, Q2);
-  return rx*ry*rxbar*cos(pT*(rx*cos(Tx)-rxbar*cos(Txbar)))*(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*(rx*rxbar*cos(Tx-Txbar)-rx*ry*cos(Tx-Ty)-ry*rxbar*cos(Ty-Txbar)+ry*ry)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))*(dip_amp_1+dip_amp_2-dip_amp_3);
+  //return rx*ry*rxbar*cos(pT*(rx*cos(Tx)-rxbar*cos(Txbar)))*(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*(rx*rxbar*cos(Tx-Txbar)-rx*ry*cos(Tx-Ty)-ry*rxbar*cos(Ty-Txbar)+ry*ry)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))*(dip_amp_1+dip_amp_2-dip_amp_3);
+  
+  double integrand_value = rx*ry*rxbar*1*(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*rbar) + epsilon2(z, Q2)*(z*z + gsl_pow_2(1-z))*(rx*rxbar*cos(Tx-Txbar)-rx*ry*cos(Tx-Ty)-ry*rxbar*cos(Ty-Txbar)+ry*ry)/(r*rbar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*rbar))*(dip_amp_1+dip_amp_2-dip_amp_3);
+  double integrand_radius = abs(pT*(rx*cos(Tx)-rxbar*cos(Txbar)));
+  integrand_values.push_back(integrand_value);
+  integrand_radiuses.push_back(integrand_radius);
+  return integrand_value;
 }
 
 struct parameters {double pT; double y;};
@@ -223,9 +234,11 @@ int main() {
   const double y_stop = 3;
   const double y_step = (y_stop-y_start)/y_steps;
 
+  const int pT_steps = 1;
+  double pT_values[pT_steps] = {2};
+  /*
   const int pT_steps = 5;
   double pT_values[pT_steps] = {2, 6, 10, 15, 20};
-  /*
   const double pT_start = 1e0;
   const double pT_stop = 1e3;
   const double pT_step = 1.0/(pT_steps-1)*log10(pT_stop/pT_start);
@@ -277,7 +290,7 @@ cout << "start time: " << ctime(&start_time);
   double T_pT_values[pT_steps*y_steps], T_y_values[pT_steps*y_steps], T_sigma_values[pT_steps*y_steps], T_pT_errors[pT_steps*y_steps], T_y_errors[pT_steps*y_steps], T_sigma_errors[pT_steps*y_steps];
   thread T_threads[pT_steps*y_steps];
 
-  const int max_threads = 10000;
+  const int max_threads = 1; //7
   int active_threads = 0;
   for (int i=0; i<pT_steps; i++) {
     for (int j=0; j<y_steps; j++) {
@@ -369,6 +382,19 @@ cout << "start time: " << ctime(&start_time);
     outfile_name = "figures/rapidity_LHC_inclusive_D0_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".pdf";
   }
   T_sigma_canvas->Print(outfile_name);
+
+  cout << "histogram start" << endl;
+
+  TCanvas* TH2_canvas = new TCanvas("TH2_canvas", "", 1100, 600);
+
+  TH2D* integrand_hist = new TH2D("h2", "title", 500, -10, 30, 500, 0, 30);
+  for (int i=0; i<size(integrand_values); i++) {
+    cout << integrand_values[i] << ", " << integrand_radiuses[i] << endl;
+    integrand_hist->Fill(integrand_values[i], integrand_radiuses[i]);
+  }
+
+  integrand_hist->Draw();
+  TH2_canvas->Print("figures/integrand_plot.pdf");
 
   return 0;
 }
