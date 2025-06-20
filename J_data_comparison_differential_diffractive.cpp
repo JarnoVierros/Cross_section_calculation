@@ -99,10 +99,10 @@ int main() {
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
   vector<double> charm_T_prediction_Q2, charm_T_prediction_beta, charm_T_prediction_x, charm_T_prediction_sigma, charm_T_prediction_sigma_error, charm_T_prediction_fit;
 
-  bool vector_dipamp = false;
+  bool vector_dipamp = true;
   if (vector_dipamp) {
     string L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_vector_all.txt"
+        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_vector_all.txt"
       };
 
     for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -110,7 +110,7 @@ int main() {
     }
 
     string charm_L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_vector_charm_all.txt"
+        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_vector_charm_all.txt"
       };
 
     for (long unsigned int i=0; i<size(charm_L_prediction_filenames); i++) {
@@ -118,7 +118,7 @@ int main() {
     }
 
     string T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_vector_all.txt"
+      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_vector_all.txt"
     };
 
     for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -126,7 +126,7 @@ int main() {
     }
 
     string charm_T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_vector_charm_all.txt"
+      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_vector_charm_all.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
@@ -135,7 +135,7 @@ int main() {
 
   } else {
     string L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_all.txt"
+        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_10k_all_diffdiff.txt"
       };
 
     for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -143,7 +143,7 @@ int main() {
     }
 
     string charm_L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/data/differential_diffractive_L_charm_all.txt"
+        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_10k_all_diffdiff_charm.txt"
       };
 
     for (long unsigned int i=0; i<size(charm_L_prediction_filenames); i++) {
@@ -151,7 +151,7 @@ int main() {
     }
 
     string T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_all.txt"
+      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_10k_all_diffdiff.txt"
     };
 
     for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -159,7 +159,7 @@ int main() {
     }
 
     string charm_T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/data/differential_diffractive_T_charm_all.txt"
+      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_10k_all_diffdiff_charm.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
@@ -257,7 +257,8 @@ int main() {
         if (L_prediction_x[j] != x_selection[i]) {
           continue;
         }
-        L_sigma = L_prediction_sigma[j] + charm_L_prediction_sigma[j];
+        //L_sigma = L_prediction_sigma[j] + charm_L_prediction_sigma[j];
+        L_sigma = L_prediction_sigma[j];
         L_error = sqrt(L_prediction_sigma_error[j]*L_prediction_sigma_error[j] + charm_L_prediction_sigma_error[j]*charm_L_prediction_sigma_error[j]);
         L_found = true;
         if (L_sigma < 0) {
@@ -275,7 +276,8 @@ int main() {
         if (T_prediction_x[j] != x_selection[i]) {
           continue;
         }
-        T_sigma = T_prediction_sigma[j] + charm_T_prediction_sigma[j];
+        //T_sigma = T_prediction_sigma[j] + charm_T_prediction_sigma[j];
+        T_sigma = T_prediction_sigma[j];
         T_error = sqrt(T_prediction_sigma_error[j]*T_prediction_sigma_error[j] + T_prediction_sigma_error[j]*T_prediction_sigma_error[j]);
         T_found = true;
         if (T_sigma < 0) {
@@ -291,7 +293,7 @@ int main() {
         cout << "Warning: T prediction not found" << endl;
         T_sigma = 0;
       }
-      const double correction = 6;//12
+      const double correction = 1;//12
       chosen_prediction_xpomF2.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma));
       chosen_prediction_xpomFL.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
       chosen_prediction_xpomFT.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);

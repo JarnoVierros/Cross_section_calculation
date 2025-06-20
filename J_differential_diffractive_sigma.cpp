@@ -24,6 +24,8 @@ using namespace std;
 
 #include "direct_dipole_amp_reader.h"
 
+//THIS ONLY WORKS FOR PROTONS
+
 const double alpha_em = 1.0/137;
 const int N_c = 3;
 const double e_f = 2.0/3;
@@ -206,7 +208,7 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double x) {
-  return get_dipole_amplitude(table, r, b_min, phi, x);
+  return get_p_dipole_amplitude(table, r, b_min, phi, x);
 }
 
 double L_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta) {
@@ -274,7 +276,7 @@ double T_integrand(double r, double b_min, double phi, double r_bar, double phi_
     double sub_integrand = r*b_min*r_bar
     *gsl_sf_bessel_J0(sqrt(z*(1-z)*Q2*(1/beta-1)-m_f*m_f)*sqrt(r*r+r_bar*r_bar-2*r*r_bar*cos(-theta_bar[i]+phi-phi_bar)))*z*(1-z)
     *(m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*r_bar)+epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(-theta_bar[i]+phi-phi_bar)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*r_bar))
-    *get_dipole_amplitude(table, r, b_min, phi, x)*get_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, x);
+    *get_p_dipole_amplitude(table, r, b_min, phi, x)*get_p_dipole_amplitude(table, r_bar, b_min_bar, phi_bar, x);
 
     if (gsl_isnan(sub_integrand)) {
       cout << "T sub_integrand " << i << " is nan" << endl;
@@ -433,8 +435,8 @@ int main() {
 
   gsl_set_error_handler_off();
 
-  string filename = "data/dipole_amplitude_with_IP_dependence.csv";
-  load_dipole_amplitudes(table, filename);
+  string filename = "data/dipole_amplitude_with_IP_dependence_bk_p_diffraction.csv";
+  load_p_dipole_amplitudes(table, filename);
 
   double Q2 = 35;
   double beta = 0.04;

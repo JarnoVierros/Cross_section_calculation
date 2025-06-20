@@ -26,8 +26,13 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
+
+
 const double e_f = sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3); //2.0/3, sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3)
 const double m_f = 0; //GeV 1.27
+
+//const double e_f = 2.0/3;
+//const double m_f = 1.27; //GeV 
 
 const double normalization = 16/gsl_pow_2(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
@@ -41,10 +46,10 @@ const int warmup_calls = 100000;
 const int integration_calls = 20000000;//20 000 000
 const int integration_iterations = 1;
 
-const int i_start = 20; // number of data points to skip
-const int data_inclusion_count = 40;
+const int i_start = 0; // number of data points to skip
+const int data_inclusion_count = 226;
 
-const string filename_end = "_20mil_20-59_xpom";//
+const string filename_end = "_20mil_all_diffdiff_charm";//
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
@@ -209,7 +214,7 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double x) {
-  return get_dipole_amplitude(table, r, b_min, phi, x);
+  return get_p_dipole_amplitude(table, r, b_min, phi, x);
 }
 
 double L_integrand(double r, double b_min, double phi, double r_bar, double phi_bar, double z, double Q2, double x, double beta) {
@@ -441,8 +446,8 @@ int main() {
 
   read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
 
-  string filename = "data/dipole_amplitude_with_IP_dependence_bk_p.csv";
-  load_dipole_amplitudes(table, filename);
+  string filename = "data/dipole_amplitude_with_IP_dependence_bk_p_diffraction.csv";
+  load_p_dipole_amplitudes(table, filename);
   
   /*
   for (long unsigned int i=0; i<Q2_values.size(); i++) {
@@ -480,7 +485,7 @@ int main() {
   auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
   cout << "Calculation finished in " << duration.count() << " seconds" << endl;
 
-  ofstream L_output_file("data/differential_diffractive_L"+filename_end+".txt");
+  ofstream L_output_file("output/differential_diffractive_L"+filename_end+".txt");
   L_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {
@@ -501,7 +506,7 @@ int main() {
   }
   L_output_file.close();
 
-  ofstream T_output_file("data/differential_diffractive_T"+filename_end+".txt");
+  ofstream T_output_file("output/differential_diffractive_T"+filename_end+".txt");
   T_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {

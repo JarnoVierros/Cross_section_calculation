@@ -28,7 +28,7 @@ const double alpha_em = 1.0/137;
 const int N_c = 3;
 
 static double e_f, m_f;
-const bool charm = false;
+const bool charm = true;
 
 static double normalization;
 
@@ -38,13 +38,14 @@ static double b_min_limit; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 100000;
-const int integration_calls = 300000;//20 000 000
+const int warmup_calls = 10000;
+const int integration_calls = 100000;//20 000 000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
 string filename_end = "_all";
+bool diffraction_dipamp = true;
 
 const int i_start = 0; // number of data points to skip
 const int data_inclusion_count = 226;
@@ -373,8 +374,8 @@ int main() {
   normalization = 1.0/gsl_pow_3(2*M_PI)*alpha_em*N_c*e_f*e_f;
 
   string filename;
-  if (dipole_amp_type == "vector") {
-    filename = "data/bk_p_mu02_0.66.csv";
+  if (diffraction_dipamp) {
+    filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+"_diffraction.csv";
     filename_end = "_vector" + filename_end;
   } else {
     filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
@@ -425,7 +426,7 @@ int main() {
   auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
   cout << "Calculation finished in " << duration.count() << " seconds" << endl;
 
-  ofstream L_output_file("data/differential_diffractive_L"+filename_end+".txt");
+  ofstream L_output_file("output/differential_diffractive_L"+filename_end+".txt");
   L_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {
@@ -446,7 +447,7 @@ int main() {
   }
   L_output_file.close();
 
-  ofstream T_output_file("data/differential_diffractive_T"+filename_end+".txt");
+  ofstream T_output_file("output/differential_diffractive_T"+filename_end+".txt");
   T_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
 
   for (int i=0; i<data_inclusion_count; i++) {
