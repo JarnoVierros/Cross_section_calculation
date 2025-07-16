@@ -142,38 +142,88 @@ if (rQ_s <= 2) {
 
 }
 
-double Fqqg_LLQ2(double beta, double xpom, double Q2) {
+struct Ig_parameters {
+  double beta;
+  double xpom;
+  double Q2;
+  double k2;
+  double z;
+};
 
-    double normalization = sigma_0*alpha_em*C_f*N_c*beta*e_f*e_f/(32*gsl_pow_4(M_PI));
+double Ig_integrand(double r, void * parameters) {
+  struct Ig_parameters * params = (struct Ig_parameters *)parameters;
+  double beta = params->beta;
+  double xpom = params->xpom;
+  double Q2 = params->Q2;
+  double k2 = params->k2;
+  double z = params->z;
 
-
+  double x = beta*xpom;
+  double a = sqrt(1-z);
+  double b = sqrt(z);
+  double c = Q_s(x)/sqrt(k2);
+  return r*gsl_sf_bessel_Jn(2, a*r)*gsl_sf_bessel_Kn(2, b*r)*no_b_dipamp(c*r, xpom);
 }
 
-void integrate_for_T_qqg(thread_par_struct par) {
+double Ig(double beta, double xpom, double Q2, double k2, double z) {
 
-  double 
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
 
-  const int dim = 7;
+  struct Ig_parameters parameters = {beta, xpom, Q2, k2, z};
+
+  double result, error;
+
+  gsl_function F;
+  F.function = &Ig_integrand;
+  F.params = &parameters;
+
+  gsl_integration_qagiu(&F, 0, 0, 0.01, 100, w, &result, &error);
+
+  cout << "Result: " << result << ", error: " << error << endl;
+
+  return result;
+}
+
+double Fqqg_LLQ2_integrand(double beta, double xpom, double Q2, double k2, double z) {
+  double normalization = sigma_0*alpha_em*C_f*N_c*beta*e_f*e_f/(32*gsl_pow_4(M_PI));
+  return normalization*log(Q2/k2)*(gsl_pow_2(1-beta/z) + gsl_pow_2(beta/z))*gsl_pow_2(Ig(beta, xpom, Q2, k2, z));
+}
+
+struct qqg_LLQ2_parameters {
+  double beta;
+  double xpom;
+  double Q2;
+  double sigma;
+  double sigma_error;
+  double sigma_fit;
+};
+
+double integration_function_qqg_LLQ2(double *k, size_t dim, void * params) {
+
+    double k2 = k[0];
+    double z = k[1];
+    struct qqg_LLQ2_parameters *par = (struct qqg_LLQ2_parameters *)params;
+
+    return Fqqg_LLQ2_integrand(par->beta, par->xpom, par->Q2, k2, z);
+}
+
+double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
+
+  const int dim = 2;
   double res, err;
 
-  double z_min = (1-sqrt(1-4*m_f*m_f/(par.Q2*(1/par.beta-1))))/2;
-  double z_max = (1+sqrt(1-4*m_f*m_f/(par.Q2*(1/par.beta-1))))/2;
+  double xl[dim] = {0, beta};
+  double xu[dim] = {Q2, 1};
 
-  double xl[dim] = {-r_limit, -r_limit, -b_min_limit, -b_min_limit, -r_limit, -r_limit, z_min};
-  double xu[dim] = {r_limit, r_limit, b_min_limit, b_min_limit, r_limit, r_limit, z_max};
-
-  struct parameters params = {1, 1, 1};
-  params.Q2 = par.Q2;
-  params.x = par.x;
-  params.beta = par.beta;
-  double &sigma = par.sigma;
-  double &sigma_error = par.sigma_error;
-  double &sigma_fit = par.sigma_fit;
+  struct qqg_LLQ2_parameters params = {1, 1, 1};
+  params.beta = beta;
+  params.xpom = xpom;
+  params.Q2 = Q2;
 
   const gsl_rng_type *T;
   gsl_rng *rng;
 
-  gsl_monte_function T_G = {&T_g, dim, &params};
+  gsl_monte_function T_G = {&integration_function_qqg_LLQ2, dim, &params};
 
   gsl_rng_env_setup ();
   int status = 0;
@@ -184,23 +234,23 @@ void integrate_for_T_qqg(thread_par_struct par) {
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
   status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
-  if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
+  if (status != 0) {cout << "error1: " << status << endl; throw (status);}
   for (int i=0; i<integration_iterations; i++) {
     static auto t1 = chrono::high_resolution_clock::now();
     status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-    if (status != 0) {cout << "integrate_for_T_sigma: " << status << endl; throw (status);}
+    if (status != 0) {cout << "error2: " << status << endl; throw (status);}
     static auto t2 = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
     //cout << "T iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(T_s) << ", duration: " << duration.count() << endl;
   }
   if (gsl_isnan(res)) {
     res = 0;
-    cout << "nan found at x=" << params.x << endl;
+    cout << "nan found at xpom=" << params.xpom << endl;
   }
-  sigma = res;
-  sigma_error = err;
-  sigma_fit = gsl_monte_vegas_chisq(T_s);
-  cout << "T, Q²=" << params.Q2 << ", x=" << params.x << ", beta=" << params.beta << ", res: " << sigma << ", err: " << sigma_error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+  result = res;
+  error = err;
+  fit = gsl_monte_vegas_chisq(T_s);
+  cout << "Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
   gsl_monte_vegas_free(T_s);
 }
@@ -208,6 +258,13 @@ void integrate_for_T_qqg(thread_par_struct par) {
 int main() {
 
   //gsl_set_error_handler_off();
+
+  double result, error, fit;
+  xpomFqqg_LLQ2(0.1, 3e-4, 4.5, result, error, fit);
+
+  cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl;
+
+  return 0;
 
   vector<double> Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
@@ -233,8 +290,8 @@ int main() {
     //thread_par_struct L_par(Q2_values[i+i_start], x_values[i+i_start], beta_values[i+i_start], L_sigma[i], L_error[i], L_fit[i]);
     //L_integration_threads[i] = thread(integrate_for_L_sigma, L_par);
 
-    thread_par_struct T_par(Q2_values[i+i_start], x_values[i+i_start], beta_values[i+i_start], T_sigma[i], T_error[i], T_fit[i]);
-    T_integration_threads[i] = thread(integrate_for_T_qqg, T_par);
+    //thread_par_struct T_par(Q2_values[i+i_start], x_values[i+i_start], beta_values[i+i_start], T_sigma[i], T_error[i], T_fit[i]);
+    //T_integration_threads[i] = thread(integrate_for_T_qqg, T_par);
 
   }
 
