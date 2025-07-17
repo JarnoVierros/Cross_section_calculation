@@ -245,6 +245,10 @@ direct_integrated_diffractive_sigma: direct_integrated_diffractive_sigma.cpp
 	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c direct_integrated_diffractive_sigma.cpp $$(root-config --glibs --cflags --libs)
 	g++ direct_integrated_diffractive_sigma.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o direct_integrated_diffractive_sigma.exe
 
+qqg_contribution_calculator: qqg_contribution_calculator.cpp
+	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c qqg_contribution_calculator.cpp $$(root-config --glibs --cflags --libs)
+	g++ qqg_contribution_calculator.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o qqg_contribution_calculator.exe
+
 linterp_test: linterp_test.cpp
 	g++ linterp_test.cpp -o linterp_test.exe
 

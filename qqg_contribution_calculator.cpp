@@ -27,11 +27,11 @@ using namespace std;
 const double alpha_em = 1.0/137;
 const int N_c = 3;
 
-static double e_f, m_f;
-const bool charm = true;
+static double e_f = 2.0/3;
+static double m_f = 1.27;
 
-static double r_limit; // 34.64
-static double b_min_limit; // 17.32
+//static double r_limit; // 34.64
+//static double b_min_limit; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
@@ -54,7 +54,7 @@ const double max_theta_root_excess = 1e-6;
 
 const double sigma_0 = 70.26; //GeV^-2
 const double C_f = 1.0;
-const double x_0 = 1.632e-5;
+const double Cyrille_x_0 = 1.632e-5;
 const double lambda = 0.2197;
 const double N_0 = 0.7;
 const double gamma_c = 0.7376;
@@ -63,10 +63,10 @@ const double const_alpha = N_0*gamma_c/(8*(1-N_0));
 const double const_beta = 1/2*exp(-(1-N_0)/(N_0*gamma_c)*log(1-N_0));
 
 
-static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
-static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
+//static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
+//static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 
-static InterpMultilinear<4, double>* interpolator;
+//static InterpMultilinear<4, double>* interpolator;
 
 void read_data_file(string filename, vector<double> &Q2_values, vector<double> &beta_values, vector<double> &x_values, vector<double> &x_pom_F2_values, vector<double> &delta_stat_values, vector<double> &delta_sys_values) {
   ifstream data_file(filename);
@@ -129,7 +129,7 @@ void read_data_file(string filename, vector<double> &Q2_values, vector<double> &
 }
 
 double Q_s(double x) {
-    return pow(x_0/x, lambda/2);
+    return pow(Cyrille_x_0/x, lambda/2);
 }
 
 double no_b_dipamp(double rQ_s, double x) {
@@ -154,7 +154,7 @@ double Ig_integrand(double r, void * parameters) {
   struct Ig_parameters * params = (struct Ig_parameters *)parameters;
   double beta = params->beta;
   double xpom = params->xpom;
-  double Q2 = params->Q2;
+  //double Q2 = params->Q2;
   double k2 = params->k2;
   double z = params->z;
 
@@ -179,7 +179,9 @@ double Ig(double beta, double xpom, double Q2, double k2, double z) {
 
   gsl_integration_qagiu(&F, 0, 0, 0.01, 100, w, &result, &error);
 
-  cout << "Result: " << result << ", error: " << error << endl;
+  gsl_integration_workspace_free(w);
+
+  //cout << "Result: " << result << ", error: " << error << endl;
 
   return result;
 }
@@ -234,15 +236,9 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
   status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
   if (status != 0) {cout << "error1: " << status << endl; throw (status);}
-  for (int i=0; i<integration_iterations; i++) {
-    static auto t1 = chrono::high_resolution_clock::now();
-    status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-    if (status != 0) {cout << "error2: " << status << endl; throw (status);}
-    static auto t2 = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
-    //cout << "T iteration " << i << " result: " << res << ", err: " << err  << ", fit: " << gsl_monte_vegas_chisq(T_s) << ", duration: " << duration.count() << endl;
-  }
+
   if (gsl_isnan(res)) {
     res = 0;
     cout << "nan found at xpom=" << params.xpom << endl;
@@ -253,6 +249,8 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
   cout << "Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
   gsl_monte_vegas_free(T_s);
+
+  return 0;
 }
 
 int main() {
@@ -260,7 +258,7 @@ int main() {
   //gsl_set_error_handler_off();
 
   double result, error, fit;
-  xpomFqqg_LLQ2(0.1, 3e-4, 4.5, result, error, fit);
+  xpomFqqg_LLQ2(0.5, 3e-5, 1000, result, error, fit);
 
   cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl;
 
@@ -269,15 +267,6 @@ int main() {
   vector<double> Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
   read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
-
-  if (charm) {
-    e_f = 2.0/3;
-    m_f = 1.27;
-    filename_end = "_charm" + filename_end;
-  } else {
-    e_f = sqrt(2.0/3*2.0/3+1.0/3*1.0/3+1.0/3*1.0/3);
-    m_f = 0;
-  }
 
   thread L_integration_threads[data_inclusion_count], T_integration_threads[data_inclusion_count];
   double L_sigma[data_inclusion_count], L_error[data_inclusion_count], L_fit[data_inclusion_count];
