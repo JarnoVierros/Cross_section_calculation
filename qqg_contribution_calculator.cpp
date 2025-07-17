@@ -26,11 +26,12 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
+const double alpha_s = 0.25;
 
 static double e_f = 2.0/3;
 static double m_f = 1.27;
 
-//static double r_limit; // 34.64
+static double r_limit = 100; // 100
 //static double b_min_limit; // 17.32
 
 const bool print_r_limit = false;
@@ -162,7 +163,7 @@ double Ig_integrand(double r, void * parameters) {
   double a = sqrt(1-z);
   double b = sqrt(z);
   double c = Q_s(x)/sqrt(k2);
-  return r*gsl_sf_bessel_Jn(2, a*r)*gsl_sf_bessel_Kn(2, b*r)*no_b_dipamp(c*r, xpom);
+  return r*gsl_sf_bessel_Jn(2, a*r)*gsl_sf_bessel_Kn(2, b*r)*no_b_dipamp(c*r, x);
 }
 
 double Ig(double beta, double xpom, double Q2, double k2, double z) {
@@ -187,7 +188,7 @@ double Ig(double beta, double xpom, double Q2, double k2, double z) {
 }
 
 double Fqqg_LLQ2_integrand(double beta, double xpom, double Q2, double k2, double z) {
-  double normalization = sigma_0*alpha_em*C_f*N_c*beta*e_f*e_f/(32*gsl_pow_4(M_PI));
+  double normalization = sigma_0*alpha_s*C_f*N_c*beta*e_f*e_f/(32*gsl_pow_4(M_PI));
   return normalization*log(Q2/k2)*(gsl_pow_2(1-beta/z) + gsl_pow_2(beta/z))*gsl_pow_2(Ig(beta, xpom, Q2, k2, z));
 }
 
@@ -222,22 +223,23 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
   params.xpom = xpom;
   params.Q2 = Q2;
 
-  const gsl_rng_type *T;
+  const gsl_rng_type *qqg_LLQ2_rng;
   gsl_rng *rng;
 
-  gsl_monte_function T_G = {&integration_function_qqg_LLQ2, dim, &params};
+  gsl_monte_function qqg_LLQ2_rng_G = {&integration_function_qqg_LLQ2, dim, &params};
 
   gsl_rng_env_setup ();
   int status = 0;
 
-  T = gsl_rng_default;
-  rng = gsl_rng_alloc(T);
+  qqg_LLQ2_rng = gsl_rng_default;
+  rng = gsl_rng_alloc(qqg_LLQ2_rng);
   gsl_rng_set(rng, 1);
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
-  status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
-  status = gsl_monte_vegas_integrate(&T_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
-  if (status != 0) {cout << "error1: " << status << endl; throw (status);}
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_warmup_error: " << status << endl; throw (status);}
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_integration_error: " << status << endl; throw (status);}
 
   if (gsl_isnan(res)) {
     res = 0;
@@ -253,13 +255,95 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
   return 0;
 }
 
+double Fqqg_LLbeta_integrand(double beta, double xpom, double Q2, double r, double z, double Rx, double Ry) {
+  double normalization = C_f*alpha_s*Q2*sigma_0/(8*gsl_pow_3(M_PI)*alpha_em);
+
+  double epsilon = sqrt(z*(1-z)*Q2 + m_f*m_f);
+  double Phi_T = alpha_em*N_c/(2*M_PI*M_PI)*e_f*e_f*((z*z+gsl_pow_2(1-z))*epsilon*epsilon*gsl_pow_2(gsl_sf_bessel_K1(epsilon*r)) + m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon*r)));
+
+  double x = beta*xpom;
+  double Qs = Q_s(x);
+  double R = sqrt(Rx*Rx + Ry*Ry);
+  double rminusR = sqrt(gsl_pow_2(r-Rx) + gsl_pow_2(0-Ry));
+  double A = r*r/(R*R*gsl_pow_2(rminusR))*gsl_pow_2(no_b_dipamp(R*Qs, xpom) + no_b_dipamp(rminusR*Qs, xpom) - no_b_dipamp(r*Qs, xpom) - no_b_dipamp(R*Qs, xpom)*no_b_dipamp(rminusR*Qs, xpom));
+
+  return normalization*r*Phi_T*A;
+}
+
+struct qqg_LLbeta_parameters {
+  double beta;
+  double xpom;
+  double Q2;
+  double sigma;
+  double sigma_error;
+  double sigma_fit;
+};
+
+double integration_function_qqg_LLbeta(double *k, size_t dim, void * params) {
+  double beta = k[0];
+  double r = k[1];
+  double z = k[2];
+  double Rx = k[3];
+  double Ry = k[4];
+  struct qqg_LLbeta_parameters *par = (struct qqg_LLbeta_parameters *)params;
+
+  return Fqqg_LLbeta_integrand(par->xpom, par->Q2, beta, r, z, Rx, Ry);
+}
+
+double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
+
+  const int dim = 4;
+  double res, err;
+
+  double xl[dim] = {0, 0, -r_limit, -r_limit};
+  double xu[dim] = {r_limit, 1, r_limit, r_limit};
+
+  struct qqg_LLbeta_parameters params = {1, 1, 1};
+  params.beta = beta;
+  params.xpom = xpom;
+  params.Q2 = Q2;
+
+  const gsl_rng_type *qqg_LLbeta_rng;
+  gsl_rng *rng;
+
+  gsl_monte_function qqg_LLbeta_rng_G = {&integration_function_qqg_LLbeta, dim, &params};
+
+  gsl_rng_env_setup();
+  int status = 0;
+
+  qqg_LLbeta_rng = gsl_rng_default;
+  rng = gsl_rng_alloc(qqg_LLbeta_rng);
+  gsl_rng_set(rng, 1);
+
+  gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&qqg_LLbeta_rng_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_warmup_error: " << status << endl; throw (status);}
+  status = gsl_monte_vegas_integrate(&qqg_LLbeta_rng_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_integration_error: " << status << endl; throw (status);}
+
+  if (gsl_isnan(res)) {
+    res = 0;
+    cout << "nan found at xpom=" << params.xpom << endl;
+  }
+  result = res;
+  error = err;
+  fit = gsl_monte_vegas_chisq(T_s);
+  cout << "Q²=" << params.Q2 << ", xpom=" << params.xpom << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+
+  gsl_monte_vegas_free(T_s);
+
+  return 0;
+}
+
 int main() {
 
   //gsl_set_error_handler_off();
 
   double result, error, fit;
   xpomFqqg_LLQ2(0.5, 3e-5, 1000, result, error, fit);
+  cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl << endl;
 
+  xpomFqqg_LLbeta(0.5, 3e-5, 1000, result, error, fit);
   cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl;
 
   return 0;
