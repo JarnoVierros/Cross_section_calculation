@@ -280,14 +280,13 @@ struct qqg_LLbeta_parameters {
 };
 
 double integration_function_qqg_LLbeta(double *k, size_t dim, void * params) {
-  double beta = k[0];
-  double r = k[1];
-  double z = k[2];
-  double Rx = k[3];
-  double Ry = k[4];
+  double r = k[0];
+  double z = k[1];
+  double Rx = k[2];
+  double Ry = k[3];
   struct qqg_LLbeta_parameters *par = (struct qqg_LLbeta_parameters *)params;
 
-  return Fqqg_LLbeta_integrand(par->xpom, par->Q2, beta, r, z, Rx, Ry);
+  return Fqqg_LLbeta_integrand(par->xpom, par->Q2, par->beta, r, z, Rx, Ry);
 }
 
 double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
@@ -343,7 +342,7 @@ int main() {
   xpomFqqg_LLQ2(0.5, 3e-5, 1000, result, error, fit);
   cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl << endl;
 
-  xpomFqqg_LLbeta(0.5, 3e-5, 1000, result, error, fit);
+  xpomFqqg_LLbeta(0.05, 3e-5, 1, result, error, fit);
   cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl;
 
   return 0;
