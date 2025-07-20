@@ -37,8 +37,8 @@ static double r_limit = 100; // 100
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;//20 000 000
+const int warmup_calls = 1000;
+const int integration_calls = 10000;//20 000 000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
@@ -163,12 +163,19 @@ double Ig_integrand(double r, void * parameters) {
   double a = sqrt(1-z);
   double b = sqrt(z);
   double c = Q_s(x)/sqrt(k2);
-  return r*gsl_sf_bessel_Jn(2, a*r)*gsl_sf_bessel_Kn(2, b*r)*no_b_dipamp(c*r, x);
+  double value = r*gsl_sf_bessel_Jn(2, a*r)*gsl_sf_bessel_Kn(2, b*r)*no_b_dipamp(c*r, xpom);
+
+  cout << gsl_sf_bessel_Jn(2, a*r) << endl;
+  cout << gsl_sf_bessel_Kn(2, b*r) << endl;
+  cout << no_b_dipamp(c*r, x) << endl;
+  cout << "k2=" << k2 << endl;
+  cout << "beta=" << beta << ", z=" << z << ", r=" << r << ", rQs=" << c*r << ", x=" << x <<  ", value=" << value << endl << endl;
+  return value;
 }
 
 double Ig(double beta, double xpom, double Q2, double k2, double z) {
 
-  gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc (10000);
 
   struct Ig_parameters parameters = {beta, xpom, Q2, k2, z};
 
@@ -178,7 +185,7 @@ double Ig(double beta, double xpom, double Q2, double k2, double z) {
   F.function = &Ig_integrand;
   F.params = &parameters;
 
-  gsl_integration_qagiu(&F, 0, 0, 0.01, 100, w, &result, &error);
+  gsl_integration_qagiu(&F, 0, 0, 0.01, 10000, w, &result, &error);
 
   gsl_integration_workspace_free(w);
 
@@ -236,10 +243,13 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
   gsl_rng_set(rng, 1);
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+  cout << "test 1" << endl;
   status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
   if (status != 0) {cout << "qqg_LLQ2_warmup_error: " << status << endl; throw (status);}
+  cout << "test 2" << endl;
   status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
   if (status != 0) {cout << "qqg_LLQ2_integration_error: " << status << endl; throw (status);}
+  cout << "test 3" << endl;
 
   if (gsl_isnan(res)) {
     res = 0;
@@ -248,7 +258,7 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
   result = res;
   error = err;
   fit = gsl_monte_vegas_chisq(T_s);
-  cout << "Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+  cout << "LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
   gsl_monte_vegas_free(T_s);
 
@@ -327,7 +337,7 @@ double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, doub
   result = res;
   error = err;
   fit = gsl_monte_vegas_chisq(T_s);
-  cout << "Q²=" << params.Q2 << ", xpom=" << params.xpom << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+  cout << "LLbeta: Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
   gsl_monte_vegas_free(T_s);
 
@@ -336,10 +346,10 @@ double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, doub
 
 int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, double &result, double &error, double fits[3]) {
   double LLQ2_result, LLQ2_error, LLQ2_fit;
-  xpomFqqg_LLQ2(beta, xpom, Q2, LLQ2_result, LLQ2_error, LLQ2_fit);
+  //xpomFqqg_LLQ2(beta, xpom, Q2, LLQ2_result, LLQ2_error, LLQ2_fit);
 
   double LLbeta_result, LLbeta_error, LLbeta_fit;
-  xpomFqqg_LLbeta(beta, xpom, Q2, LLbeta_result, LLbeta_error, LLbeta_fit);
+  //xpomFqqg_LLbeta(beta, xpom, Q2, LLbeta_result, LLbeta_error, LLbeta_fit);
 
   double LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit;
   xpomFqqg_LLQ2(0, xpom, Q2, LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit);
