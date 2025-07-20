@@ -334,87 +334,32 @@ double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, doub
   return 0;
 }
 
+int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, double &result, double &error, double fits[3]) {
+  double LLQ2_result, LLQ2_error, LLQ2_fit;
+  xpomFqqg_LLQ2(beta, xpom, Q2, LLQ2_result, LLQ2_error, LLQ2_fit);
+
+  double LLbeta_result, LLbeta_error, LLbeta_fit;
+  xpomFqqg_LLbeta(beta, xpom, Q2, LLbeta_result, LLbeta_error, LLbeta_fit);
+
+  double LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit;
+  xpomFqqg_LLQ2(0, xpom, Q2, LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit);
+
+  result  = LLQ2_result*LLbeta_result/LLQ2nul_result;
+  error = sqrt(gsl_pow_2(LLbeta_result/LLQ2nul_result*LLQ2_error) + gsl_pow_2(LLQ2_result/LLQ2nul_result*LLbeta_error) + gsl_pow_2(LLQ2_result*LLbeta_result/(LLQ2nul_result*LLQ2nul_result)*LLQ2nul_error));
+  fits[0] = LLQ2_fit;
+  fits[1] = LLbeta_fit;
+  fits[2] = LLQ2nul_fit;
+  return 0;
+}
+
 int main() {
 
   //gsl_set_error_handler_off();
 
-  double result, error, fit;
-  xpomFqqg_LLQ2(0.5, 3e-5, 1000, result, error, fit);
-  cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl << endl;
-
-  xpomFqqg_LLbeta(0.05, 3e-5, 1, result, error, fit);
-  cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl;
+  double result, error;
+  double fits[3];
+  calc_total_xpomF_Tqqg_contribution(0.5, 3e-5, 1000, result, error, fits);
+  cout << "result: " << result << ", error: " << error << ", fits: " << fits[0] << ", " << fits[1] << ", " << fits[2] << endl << endl;
 
   return 0;
-
-  vector<double> Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
-
-  read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
-
-  thread L_integration_threads[data_inclusion_count], T_integration_threads[data_inclusion_count];
-  double L_sigma[data_inclusion_count], L_error[data_inclusion_count], L_fit[data_inclusion_count];
-  double T_sigma[data_inclusion_count], T_error[data_inclusion_count], T_fit[data_inclusion_count];
-
-  static auto t1 = chrono::high_resolution_clock::now();
-
-  for (int i=0; i<data_inclusion_count; i++) {
-
-    //thread_par_struct L_par(Q2_values[i+i_start], x_values[i+i_start], beta_values[i+i_start], L_sigma[i], L_error[i], L_fit[i]);
-    //L_integration_threads[i] = thread(integrate_for_L_sigma, L_par);
-
-    //thread_par_struct T_par(Q2_values[i+i_start], x_values[i+i_start], beta_values[i+i_start], T_sigma[i], T_error[i], T_fit[i]);
-    //T_integration_threads[i] = thread(integrate_for_T_qqg, T_par);
-
-  }
-
-  for (int i=0; i<data_inclusion_count; i++) {
-    //L_integration_threads[i].join();
-    T_integration_threads[i].join();
-  }
-
-  static auto t2 = chrono::high_resolution_clock::now();
-  auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
-  cout << "Calculation finished in " << duration.count() << " seconds" << endl;
-
-  ofstream L_output_file("output/differential_diffractive_L"+filename_end+".txt");
-  L_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
-
-  for (int i=0; i<data_inclusion_count; i++) {
-    ostringstream Q2;
-    Q2 << Q2_values[i+i_start];
-    ostringstream beta;
-    beta << beta_values[i+i_start];
-    ostringstream x;
-    x << x_values[i+i_start];
-    ostringstream sigma;
-    sigma << L_sigma[i];
-    ostringstream error;
-    error << L_error[i];
-    ostringstream fit;
-    fit << L_fit[i];
-    string line = Q2.str() + ";" + beta.str() + ";" + x.str() + ";" + sigma.str() + ";" + error.str() + ";" + fit.str();
-    L_output_file << line << endl;
-  }
-  L_output_file.close();
-
-  ofstream T_output_file("output/differential_diffractive_T"+filename_end+".txt");
-  T_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
-
-  for (int i=0; i<data_inclusion_count; i++) {
-    ostringstream Q2;
-    Q2 << Q2_values[i+i_start];
-    ostringstream beta;
-    beta << beta_values[i+i_start];
-    ostringstream x;
-    x << x_values[i+i_start];
-    ostringstream sigma;
-    sigma << T_sigma[i];
-    ostringstream error;
-    error << T_error[i];
-    ostringstream fit;
-    fit << T_fit[i];
-    string line = Q2.str() + ";" + beta.str() + ";" + x.str() + ";" + sigma.str() + ";" + error.str() + ";" + fit.str();
-    T_output_file << line << endl;
-  }
-  T_output_file.close();
 }
