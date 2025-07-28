@@ -270,6 +270,104 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
   return 0;
 }
 
+///////////////////////////////////////////
+
+
+double nulbeta_Ig_integrand(double r, void * parameters) {
+  struct Ig_parameters * params = (struct Ig_parameters *)parameters;
+  double beta = params->beta;
+  double xpom = params->xpom;
+  //double Q2 = params->Q2;
+  double k2 = params->k2;
+  double z = params->z;
+
+  return 1/r*gsl_sf_bessel_Jn(2, sqrt(k2)*r)*(2*no_b_dipamp(r*Q_s(xpom), xpom) - gsl_pow_2(no_b_dipamp(r*Q_s(xpom), xpom)));
+}
+
+double nulbeta_Ig(double beta, double xpom, double Q2, double k2, double z) {
+
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc (10000);
+
+  struct Ig_parameters parameters = {beta, xpom, Q2, k2, z};
+
+  double result, error;
+
+  gsl_function F;
+  F.function = &nulbeta_Ig_integrand;
+  F.params = &parameters;
+
+  gsl_integration_qagiu(&F, 0, 0, 0.01, 10000, w, &result, &error);
+
+  gsl_integration_workspace_free(w);
+
+  //cout << "Result: " << result << ", error: " << error << endl;
+
+  return result;
+}
+
+double nulbeta_Fqqg_LLQ2_integrand(double beta, double xpom, double Q2, double k2, double z) {
+  double normalization = sigma_0*alpha_s*C_f*N_c*e_f*e_f/(12*gsl_pow_4(M_PI));
+  return normalization*log(Q2/k2)*gsl_pow_2(nulbeta_Ig(beta, xpom, Q2, k2, z));
+}
+
+double nulbeta_integration_function_qqg_LLQ2(double *k, size_t dim, void * params) {
+
+    double k2 = k[0];
+    double z = 0;
+    struct qqg_LLQ2_parameters *par = (struct qqg_LLQ2_parameters *)params;
+
+    return nulbeta_Fqqg_LLQ2_integrand(par->beta, par->xpom, par->Q2, k2, z);
+}
+
+double nulbeta_xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
+
+  const int dim = 1;
+  double res, err;
+
+  double xl[dim] = {0};
+  double xu[dim] = {Q2};
+
+  struct qqg_LLQ2_parameters params = {1, 1, 1};
+  params.beta = beta;
+  params.xpom = xpom;
+  params.Q2 = Q2;
+
+  const gsl_rng_type *qqg_LLQ2_rng;
+  gsl_rng *rng;
+
+  gsl_monte_function qqg_LLQ2_rng_G = {&nulbeta_integration_function_qqg_LLQ2, dim, &params};
+
+  gsl_rng_env_setup ();
+  int status = 0;
+
+  qqg_LLQ2_rng = gsl_rng_default;
+  rng = gsl_rng_alloc(qqg_LLQ2_rng);
+  gsl_rng_set(rng, 1);
+
+  gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_warmup_error: " << status << endl; throw (status);}
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_integration_error: " << status << endl; throw (status);}
+
+  if (gsl_isnan(res)) {
+    res = 0;
+    cout << "nan found at xpom=" << params.xpom << endl;
+  }
+  result = res;
+  error = err;
+  fit = gsl_monte_vegas_chisq(T_s);
+  cout << "LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+
+  gsl_monte_vegas_free(T_s);
+
+  return 0;
+}
+
+//////////////////////////////////////////
+
+
+
 double cartesian_Fqqg_LLbeta_integrand(double beta, double xpom, double Q2, double r, double z, double Rx, double Ry) {
   double normalization = C_f*alpha_s*Q2*sigma_0/(8*gsl_pow_3(M_PI)*alpha_em);
 
@@ -369,7 +467,9 @@ double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, doub
   return 0;
 }
 
-int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, double &result, double &error, double fits[3]) {
+int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, double &result, double &error, double fit) {
+  double fits[3];
+
   double LLQ2_result, LLQ2_error, LLQ2_fit;
   xpomFqqg_LLQ2(beta, xpom, Q2, LLQ2_result, LLQ2_error, LLQ2_fit);
 
@@ -377,13 +477,26 @@ int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, doub
   xpomFqqg_LLbeta(beta, xpom, Q2, LLbeta_result, LLbeta_error, LLbeta_fit);
 
   double LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit;
-  xpomFqqg_LLQ2(0, xpom, Q2, LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit);
+  nulbeta_xpomFqqg_LLQ2(beta, xpom, Q2, LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit);
 
   result  = LLQ2_result*LLbeta_result/LLQ2nul_result;
   error = sqrt(gsl_pow_2(LLbeta_result/LLQ2nul_result*LLQ2_error) + gsl_pow_2(LLQ2_result/LLQ2nul_result*LLbeta_error) + gsl_pow_2(LLQ2_result*LLbeta_result/(LLQ2nul_result*LLQ2nul_result)*LLQ2nul_error));
   fits[0] = LLQ2_fit;
   fits[1] = LLbeta_fit;
   fits[2] = LLQ2nul_fit;
+  if (LLQ2_fit > LLbeta_fit) {
+    if (LLQ2_fit > LLQ2nul_fit) {
+      fit = LLQ2_fit;
+    } else {
+      fit = LLQ2nul_fit;
+    }
+  } else {
+    if (LLbeta_fit > LLQ2nul_fit) {
+      fit = LLbeta_fit;
+    } else {
+      fit = LLQ2nul_fit;
+    }
+  }
   return 0;
 }
 
@@ -399,7 +512,7 @@ struct thread_par_struct
 };
 
 int low_beta_thread_func(thread_par_struct par) {
-  xpomFqqg_LLbeta(par.beta, par.x, par.Q2, par.result, par.error, par.fit);
+  calc_total_xpomF_Tqqg_contribution(par.beta, par.x, par.Q2, par.result, par.error, par.fit);
   return 0;
 }
 
