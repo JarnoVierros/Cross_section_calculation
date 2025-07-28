@@ -29,7 +29,7 @@ const int N_c = 3;
 const double alpha_s = 0.25;
 
 
-const bool is_charm = false;
+const bool is_charm = true;
 
 static double e_f;
 static double m_f;
@@ -40,8 +40,8 @@ static double m_f;
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 100000;
-const int integration_calls = 1000000;//100000000
+const int warmup_calls = 1000;
+const int integration_calls = 10000;//100000000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
@@ -193,12 +193,11 @@ double Ig(double beta, double xpom, double Q2, double k2, double z) {
   F.function = &Ig_integrand;
   F.params = &parameters;
 
-  gsl_integration_qagiu(&F, 0, 0, 0.01, 10000, w, &result, &error);
+  gsl_integration_qagiu(&F, 0, 0, 0.1, 1000, w, &result, &error);
 
   gsl_integration_workspace_free(w);
 
   //cout << "Result: " << result << ", error: " << error << endl;
-
   return result;
 }
 
@@ -275,11 +274,11 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
 
 double nulbeta_Ig_integrand(double r, void * parameters) {
   struct Ig_parameters * params = (struct Ig_parameters *)parameters;
-  double beta = params->beta;
+  //double beta = params->beta;
   double xpom = params->xpom;
   //double Q2 = params->Q2;
   double k2 = params->k2;
-  double z = params->z;
+  //double z = params->z;
 
   return 1/r*gsl_sf_bessel_Jn(2, sqrt(k2)*r)*(2*no_b_dipamp(r*Q_s(xpom), xpom) - gsl_pow_2(no_b_dipamp(r*Q_s(xpom), xpom)));
 }
@@ -301,7 +300,6 @@ double nulbeta_Ig(double beta, double xpom, double Q2, double k2, double z) {
   gsl_integration_workspace_free(w);
 
   //cout << "Result: " << result << ", error: " << error << endl;
-
   return result;
 }
 
@@ -345,9 +343,9 @@ double nulbeta_xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result
   gsl_rng_set(rng, 1);
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
-  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, 10, rng, T_s, &res, &err);
   if (status != 0) {cout << "qqg_LLQ2_warmup_error: " << status << endl; throw (status);}
-  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, 100, rng, T_s, &res, &err);
   if (status != 0) {cout << "qqg_LLQ2_integration_error: " << status << endl; throw (status);}
 
   if (gsl_isnan(res)) {
@@ -467,7 +465,7 @@ double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, doub
   return 0;
 }
 
-int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, double &result, double &error, double fit) {
+int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
   double fits[3];
 
   double LLQ2_result, LLQ2_error, LLQ2_fit;
@@ -526,6 +524,16 @@ int main() {
     m_f = 0;
   }
 
+  gsl_set_error_handler_off();
+
+  /*
+  double aresult, aerror, afit;
+  calc_total_xpomF_Tqqg_contribution(0.04, 0.00012/0.04, 4.5, aresult, aerror, afit);
+  cout << aresult << endl;
+  cout << aerror << endl;
+  cout << afit << endl;
+  return 0;
+  */
   /*
   for(int i=0; i<1000; i++) {
     double beta = 0.04;

@@ -351,7 +351,6 @@ int main() {
       chosen_prediction_xpomFL.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
       chosen_prediction_xpomFT.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
       double combined_error = correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error);
-      cout << combined_error << ", " << L_error << ", " << T_error << ", " << qqg_correction_error << endl;
       combined_error = sqrt(combined_error*combined_error + qqg_correction_error*qqg_correction_error);
       chosen_prediction_error.push_back(combined_error);
       chosen_qqg_correction.push_back(qqg_correction);
