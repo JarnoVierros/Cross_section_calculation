@@ -83,6 +83,7 @@ struct plot {
   TGraphErrors* prediction;
   TGraph* FL_prediction;
   TGraph* FT_prediction;
+  TGraph* qqg_correction;
   double Q2;
   double beta;
 };
@@ -140,7 +141,15 @@ int main() {
     };
 
     for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
-      read_differential_sigma_file(qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit);
+      read_differential_sigma_file(qqg_low_beta_correction_filenames[i], qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit);
+    }
+
+    string charm_qqg_low_beta_correction_filenames[] = {
+      "/home/jarno/Cross_section_calculation/output/charm_low_beta_corrections_all.txt"
+    };
+
+    for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
+      read_differential_sigma_file(charm_qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit);
     }
 
   } else {
@@ -174,6 +183,22 @@ int main() {
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
       read_differential_sigma_file(charm_T_prediction_filenames[i], charm_T_prediction_Q2, charm_T_prediction_beta, charm_T_prediction_x, charm_T_prediction_sigma, charm_T_prediction_sigma_error, charm_T_prediction_fit);
+    }
+
+    string qqg_low_beta_correction_filenames[] = {
+      "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
+    };
+
+    for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
+      read_differential_sigma_file(qqg_low_beta_correction_filenames[i], qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit);
+    }
+
+    string charm_qqg_low_beta_correction_filenames[] = {
+      "/home/jarno/Cross_section_calculation/output/charm_low_beta_corrections_all.txt"
+    };
+
+    for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
+      read_differential_sigma_file(charm_qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit);
     }
   }
 
@@ -251,11 +276,11 @@ int main() {
     }
 
 
-    vector<double> chosen_prediction_xpomF2, chosen_prediction_xpomFL, chosen_prediction_xpomFT, chosen_prediction_error;
+    vector<double> chosen_prediction_xpomF2, chosen_prediction_xpomFL, chosen_prediction_xpomFT, chosen_prediction_error, chosen_qqg_correction;
 
     for (int i=0; i<x_selection.size(); i++) {
-      double L_sigma, L_error, T_sigma, T_error;
-      double L_found = false, T_found = false;
+      double L_sigma, L_error, T_sigma, T_error, qqg_correction, qqg_correction_error;
+      double L_found = false, T_found = false, qqg_found = false;
       for (int j=0; j<L_prediction_Q2.size(); j++) {
 
         if (L_prediction_Q2[j] != Q2_selections[k]) {
@@ -267,8 +292,7 @@ int main() {
         if (L_prediction_x[j] != x_selection[i]) {
           continue;
         }
-        //L_sigma = L_prediction_sigma[j] + charm_L_prediction_sigma[j];
-        L_sigma = L_prediction_sigma[j];
+        L_sigma = L_prediction_sigma[j] + charm_L_prediction_sigma[j];
         L_error = sqrt(L_prediction_sigma_error[j]*L_prediction_sigma_error[j] + charm_L_prediction_sigma_error[j]*charm_L_prediction_sigma_error[j]);
         L_found = true;
         if (L_sigma < 0) {
@@ -286,12 +310,29 @@ int main() {
         if (T_prediction_x[j] != x_selection[i]) {
           continue;
         }
-        //T_sigma = T_prediction_sigma[j] + charm_T_prediction_sigma[j];
-        T_sigma = T_prediction_sigma[j];
-        T_error = sqrt(T_prediction_sigma_error[j]*T_prediction_sigma_error[j] + T_prediction_sigma_error[j]*T_prediction_sigma_error[j]);
+        T_sigma = T_prediction_sigma[j] + charm_T_prediction_sigma[j];
+        T_error = sqrt(T_prediction_sigma_error[j]*T_prediction_sigma_error[j] + charm_T_prediction_sigma_error[j]*charm_T_prediction_sigma_error[j]);
         T_found = true;
         if (T_sigma < 0) {
           T_sigma = 0;
+        }
+        break;
+      }
+      for (int j=0; j<qqg_low_beta_correction_Q2.size(); j++) {
+        if (qqg_low_beta_correction_Q2[j] != Q2_selections[k]) {
+          continue;
+        }
+        if (qqg_low_beta_correction_beta[j] != beta_selections[k]) {
+          continue;
+        }
+        if (qqg_low_beta_correction_x[j] != x_selection[i]) {
+          continue;
+        }
+        qqg_correction = qqg_low_beta_correction_sigma[j] + charm_qqg_low_beta_correction_sigma[j];
+        qqg_correction_error = sqrt(qqg_low_beta_correction_error[j]*qqg_low_beta_correction_error[j] + charm_qqg_low_beta_correction_error[j]*charm_qqg_low_beta_correction_error[j]);
+        qqg_found = true;
+        if (qqg_correction < 0) {
+          qqg_correction = 0;
         }
         break;
       }
@@ -303,11 +344,18 @@ int main() {
         cout << "Warning: T prediction not found" << endl;
         T_sigma = 0;
       }
+      if (!qqg_found) {
+        cout << "Warning: qqg correction not found" << endl;
+        qqg_correction = 0;
+      }
       const double correction = 1;//12
-      chosen_prediction_xpomF2.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma));
       chosen_prediction_xpomFL.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
       chosen_prediction_xpomFT.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
-      chosen_prediction_error.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error));
+      double combined_error = sqrt(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error));
+      combined_error = sqrt(combined_error*combined_error + qqg_correction_error*qqg_correction_error);
+      chosen_prediction_error.push_back(combined_error);
+      chosen_qqg_correction.push_back(qqg_correction);
+      chosen_prediction_xpomF2.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma) + qqg_correction);
     }
 /*
 struct plot {
@@ -375,7 +423,14 @@ struct plot {
     FT_prediction->SetLineStyle(2);
     comparison_graph->Add(FT_prediction, "C");
 
-    plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction, Q2_selections[k], beta_selections[k]};
+    double* chosen_qqg_correction_arr = &chosen_qqg_correction[0];
+
+    TGraph* qqg_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_qqg_correction_arr);
+    qqg_prediction->SetLineColor(5);
+    qqg_prediction->SetLineStyle(2);
+    comparison_graph->Add(qqg_prediction, "C");
+
+    plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction, qqg_prediction, Q2_selections[k], beta_selections[k]};
     plots.push_back(new_plot);
 
   }
