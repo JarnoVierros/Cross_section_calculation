@@ -38,7 +38,7 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 100000;
-const int integration_calls = 10000000;//100000000
+const int integration_calls = 1000000;//100000000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
@@ -412,14 +412,14 @@ int main() {
   return 0;
   */
 
-  gsl_set_error_handler_off();
-
+  //gsl_set_error_handler_off();
+  /*
   double Result, Error, Fit;
 
   xpomFqqg_LLbeta(0.04, 0.00012/0.04, 4.5, Result, Error, Fit);
   cout << "result: " << Result << ", error: " << Error << ", fit: " << Fit << endl;
   return 0;
-
+  */
   vector<double> Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
   read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
@@ -434,7 +434,7 @@ int main() {
 
   for (int i=0; i<data_inclusion_count; i++) {
 
-    thread_par_struct low_beta_par(Q2_values[i+i_start], x_values[i+i_start], beta_values[i+i_start], result[i], error[i], fit[i]);
+    thread_par_struct low_beta_par(Q2_values[i+i_start], x_values[i+i_start]/beta_values[i+i_start], beta_values[i+i_start], result[i], error[i], fit[i]);
     low_beta_integration_threads[i] = thread(low_beta_thread_func, low_beta_par);
 
   }

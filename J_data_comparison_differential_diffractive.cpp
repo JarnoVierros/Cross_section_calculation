@@ -98,6 +98,8 @@ int main() {
   vector<double> charm_L_prediction_Q2, charm_L_prediction_beta, charm_L_prediction_x, charm_L_prediction_sigma, charm_L_prediction_sigma_error, charm_L_prediction_fit;
   vector<double> T_prediction_Q2, T_prediction_beta, T_prediction_x, T_prediction_sigma, T_prediction_sigma_error, T_prediction_fit;
   vector<double> charm_T_prediction_Q2, charm_T_prediction_beta, charm_T_prediction_x, charm_T_prediction_sigma, charm_T_prediction_sigma_error, charm_T_prediction_fit;
+  vector<double> qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit;
+  vector<double> charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit;
 
   bool vector_dipamp = true;
   if (vector_dipamp) {
@@ -131,6 +133,14 @@ int main() {
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
       read_differential_sigma_file(charm_T_prediction_filenames[i], charm_T_prediction_Q2, charm_T_prediction_beta, charm_T_prediction_x, charm_T_prediction_sigma, charm_T_prediction_sigma_error, charm_T_prediction_fit);
+    }
+  
+    string qqg_low_beta_correction_filenames[] = {
+      "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
+    };
+
+    for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
+      read_differential_sigma_file(qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, L_prediction_beta, L_prediction_x, L_prediction_sigma, L_prediction_sigma_error, L_prediction_fit);
     }
 
   } else {
