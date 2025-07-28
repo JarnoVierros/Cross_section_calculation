@@ -411,21 +411,21 @@ struct plot {
     double* chosen_prediction_xpomFL_arr = &chosen_prediction_xpomFL[0];
 
     TGraph* FL_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_prediction_xpomFL_arr);
-    FL_prediction->SetLineColor(3);
+    FL_prediction->SetLineColor(7);
     FL_prediction->SetLineStyle(3);
     comparison_graph->Add(FL_prediction, "C");
 
     double* chosen_prediction_xpomFT_arr = &chosen_prediction_xpomFT[0];
 
     TGraph* FT_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_prediction_xpomFT_arr);
-    FT_prediction->SetLineColor(4);
+    FT_prediction->SetLineColor(9);
     FT_prediction->SetLineStyle(2);
     comparison_graph->Add(FT_prediction, "C");
 
     double* chosen_qqg_correction_arr = &chosen_qqg_correction[0];
 
     TGraph* qqg_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_qqg_correction_arr);
-    qqg_prediction->SetLineColor(9);
+    qqg_prediction->SetLineColor(3);
     qqg_prediction->SetLineStyle(4);
     comparison_graph->Add(qqg_prediction, "C");
 
