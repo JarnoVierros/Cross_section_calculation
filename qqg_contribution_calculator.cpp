@@ -28,8 +28,8 @@ const double alpha_em = 1.0/137;
 const int N_c = 3;
 const double alpha_s = 0.25;
 
-static double e_f = 2.0/3;
-static double m_f = 1.27;
+static double e_f = sqrt(2.0/3*2.0/3+2*1.0/3*1.0/3);//2.0/3
+static double m_f = 0;//1.27
 
 //static double r_limit = 100; // 100
 //static double b_min_limit; // 17.32
@@ -38,7 +38,7 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 100000;
-const int integration_calls = 1000000;//100000000
+const int integration_calls = 10000000;//100000000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
@@ -288,11 +288,11 @@ double polar_Fqqg_LLbeta_integrand(double beta, double xpom, double Q2, double r
   double epsilon = sqrt(z*(1-z)*Q2 + m_f*m_f);
   double Phi_T = alpha_em*N_c/(2*M_PI*M_PI)*e_f*e_f*((z*z+gsl_pow_2(1-z))*epsilon*epsilon*gsl_pow_2(gsl_sf_bessel_K1(epsilon*r)) + m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon*r)));
 
-  double x = beta*xpom;
-  double Qs = Q_s(x);
+  //double x = beta*xpom;
+  double Qs = Q_s(xpom);
   double rminusR = sqrt(r*r - 2*r*R*cos(theta) + R*R);
-  double A = 2*r*r/(R*R*gsl_pow_2(rminusR))*gsl_pow_2(no_b_dipamp(R*Qs, xpom) + no_b_dipamp(rminusR*Qs, xpom) - no_b_dipamp(r*Qs, xpom) - no_b_dipamp(R*Qs, xpom)*no_b_dipamp(rminusR*Qs, xpom));
-  if (A>1e20) {
+  double A = 2*R*r*r/(R*R*gsl_pow_2(rminusR))*gsl_pow_2(no_b_dipamp(R*Qs, xpom) + no_b_dipamp(rminusR*Qs, xpom) - no_b_dipamp(r*Qs, xpom) - no_b_dipamp(R*Qs, xpom)*no_b_dipamp(rminusR*Qs, xpom));
+  if (false) {
     cout << "beta=" << beta << ", xpom=" << xpom << ", Q2=" << Q2 << endl;
     cout << "Q_s: " << Qs << ", r: " << r << ", z: " << z << ", R: " << R << ", theta: " << theta << endl;
     cout << normalization*r*Phi_T*A << ", " << A << endl;;
@@ -317,7 +317,7 @@ double integration_function_qqg_LLbeta(double *k, size_t dim, void * params) {
   double theta = k[3];
   struct qqg_LLbeta_parameters *par = (struct qqg_LLbeta_parameters *)params;
 
-  return polar_Fqqg_LLbeta_integrand(par->xpom, par->Q2, par->beta, r, z, R, theta);
+  return polar_Fqqg_LLbeta_integrand(par->beta, par->xpom, par->Q2, r, z, R, theta);
 }
 
 double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
