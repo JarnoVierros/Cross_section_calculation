@@ -145,7 +145,7 @@ int main() {
     }
 
     string charm_qqg_low_beta_correction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/charm_low_beta_corrections_all.txt"
+      "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -194,7 +194,7 @@ int main() {
     }
 
     string charm_qqg_low_beta_correction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/charm_low_beta_corrections_all.txt"
+      "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -260,7 +260,6 @@ int main() {
 
 
   for (int k=0; k<size(Q2_selections); k++) {
-
     vector<double> x_selection, chosen_measurement_xpomF2, chosen_delta;
 
     for (int i=0; i<measurement_Q2.size(); i++) {
@@ -351,7 +350,8 @@ int main() {
       const double correction = 1;//12
       chosen_prediction_xpomFL.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
       chosen_prediction_xpomFT.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
-      double combined_error = sqrt(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error));
+      double combined_error = correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error);
+      cout << combined_error << ", " << L_error << ", " << T_error << ", " << qqg_correction_error << endl;
       combined_error = sqrt(combined_error*combined_error + qqg_correction_error*qqg_correction_error);
       chosen_prediction_error.push_back(combined_error);
       chosen_qqg_correction.push_back(qqg_correction);
@@ -426,8 +426,8 @@ struct plot {
     double* chosen_qqg_correction_arr = &chosen_qqg_correction[0];
 
     TGraph* qqg_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_qqg_correction_arr);
-    qqg_prediction->SetLineColor(5);
-    qqg_prediction->SetLineStyle(2);
+    qqg_prediction->SetLineColor(9);
+    qqg_prediction->SetLineStyle(4);
     comparison_graph->Add(qqg_prediction, "C");
 
     plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction, qqg_prediction, Q2_selections[k], beta_selections[k]};

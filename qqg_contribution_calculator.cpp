@@ -28,8 +28,11 @@ const double alpha_em = 1.0/137;
 const int N_c = 3;
 const double alpha_s = 0.25;
 
-static double e_f = sqrt(2.0/3*2.0/3+2*1.0/3*1.0/3);//2.0/3
-static double m_f = 0;//1.27
+
+const bool is_charm = false;
+
+static double e_f;
+static double m_f;
 
 //static double r_limit = 100; // 100
 //static double b_min_limit; // 17.32
@@ -401,6 +404,15 @@ int low_beta_thread_func(thread_par_struct par) {
 }
 
 int main() {
+  if (is_charm) {
+    e_f = 2.0/3;
+    m_f = 1.27;
+    filename_end += "_charm";
+  } else {
+    e_f = sqrt(2.0/3*2.0/3+2*1.0/3*1.0/3);
+    m_f = 0;
+  }
+
   /*
   for(int i=0; i<1000; i++) {
     double beta = 0.04;
