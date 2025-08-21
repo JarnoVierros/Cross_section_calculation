@@ -40,8 +40,8 @@ static double m_f;
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;//100000000
+const int warmup_calls = 1000000;
+const int integration_calls = 10000000;//100000000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
@@ -502,7 +502,7 @@ double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, doub
   const int dim = 7;
   double res, err;
 
-  const double range = 100;
+  const double range = 800;
   double xl[dim] = {0, -range, -range, -range, -range, -range, -range};
   double xu[dim] = {1, range, range, range, range, range, range};
 
@@ -665,7 +665,7 @@ int main() {
   cout << "result: " << Result << ", error: " << Error << ", fit: " << Fit << endl;
   return 0;
   */
-
+  /*
   vector<double> Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
   read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
@@ -711,6 +711,6 @@ int main() {
     L_output_file << line << endl;
   }
   L_output_file.close();
-  
+  */
 }
 
