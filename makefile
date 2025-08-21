@@ -248,6 +248,14 @@ direct_integrated_diffractive_sigma: direct_integrated_diffractive_sigma.cpp
 qqg_contribution_calculator: qqg_contribution_calculator.cpp
 	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c qqg_contribution_calculator.cpp $$(root-config --glibs --cflags --libs)
 	g++ qqg_contribution_calculator.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o qqg_contribution_calculator.exe
+	
+Jani_qqg_contribution_calculator: Jani_qqg_contribution_calculator.cpp
+	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c Jani_qqg_contribution_calculator.cpp $$(root-config --glibs --cflags --libs)
+	g++ Jani_qqg_contribution_calculator.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o Jani_qqg_contribution_calculator.exe
+	
+sandbox: sandbox.cpp
+	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c sandbox.cpp $$(root-config --glibs --cflags --libs)
+	g++ sandbox.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o sandbox.exe
 
 linterp_test: linterp_test.cpp
 	g++ linterp_test.cpp -o linterp_test.exe

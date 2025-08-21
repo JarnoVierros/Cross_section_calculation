@@ -102,6 +102,7 @@ int main() {
   vector<double> qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit;
   vector<double> charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit;
 
+  bool Jani_qqg_correction = true;
   bool vector_dipamp = true;
   if (vector_dipamp) {
     string L_prediction_filenames[] = {
@@ -135,22 +136,42 @@ int main() {
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
       read_differential_sigma_file(charm_T_prediction_filenames[i], charm_T_prediction_Q2, charm_T_prediction_beta, charm_T_prediction_x, charm_T_prediction_sigma, charm_T_prediction_sigma_error, charm_T_prediction_fit);
     }
-  
-    string qqg_low_beta_correction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
-    };
 
-    for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
-      read_differential_sigma_file(qqg_low_beta_correction_filenames[i], qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit);
+    if (Jani_qqg_correction) {
+      string qqg_low_beta_correction_filenames[] = {
+        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all.txt"
+      };
+
+      for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
+        read_differential_sigma_file(qqg_low_beta_correction_filenames[i], qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit);
+      }
+
+      string charm_qqg_low_beta_correction_filenames[] = {
+        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all_charm.txt"
+      };
+
+      for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
+        read_differential_sigma_file(charm_qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit);
+      }
+    } else {
+      string qqg_low_beta_correction_filenames[] = {
+        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
+      };
+
+      for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
+        read_differential_sigma_file(qqg_low_beta_correction_filenames[i], qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit);
+      }
+
+      string charm_qqg_low_beta_correction_filenames[] = {
+        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
+      };
+
+      for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
+        read_differential_sigma_file(charm_qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit);
+      }
     }
 
-    string charm_qqg_low_beta_correction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
-    };
 
-    for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
-      read_differential_sigma_file(charm_qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit);
-    }
 
   } else {
     string L_prediction_filenames[] = {
@@ -185,21 +206,40 @@ int main() {
       read_differential_sigma_file(charm_T_prediction_filenames[i], charm_T_prediction_Q2, charm_T_prediction_beta, charm_T_prediction_x, charm_T_prediction_sigma, charm_T_prediction_sigma_error, charm_T_prediction_fit);
     }
 
-    string qqg_low_beta_correction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
-    };
+    if (Jani_qqg_correction) {
+      string qqg_low_beta_correction_filenames[] = {
+        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all.txt"
+      };
 
-    for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
-      read_differential_sigma_file(qqg_low_beta_correction_filenames[i], qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit);
+      for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
+        read_differential_sigma_file(qqg_low_beta_correction_filenames[i], qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit);
+      }
+
+      string charm_qqg_low_beta_correction_filenames[] = {
+        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all_charm.txt"
+      };
+
+      for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
+        read_differential_sigma_file(charm_qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit);
+      }
+    } else {
+      string qqg_low_beta_correction_filenames[] = {
+        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
+      };
+
+      for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
+        read_differential_sigma_file(qqg_low_beta_correction_filenames[i], qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit);
+      }
+
+      string charm_qqg_low_beta_correction_filenames[] = {
+        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
+      };
+
+      for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
+        read_differential_sigma_file(charm_qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit);
+      }
     }
 
-    string charm_qqg_low_beta_correction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
-    };
-
-    for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
-      read_differential_sigma_file(charm_qqg_low_beta_correction_filenames[i], charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit);
-    }
   }
 
   vector<double> measurement_Q2, measurement_beta, measurement_x, measurement_xpomF2, measurement_delta_stat, measurement_delta_sys;
@@ -347,6 +387,13 @@ int main() {
         cout << "Warning: qqg correction not found" << endl;
         qqg_correction = 0;
       }
+
+      const double Jani_dipamp_normalization = 8;
+      if (Jani_qqg_correction) {
+        qqg_correction = Jani_dipamp_normalization*qqg_correction;
+        qqg_correction_error = Jani_dipamp_normalization*qqg_correction_error;
+      }
+
       const double correction = 1;//12
       chosen_prediction_xpomFL.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
       chosen_prediction_xpomFT.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);

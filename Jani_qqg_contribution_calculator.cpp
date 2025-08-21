@@ -40,14 +40,15 @@ static double m_f;
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 1000;
-const int integration_calls = 10000;//100000000
+const int warmup_calls = 10000;
+const int integration_calls = 100000;//100000000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
 string filename_end = "_all";
-bool diffraction_dipamp = true;
+//bool diffraction_dipamp = true;
+const string diffraction = "_diffraction";
 
 const int i_start = 0; // number of data points to skip
 const int data_inclusion_count = 226;
@@ -62,7 +63,7 @@ static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 static InterpMultilinear<4, double>* interpolator;
 
 
-const double sigma_0 = 70.26; //GeV^-2
+const double sigma_0 = 4; //GeV^-2
 const double C_f = 1.0;
 const double Cyrille_x_0 = 1.632e-5;
 const double lambda = 0.2197;
@@ -143,7 +144,7 @@ double Q_s(double x) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double xpom) {
-  //phi potentially being too large is ignored intentionally
+  //phi potentially being too large is ignored "intentionally"
 
   array<double, 4> args = {log(r), log(b_min), phi, log(xpom)};
   return exp(interpolator->interp(args.begin()));
@@ -164,7 +165,7 @@ double Ig_integrand(double r, double b_min, double phi, double beta, double xpom
   double a = sqrt(1-z);
   double b = sqrt(z);
   double c = Q_s(x)/sqrt(k2);
-  double N = dipole_amplitude(r, b_min, phi, xpom);
+  double N = dipole_amplitude(c*r, b_min, phi, xpom);
   double value = 2*r*gsl_sf_bessel_Jn(2, a*r)*gsl_sf_bessel_Kn(2, b*r)*(2*N-N*N);
 
   //cout << gsl_sf_bessel_Jn(2, a*r) << endl;
@@ -213,7 +214,7 @@ double Ig(double beta, double xpom, double Q2, double k2, double z) {
   gsl_monte_vegas_state *memory = gsl_monte_vegas_alloc(dim);
   status = gsl_monte_vegas_integrate(&Ig_G, xl, xu, dim, 100, rng, memory, &res, &err);
   if (status != 0) {cout << "Ig integration error: " << status << endl; throw (status);}
-  status = gsl_monte_vegas_integrate(&Ig_G, xl, xu, dim, 1000, rng, memory, &res, &err);
+  status = gsl_monte_vegas_integrate(&Ig_G, xl, xu, dim, 800, rng, memory, &res, &err);
   if (status != 0) {cout << "Ig integration error: " << status << endl; throw (status);}
 
   if (gsl_isnan(res)) {
@@ -226,8 +227,10 @@ double Ig(double beta, double xpom, double Q2, double k2, double z) {
   //double fit = gsl_monte_vegas_chisq(T_s);
   //cout << "LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 }
-
+static int counta = 0;
 double Fqqg_LLQ2_integrand(double beta, double xpom, double Q2, double k2, double z) {
+  //cout << counta << endl;
+  counta++;
   double normalization = sigma_0*alpha_s*C_f*N_c*beta*e_f*e_f/(32*gsl_pow_4(M_PI));
   return normalization*log(Q2/k2)*(gsl_pow_2(1-beta/z) + gsl_pow_2(beta/z))*gsl_pow_2(Ig(beta, xpom, Q2, k2, z));
 }
@@ -276,9 +279,9 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
   gsl_rng_set(rng, 1);
 
   gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
-  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, 100, rng, T_s, &res, &err);
   if (status != 0) {cout << "qqg_LLQ2_warmup_error: " << status << endl; throw (status);}
-  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, 1000, rng, T_s, &res, &err);
   if (status != 0) {cout << "qqg_LLQ2_integration_error: " << status << endl; throw (status);}
 
   if (gsl_isnan(res)) {
@@ -298,7 +301,7 @@ double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double
 ///////////////////////////////////////////
 
 
-struct Ig_parameters {
+struct nulbeta_Ig_parameters {
   double beta;
   double xpom;
   double Q2;
@@ -320,7 +323,7 @@ double nulbeta_Ig_integrand(double r, double b_min, double phi, double beta, dou
 }
 
 double nulbeta_Ig_integration_function(double *k, size_t dim, void * parameters) {
-  struct Ig_parameters * params = (struct Ig_parameters *)parameters;
+  struct nulbeta_Ig_parameters * params = (struct nulbeta_Ig_parameters *)parameters;
   double beta = params->beta;
   double xpom = params->xpom;
   double k2 = params->k2;
@@ -340,7 +343,7 @@ double nulbeta_Ig(double beta, double xpom, double Q2, double k2, double z) {
   double xl[dim] = {0, 0, 0};
   double xu[dim] = {3.464101615137755e+01, 1.732050807568877e+01, M_PI};
 
-  struct Ig_parameters parameters = {beta, xpom, Q2, k2, z};
+  struct nulbeta_Ig_parameters parameters = {beta, xpom, Q2, k2, z};
 
   const gsl_rng_type *Ig_rng;
   gsl_rng *rng;
@@ -423,7 +426,7 @@ double nulbeta_xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result
   result = res;
   error = err;
   fit = gsl_monte_vegas_chisq(T_s);
-  cout << "LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+  cout << "nulbeta LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 
   gsl_monte_vegas_free(T_s);
 
@@ -577,14 +580,34 @@ int main() {
     m_f = 0;
   }
 
+  string filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+diffraction+".csv";
+  if (nucleus_type == "p") {
+    if (diffraction=="_diffraction" && dipole_amp_type == "bfkl") {
+      load_Pb_dipole_amplitudes(Pb_table, filename);
+      create_Pb_interpolator(Pb_table, interpolator);
+    } else {
+      load_p_dipole_amplitudes(p_table, filename);
+      create_p_interpolator(p_table, interpolator);
+    }
+  } else if (nucleus_type == "Pb") {
+    load_Pb_dipole_amplitudes(Pb_table, filename);
+    create_Pb_interpolator(Pb_table, interpolator);
+  } else {
+    throw 1;
+  }
+
   gsl_set_error_handler_off();
 
+  /*
   double beta = 0.04;
   double xpom = 0.00012/0.04;
   double Q2 = 4.5;
   double r = 1e-3;
-  cout << r << ", " << polar_Fqqg_LLbeta_integrand(beta, xpom, Q2, r, 0.5, r, 0.01) << endl;;
+  double result, error, fit;
+  cout << r << ", " << calc_total_xpomF_Tqqg_contribution(beta, xpom, Q2, result, error, fit) << endl;
+  cout << result << ", " << error << endl;
   return 0;
+  */
   /*
   double aresult, aerror, afit;
   calc_total_xpomF_Tqqg_contribution(0.04, 0.00012/0.04, 4.5, aresult, aerror, afit);
@@ -608,16 +631,15 @@ int main() {
   /*
   double Result, Error, Fit;
 
-  xpomFqqg_LLbeta(0.04, 0.00012/0.04, 4.5, Result, Error, Fit);
+  calc_total_xpomF_Tqqg_contribution(0.04, 0.00012/0.04, 4.5, Result, Error, Fit);
   cout << "result: " << Result << ", error: " << Error << ", fit: " << Fit << endl;
   return 0;
   */
+
   vector<double> Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
   read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
 
-  //string filename = "data/dipole_amplitude_with_IP_dependence_bk_p_diffraction.csv";
-  //load_p_dipole_amplitudes(table, filename);
 
   thread low_beta_integration_threads[data_inclusion_count];
   double result[data_inclusion_count], error[data_inclusion_count], fit[data_inclusion_count];
@@ -639,9 +661,9 @@ int main() {
   auto duration = chrono::duration_cast<chrono::seconds>(t2-t1);
   cout << "Calculation finished in " << duration.count() << " seconds" << endl;
 
-  ofstream L_output_file("output/low_beta_corrections"+filename_end+".txt");
+  ofstream L_output_file("output/Jani_low_beta_corrections"+filename_end+".txt");
   L_output_file << "Q2 (GeV);beta;x;sigma (mb);sigma error (mb);fit" << endl;
-
+  
   for (int i=0; i<data_inclusion_count; i++) {
     ostringstream Q2;
     Q2 << Q2_values[i+i_start];
@@ -659,5 +681,6 @@ int main() {
     L_output_file << line << endl;
   }
   L_output_file.close();
+  
 }
 
