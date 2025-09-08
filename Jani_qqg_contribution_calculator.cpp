@@ -151,6 +151,15 @@ double dipole_amplitude(double r, double b_min, double phi, double xpom) {
 
 }
 
+double dipole_amplitude(double r, double b_min, double phi, double x_pom, double beta, bool limit_phi=true) {
+  if (limit_phi && calc_max_phi(r, b_min) < phi) {
+    return 0;
+  } else {
+    array<double, 4> args = {log(r), log(b_min), phi, log(x_pom)};
+    return exp(interpolator->interp(args.begin()));
+  }
+}
+
 struct Ig_parameters {
   double beta;
   double xpom;
@@ -459,19 +468,46 @@ double LLbeta_dipole_amplitude(double x1, double x2, double y1, double y2, doubl
   return dipole_amplitude(dipole_r(x1, x2, y1, y2), dipole_bmin(x1, x2, y1, y2), dipole_phi(x1, x2, y1, y2), xpom);
 }
 
-double polar_Fqqg_LLbeta_integrand(double beta, double xpom, double Q2, double z, double x1, double x2, double y1, double y2, double z1, double z2) {
-  double normalization = C_f*alpha_s*Q2*sigma_0/(8*gsl_pow_3(M_PI)*alpha_em);
-
-  double r = sqrt(gsl_pow_2(x1-y1) + gsl_pow_2(x2-y2));
+double polar_Fqqg_LLbeta_integrand(double beta, double xpom, double Q2, double z, double r, double bmin, double phi, double R, double PHI) {
+  double normalization = 2*C_f*alpha_s*Q2*sigma_0/(gsl_pow_3(M_PI)*alpha_em);
 
   double epsilon = sqrt(z*(1-z)*Q2 + m_f*m_f);
   double Phi_T = alpha_em*N_c/(2*M_PI*M_PI)*e_f*e_f*((z*z+gsl_pow_2(1-z))*epsilon*epsilon*gsl_pow_2(gsl_sf_bessel_K1(epsilon*r)) + m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon*r)));
 
   //double x = beta*xpom;
-  //double Qs = Q_s(xpom);
+  double Qs = Q_s(xpom);
   //double rminusR = sqrt(r*r - 2*r*R*cos(theta) + R*R);
-  double factor = (gsl_pow_2(x1-y1) + gsl_pow_2(x2-y2))/((gsl_pow_2(x1-z1)+gsl_pow_2(x2-z2))*(gsl_pow_2(z1-y1)+gsl_pow_2(z2-y2)));
-  double A = factor*gsl_pow_2(LLbeta_dipole_amplitude(x1, x2, z1, z2, xpom) + LLbeta_dipole_amplitude(z1, z2, y1, y2, xpom) - LLbeta_dipole_amplitude(x1, x2, y1, y2, xpom) - LLbeta_dipole_amplitude(x1, x2, z1, z2, xpom)*LLbeta_dipole_amplitude(z1, z2, y1, y2, xpom));
+
+  double alpha = abs(PHI - phi);
+  if (alpha > M_PI) {
+    alpha = 2*M_PI - alpha;
+  }
+  double rminusR = sqrt(r*r + R*R - 2*r*R*cos(alpha));
+
+  double Z_B = sqrt(bmin*bmin + R*R - 2*bmin*R*cos(abs(M_PI-PHI)));
+
+  double YZ_BMIN, YZ_PHI;
+  if (bmin < Z_B) {
+    YZ_BMIN = bmin;
+    YZ_PHI = PHI;
+  } else {
+    YZ_BMIN = Z_B;
+    YZ_PHI = M_PI - acos(1/(2*R*Z_B)*(R*R+Z_B*Z_B-bmin*bmin));
+  }
+
+  double X_B = sqrt(r*r+bmin*bmin-2*r*bmin*cos(M_PI-phi));
+  double XZ_BMIN, XZ_PHI;
+  if (X_B < Z_B) {
+    XZ_BMIN = X_B;
+    XZ_PHI = M_PI - acos(1/(2*X_B*rminusR)*(X_B*X_B+rminusR*rminusR-Z_B*Z_B));
+  } else {
+    XZ_BMIN = Z_B;
+    XZ_PHI = M_PI - acos(1/(2*Z_B*rminusR)*(Z_B*Z_B+rminusR*rminusR-X_B*X_B));
+  }
+
+
+  double factor = bmin*r*r*r/(R*rminusR*rminusR);
+  double A = factor*gsl_pow_2(dipole_amplitude(Qs*R, YZ_BMIN, YZ_PHI, xpom) + dipole_amplitude(Qs*rminusR, XZ_BMIN, XZ_PHI, xpom) - dipole_amplitude(Qs*r, bmin, phi, xpom) - dipole_amplitude(Qs*R, YZ_BMIN, YZ_PHI, xpom)*dipole_amplitude(Qs*rminusR, XZ_BMIN, XZ_PHI, xpom));
   return normalization*Phi_T*A;
 }
 
@@ -486,25 +522,24 @@ struct qqg_LLbeta_parameters {
 
 double integration_function_qqg_LLbeta(double *k, size_t dim, void * params) {
   double z = k[0];
-  double x1 = k[1];
-  double x2 = k[2];
-  double y1 = k[3];
-  double y2 = k[4];
-  double z1 = k[5];
-  double z2 = k[6];
+  double r = k[1];
+  double bmin = k[2];
+  double phi = k[3];
+  double R = k[4];
+  double PHI = k[5];
   struct qqg_LLbeta_parameters *par = (struct qqg_LLbeta_parameters *)params;
 
-  return polar_Fqqg_LLbeta_integrand(par->beta, par->xpom, par->Q2, z, x1, x2, y1, y2, z1, z2);
+  return polar_Fqqg_LLbeta_integrand(par->beta, par->xpom, par->Q2, z, r, bmin, phi, R, PHI);
 }
 
 double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
 
-  const int dim = 7;
+  const int dim = 6;
   double res, err;
 
-  const double range = 800;
-  double xl[dim] = {0, -range, -range, -range, -range, -range, -range};
-  double xu[dim] = {1, range, range, range, range, range, range};
+  const double range = 100;
+  double xl[dim] = {0, 0, 0, -M_PI, 0, -M_PI};
+  double xu[dim] = {1, range, range, M_PI, range, M_PI};
 
   struct qqg_LLbeta_parameters params = {1, 1, 1};
   params.beta = beta;
