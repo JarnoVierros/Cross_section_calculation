@@ -175,7 +175,7 @@ double Ig_integrand(double r, double b_min, double phi, double beta, double xpom
   double b = sqrt(z);
   double c = Q_s(x)/sqrt(k2);
   double N = dipole_amplitude(c*r, b_min, phi, xpom);
-  double value = 2*r*gsl_sf_bessel_Jn(2, a*r)*gsl_sf_bessel_Kn(2, b*r)*(2*N-N*N);
+  double value = 2*2*b_min*r*gsl_sf_bessel_Jn(2, a*r)*gsl_sf_bessel_Kn(2, b*r)*(2*N-N*N);
 
   //cout << gsl_sf_bessel_Jn(2, a*r) << endl;
   //cout << gsl_sf_bessel_Kn(2, b*r) << endl;
@@ -204,7 +204,7 @@ double Ig(double beta, double xpom, double Q2, double k2, double z) {
   double res, err;
 
   double xl[dim] = {0, 0, 0};
-  double xu[dim] = {3.464101615137755e+01, 1.732050807568877e+01, M_PI};
+  double xu[dim] = {100, 100, M_PI};
 
   struct Ig_parameters parameters = {beta, xpom, Q2, k2, z};
 
@@ -240,7 +240,7 @@ static int counta = 0;
 double Fqqg_LLQ2_integrand(double beta, double xpom, double Q2, double k2, double z) {
   //cout << counta << endl;
   counta++;
-  double normalization = sigma_0*alpha_s*C_f*N_c*beta*e_f*e_f/(32*gsl_pow_4(M_PI));
+  double normalization = alpha_s*C_f*N_c*beta*e_f*e_f/(8*gsl_pow_4(M_PI));
   return normalization*log(Q2/k2)*(gsl_pow_2(1-beta/z) + gsl_pow_2(beta/z))*gsl_pow_2(Ig(beta, xpom, Q2, k2, z));
 }
 
@@ -321,7 +321,7 @@ struct nulbeta_Ig_parameters {
 double nulbeta_Ig_integrand(double r, double b_min, double phi, double beta, double xpom, double k2, double z) {
 
   double N = dipole_amplitude(r, b_min, phi, xpom);
-  double value = 2*1/r*gsl_sf_bessel_Jn(2, sqrt(k2)*r)*(2*N - N*N);
+  double value = 2*2*b_min/r*gsl_sf_bessel_Jn(2, sqrt(k2)*r)*(2*N - N*N);
 
   //cout << gsl_sf_bessel_Jn(2, a*r) << endl;
   //cout << gsl_sf_bessel_Kn(2, b*r) << endl;
@@ -350,7 +350,7 @@ double nulbeta_Ig(double beta, double xpom, double Q2, double k2, double z) {
   double res, err;
 
   double xl[dim] = {0, 0, 0};
-  double xu[dim] = {3.464101615137755e+01, 1.732050807568877e+01, M_PI};
+  double xu[dim] = {100, 100, M_PI};
 
   struct nulbeta_Ig_parameters parameters = {beta, xpom, Q2, k2, z};
 
@@ -384,7 +384,7 @@ double nulbeta_Ig(double beta, double xpom, double Q2, double k2, double z) {
 }
 
 double nulbeta_Fqqg_LLQ2_integrand(double beta, double xpom, double Q2, double k2, double z) {
-  double normalization = sigma_0*alpha_s*C_f*N_c*e_f*e_f/(12*gsl_pow_4(M_PI));
+  double normalization = alpha_s*C_f*N_c*e_f*e_f/(3*gsl_pow_4(M_PI));
   return normalization*log(Q2/k2)*gsl_pow_2(nulbeta_Ig(beta, xpom, Q2, k2, z));
 }
 
@@ -655,6 +655,7 @@ int main() {
 
   gsl_set_error_handler_off();
 
+  /*
   double result, error, fit;
   double beta = 0.04;
   double xpom = 0.00012/0.04;
@@ -662,7 +663,7 @@ int main() {
   xpomFqqg_LLbeta(beta, xpom, Q2, result, error, fit);
 
   cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl;
-  
+  */
   /*
   double beta = 0.04;
   double xpom = 0.00012/0.04;
@@ -700,7 +701,7 @@ int main() {
   cout << "result: " << Result << ", error: " << Error << ", fit: " << Fit << endl;
   return 0;
   */
-  /*
+  
   vector<double> Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
   read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
@@ -746,6 +747,6 @@ int main() {
     L_output_file << line << endl;
   }
   L_output_file.close();
-  */
+  
 }
 
