@@ -388,7 +388,7 @@ int main() {
         qqg_correction = 0;
       }
 
-      const double Jani_dipamp_normalization = 8;
+      const double Jani_dipamp_normalization = 1.0/20; //1.0/40
       if (Jani_qqg_correction) {
         qqg_correction = Jani_dipamp_normalization*qqg_correction;
         qqg_correction_error = Jani_dipamp_normalization*qqg_correction_error;

@@ -210,9 +210,9 @@ int main() {
 
   string filename;
   if (dipole_amp_type == "vector") {
-    filename = "data/bk_p_mu02_0.66.csv";
+    filename = "output/bk_p_mu02_0.66.csv";
   } else {
-    filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+diffraction+".csv";
+    filename = "output/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+diffraction+".csv";
   }
   if (nucleus_type == "p") {
     if (diffraction=="_diffraction" && dipole_amp_type == "bfkl") {
@@ -232,7 +232,7 @@ int main() {
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Diffractive transverse cross section;W (GeV);cross section (mb)");
 
-  ofstream T_output_file("data/diff_LHC_T_sigma_W_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+".txt");
+  ofstream T_output_file("output/diff_LHC_T_sigma_W_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+".txt");
   T_output_file << "W (GeV);sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;

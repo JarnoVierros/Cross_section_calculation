@@ -29,7 +29,7 @@ const int N_c = 3;
 const double alpha_s = 0.25;
 
 
-const bool is_charm = true;
+const bool is_charm = false;
 
 static double e_f;
 static double m_f;
@@ -40,8 +40,8 @@ static double m_f;
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 1000000;
-const int integration_calls = 10000000;//100000000
+const int warmup_calls = 10000;
+const int integration_calls = 100000;//100000000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
@@ -143,15 +143,7 @@ double Q_s(double x) {
     return pow(Cyrille_x_0/x, lambda/2);
 }
 
-double dipole_amplitude(double r, double b_min, double phi, double xpom) {
-  //phi potentially being too large is ignored "intentionally"
-
-  array<double, 4> args = {log(r), log(b_min), phi, log(xpom)};
-  return exp(interpolator->interp(args.begin()));
-
-}
-
-double dipole_amplitude(double r, double b_min, double phi, double x_pom, double beta, bool limit_phi=true) {
+double dipole_amplitude(double r, double b_min, double phi, double x_pom, bool limit_phi=true) {
   if (limit_phi && calc_max_phi(r, b_min) < phi) {
     return 0;
   } else {
@@ -236,10 +228,10 @@ double Ig(double beta, double xpom, double Q2, double k2, double z) {
   //double fit = gsl_monte_vegas_chisq(T_s);
   //cout << "LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
 }
-static int counta = 0;
+//static int counta = 0;
 double Fqqg_LLQ2_integrand(double beta, double xpom, double Q2, double k2, double z) {
   //cout << counta << endl;
-  counta++;
+  //counta++;
   double normalization = alpha_s*C_f*N_c*beta*e_f*e_f/(8*gsl_pow_4(M_PI));
   return normalization*log(Q2/k2)*(gsl_pow_2(1-beta/z) + gsl_pow_2(beta/z))*gsl_pow_2(Ig(beta, xpom, Q2, k2, z));
 }
@@ -469,6 +461,11 @@ double LLbeta_dipole_amplitude(double x1, double x2, double y1, double y2, doubl
 }
 
 double polar_Fqqg_LLbeta_integrand(double beta, double xpom, double Q2, double z, double r, double bmin, double phi, double R, double PHI) {
+  
+  if (phi > calc_max_phi(r, bmin)) {
+    return 0;
+  }
+  
   double normalization = 2*C_f*alpha_s*Q2*sigma_0/(gsl_pow_3(M_PI)*alpha_em);
 
   double epsilon = sqrt(z*(1-z)*Q2 + m_f*m_f);
@@ -507,7 +504,7 @@ double polar_Fqqg_LLbeta_integrand(double beta, double xpom, double Q2, double z
 
 
   double factor = bmin*r*r*r/(R*rminusR*rminusR);
-  double A = factor*gsl_pow_2(dipole_amplitude(Qs*R, YZ_BMIN, YZ_PHI, xpom) + dipole_amplitude(Qs*rminusR, XZ_BMIN, XZ_PHI, xpom) - dipole_amplitude(Qs*r, bmin, phi, xpom) - dipole_amplitude(Qs*R, YZ_BMIN, YZ_PHI, xpom)*dipole_amplitude(Qs*rminusR, XZ_BMIN, XZ_PHI, xpom));
+  double A = factor*gsl_pow_2(dipole_amplitude(Qs*R, YZ_BMIN, YZ_PHI, xpom, false) + dipole_amplitude(Qs*rminusR, XZ_BMIN, XZ_PHI, xpom, false) - dipole_amplitude(Qs*r, bmin, phi, xpom, false) - dipole_amplitude(Qs*R, YZ_BMIN, YZ_PHI, xpom, false)*dipole_amplitude(Qs*rminusR, XZ_BMIN, XZ_PHI, xpom, false));
   return normalization*Phi_T*A;
 }
 
@@ -586,7 +583,14 @@ int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, doub
 
   double LLbeta_result, LLbeta_error, LLbeta_fit;
   xpomFqqg_LLbeta(beta, xpom, Q2, LLbeta_result, LLbeta_error, LLbeta_fit);
-
+  
+  /*
+  result = LLbeta_result;
+  error = LLbeta_error;
+  fit = 1;
+  return 0;
+  */
+  
   double LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit;
   nulbeta_xpomFqqg_LLQ2(beta, xpom, Q2, LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit);
 
@@ -609,6 +613,7 @@ int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, doub
     }
   }
   return 0;
+  
 }
 
 struct thread_par_struct
@@ -661,6 +666,15 @@ int main() {
   double xpom = 0.00012/0.04;
   double Q2 = 4.5;
   xpomFqqg_LLbeta(beta, xpom, Q2, result, error, fit);
+
+  cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl;
+  */
+  /*
+  double result, error, fit;
+  double beta = 0.04;
+  double xpom = 0.00012/0.04;
+  double Q2 = 4.5;
+  xpomFqqg_LLQ2(beta, xpom, Q2, result, error, fit);
 
   cout << "result: " << result << ", error: " << error << ", fit: " << fit << endl;
   */
