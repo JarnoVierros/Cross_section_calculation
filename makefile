@@ -260,6 +260,10 @@ sandbox: sandbox.cpp
 linterp_test: linterp_test.cpp
 	g++ linterp_test.cpp -o linterp_test.exe
 
+J_LHC_qqg_correction: J_LHC_qqg_correction.cpp
+	g++ -Wall -Wno-sign-compare -Wno-unused-but-set-variable -c J_LHC_qqg_correction.cpp $$(root-config --glibs --cflags --libs)
+	g++ J_LHC_qqg_correction.o $$(root-config --glibs --cflags --libs) -lMinuit -lgsl -lgslcblas -lm -o J_LHC_qqg_correction.exe
+
 clean:
 	-rm *.exe
 	-rm *.o

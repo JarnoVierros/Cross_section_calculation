@@ -29,7 +29,7 @@ const int N_c = 3;
 const double alpha_s = 0.25;
 
 
-const bool is_charm = true;
+const bool is_charm = false;
 
 static double e_f;
 static double m_f;
@@ -40,8 +40,8 @@ static double m_f;
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 1000;
-const int integration_calls = 10000;//100000000
+const int warmup_calls = 100000;
+const int integration_calls = 1000000;//100000000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";

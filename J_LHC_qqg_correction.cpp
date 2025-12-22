@@ -23,29 +23,541 @@
 using namespace std;
 
 #include "direct_dipole_amp_reader.h"
-#include "Jani_qqg_contribution_calculator.cpp"
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-//const double e_f = 1.0/3; //2.0/3
-//const double m_f = 4.18; //1.27 GeV
-const double e_f = 2.0/3; //
-const double m_f = 1.27; // GeV
+const double alpha_s = 0.25;
+
+
+const bool is_charm = false;
+
+const double e_f = 2.0/3;
+const double m_f = 1.27;;
+
+//static double r_limit = 100; // 100
+//static double b_min_limit; // 17.32
+
+const bool print_r_limit = false;
+const bool print_b_min_limit = false;
 
 const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int integration_calls = 100000;//100000000
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bk";
-const string nucleus_type = "Pb";
-const string diffraction = "_diffraction";//_diffraction this tells it to use diffractive dipole amplitude
-const string filename_end = "";
 const string particle_name = "c";
+
+const string dipole_amp_type = "bk";
+const string nucleus_type = "p";
+string filename_end = "_all";
+//bool diffraction_dipamp = true;
+const string diffraction = "_diffraction";
+
+const int i_start = 0; // number of data points to skip
+const int data_inclusion_count = 226;
+
+const int debug_precision = 10;
+const double max_theta_root_excess = 1e-6;
+
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 
 static InterpMultilinear<4, double>* interpolator;
+
+
+const double sigma_0 = 4; //GeV^-2
+const double C_f = 1.0;
+const double Cyrille_x_0 = 1.632e-5;
+const double lambda = 0.2197;
+const double N_0 = 0.7;
+const double gamma_c = 0.7376;
+const double kappa = 9.9;
+const double const_alpha = N_0*gamma_c/(8*(1-N_0));
+const double const_beta = 1.0/2*exp(-(1-N_0)/(N_0*gamma_c)*log(1-N_0));
+
+
+//static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
+//static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
+
+//static InterpMultilinear<4, double>* interpolator;
+
+double Q_s(double x) {
+    return pow(Cyrille_x_0/x, lambda/2);
+}
+
+double dipole_amplitude(double r, double b_min, double phi, double x_pom, bool limit_phi=true) {
+  if (limit_phi && calc_max_phi(r, b_min) < phi) {
+    return 0;
+  } else {
+    array<double, 4> args = {log(r), log(b_min), phi, log(x_pom)};
+    return exp(interpolator->interp(args.begin()));
+  }
+}
+
+struct Ig_parameters {
+  double beta;
+  double xpom;
+  double Q2;
+  double k2;
+  double z;
+};
+
+double Ig_integrand(double r, double b_min, double phi, double beta, double xpom, double k2, double z) {
+
+  double x = beta*xpom;
+  double a = sqrt(1-z);
+  double b = sqrt(z);
+  double c = Q_s(x)/sqrt(k2);
+  double N = dipole_amplitude(c*r, b_min, phi, xpom);
+  double value = 2*2*b_min*r*gsl_sf_bessel_Jn(2, a*r)*gsl_sf_bessel_Kn(2, b*r)*(2*N-N*N);
+
+  //cout << gsl_sf_bessel_Jn(2, a*r) << endl;
+  //cout << gsl_sf_bessel_Kn(2, b*r) << endl;
+  //cout << no_b_dipamp(c*r, x) << endl;
+  //cout << "k2=" << k2 << endl;
+  //cout << "beta=" << beta << ", z=" << z << ", r=" << r << ", rQs=" << c*r << ", x=" << x <<  ", value=" << value << endl << endl;
+  return value;
+}
+
+double Ig_integration_function(double *k, size_t dim, void * parameters) {
+  struct Ig_parameters * params = (struct Ig_parameters *)parameters;
+  double beta = params->beta;
+  double xpom = params->xpom;
+  double k2 = params->k2;
+  double z = params->z;
+  double r = k[0];
+  double b_min = k[1];
+  double phi = k[2];
+
+  return Ig_integrand(r, b_min, phi, beta, xpom, k2, z);
+}
+
+double Ig(double beta, double xpom, double Q2, double k2, double z) {
+
+  const int dim = 3;
+  double res, err;
+
+  double xl[dim] = {0, 0, 0};
+  double xu[dim] = {100, 100, M_PI};
+
+  struct Ig_parameters parameters = {beta, xpom, Q2, k2, z};
+
+  const gsl_rng_type *Ig_rng;
+  gsl_rng *rng;
+
+  gsl_monte_function Ig_G = {&Ig_integration_function, dim, &parameters};
+
+  gsl_rng_env_setup ();
+  int status = 0;
+  
+  Ig_rng = gsl_rng_default;
+  rng = gsl_rng_alloc(Ig_rng);
+  gsl_rng_set(rng, 1);
+
+  gsl_monte_vegas_state *memory = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&Ig_G, xl, xu, dim, 100, rng, memory, &res, &err);
+  if (status != 0) {cout << "Ig integration error: " << status << endl; throw (status);}
+  status = gsl_monte_vegas_integrate(&Ig_G, xl, xu, dim, 800, rng, memory, &res, &err);
+  if (status != 0) {cout << "Ig integration error: " << status << endl; throw (status);}
+
+  if (gsl_isnan(res)) {
+    res = 0;
+    cout << "nan found at xpom=" << xpom << endl;
+  }
+  gsl_monte_vegas_free(memory);
+  return res;
+  //error = err;
+  //double fit = gsl_monte_vegas_chisq(T_s);
+  //cout << "LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+}
+//static int counta = 0;
+double Fqqg_LLQ2_integrand(double beta, double xpom, double Q2, double k2, double z) {
+  //cout << counta << endl;
+  //counta++;
+  double normalization = alpha_s*C_f*N_c*beta*e_f*e_f/(8*gsl_pow_4(M_PI));
+  return normalization*log(Q2/k2)*(gsl_pow_2(1-beta/z) + gsl_pow_2(beta/z))*gsl_pow_2(Ig(beta, xpom, Q2, k2, z));
+}
+
+struct qqg_LLQ2_parameters {
+  double beta;
+  double xpom;
+  double Q2;
+  double sigma;
+  double sigma_error;
+  double sigma_fit;
+};
+
+double integration_function_qqg_LLQ2(double *k, size_t dim, void * params) {
+
+    double k2 = k[0];
+    double z = k[1];
+    struct qqg_LLQ2_parameters *par = (struct qqg_LLQ2_parameters *)params;
+
+    return Fqqg_LLQ2_integrand(par->beta, par->xpom, par->Q2, k2, z);
+}
+
+double xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
+
+  const int dim = 2;
+  double res, err;
+
+  double xl[dim] = {0, beta};
+  double xu[dim] = {Q2, 1};
+
+  struct qqg_LLQ2_parameters params = {1, 1, 1};
+  params.beta = beta;
+  params.xpom = xpom;
+  params.Q2 = Q2;
+
+  const gsl_rng_type *qqg_LLQ2_rng;
+  gsl_rng *rng;
+
+  gsl_monte_function qqg_LLQ2_rng_G = {&integration_function_qqg_LLQ2, dim, &params};
+
+  gsl_rng_env_setup ();
+  int status = 0;
+
+  qqg_LLQ2_rng = gsl_rng_default;
+  rng = gsl_rng_alloc(qqg_LLQ2_rng);
+  gsl_rng_set(rng, 1);
+  //cout << "beta: " << beta << ", xpom: " << xpom << ", Q2: " << Q2 << endl;
+  gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, 100, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_warmup_error: " << status << endl; throw (status);}
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, 1000, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_integration_error: " << status << endl; throw (status);}
+
+  if (gsl_isnan(res)) {
+    res = 0;
+    cout << "nan found at xpom=" << params.xpom << endl;
+  }
+  result = res;
+  error = err;
+  fit = gsl_monte_vegas_chisq(T_s);
+  cout << "LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+
+  gsl_monte_vegas_free(T_s);
+
+  return 0;
+}
+
+///////////////////////////////////////////
+
+
+struct nulbeta_Ig_parameters {
+  double beta;
+  double xpom;
+  double Q2;
+  double k2;
+  double z;
+};
+
+double nulbeta_Ig_integrand(double r, double b_min, double phi, double beta, double xpom, double k2, double z) {
+
+  double N = dipole_amplitude(r, b_min, phi, xpom);
+  double value = 2*2*b_min/r*gsl_sf_bessel_Jn(2, sqrt(k2)*r)*(2*N - N*N);
+
+  //cout << gsl_sf_bessel_Jn(2, a*r) << endl;
+  //cout << gsl_sf_bessel_Kn(2, b*r) << endl;
+  //cout << no_b_dipamp(c*r, x) << endl;
+  //cout << "k2=" << k2 << endl;
+  //cout << "beta=" << beta << ", z=" << z << ", r=" << r << ", rQs=" << c*r << ", x=" << x <<  ", value=" << value << endl << endl;
+  return value;
+}
+
+double nulbeta_Ig_integration_function(double *k, size_t dim, void * parameters) {
+  struct nulbeta_Ig_parameters * params = (struct nulbeta_Ig_parameters *)parameters;
+  double beta = params->beta;
+  double xpom = params->xpom;
+  double k2 = params->k2;
+  double z = params->z;
+  double r = k[0];
+  double b_min = k[1];
+  double phi = k[2];
+
+  return nulbeta_Ig_integrand(r, b_min, phi, beta, xpom, k2, z);
+}
+
+double nulbeta_Ig(double beta, double xpom, double Q2, double k2, double z) {
+
+  const int dim = 3;
+  double res, err;
+
+  double xl[dim] = {0, 0, 0};
+  double xu[dim] = {100, 100, M_PI};
+
+  struct nulbeta_Ig_parameters parameters = {beta, xpom, Q2, k2, z};
+
+  const gsl_rng_type *Ig_rng;
+  gsl_rng *rng;
+
+  gsl_monte_function Ig_G = {&nulbeta_Ig_integration_function, dim, &parameters};
+
+  gsl_rng_env_setup ();
+  int status = 0;
+  
+  Ig_rng = gsl_rng_default;
+  rng = gsl_rng_alloc(Ig_rng);
+  gsl_rng_set(rng, 1);
+
+  gsl_monte_vegas_state *memory = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&Ig_G, xl, xu, dim, 100, rng, memory, &res, &err);
+  if (status != 0) {cout << "Ig integration error: " << status << endl; throw (status);}
+  status = gsl_monte_vegas_integrate(&Ig_G, xl, xu, dim, 1000, rng, memory, &res, &err);
+  if (status != 0) {cout << "Ig integration error: " << status << endl; throw (status);}
+
+  if (gsl_isnan(res)) {
+    res = 0;
+    cout << "nan found at xpom=" << xpom << endl;
+  }
+  gsl_monte_vegas_free(memory);
+  return res;
+  //error = err;
+  //double fit = gsl_monte_vegas_chisq(T_s);
+  //cout << "LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+}
+
+double nulbeta_Fqqg_LLQ2_integrand(double beta, double xpom, double Q2, double k2, double z) {
+  double normalization = alpha_s*C_f*N_c*e_f*e_f/(3*gsl_pow_4(M_PI));
+  return normalization*log(Q2/k2)*gsl_pow_2(nulbeta_Ig(beta, xpom, Q2, k2, z));
+}
+
+double nulbeta_integration_function_qqg_LLQ2(double *k, size_t dim, void * params) {
+
+    double k2 = k[0];
+    double z = 0;
+    struct qqg_LLQ2_parameters *par = (struct qqg_LLQ2_parameters *)params;
+
+    return nulbeta_Fqqg_LLQ2_integrand(par->beta, par->xpom, par->Q2, k2, z);
+}
+
+double nulbeta_xpomFqqg_LLQ2(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
+
+  const int dim = 1;
+  double res, err;
+
+  double xl[dim] = {0};
+  double xu[dim] = {Q2};
+
+  struct qqg_LLQ2_parameters params = {1, 1, 1};
+  params.beta = beta;
+  params.xpom = xpom;
+  params.Q2 = Q2;
+
+  const gsl_rng_type *qqg_LLQ2_rng;
+  gsl_rng *rng;
+
+  gsl_monte_function qqg_LLQ2_rng_G = {&nulbeta_integration_function_qqg_LLQ2, dim, &params};
+
+  gsl_rng_env_setup ();
+  int status = 0;
+
+  qqg_LLQ2_rng = gsl_rng_default;
+  rng = gsl_rng_alloc(qqg_LLQ2_rng);
+  gsl_rng_set(rng, 1);
+
+  gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, 10, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_warmup_error: " << status << endl; throw (status);}
+  status = gsl_monte_vegas_integrate(&qqg_LLQ2_rng_G, xl, xu, dim, 100, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_integration_error: " << status << endl; throw (status);}
+
+  if (gsl_isnan(res)) {
+    res = 0;
+    cout << "nan found at xpom=" << params.xpom << endl;
+  }
+  result = res;
+  error = err;
+  fit = gsl_monte_vegas_chisq(T_s);
+  cout << "nulbeta LLQ2 Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+
+  gsl_monte_vegas_free(T_s);
+
+  return 0;
+}
+
+//////////////////////////////////////////
+
+double dipole_r(double x1, double x2, double y1, double y2) {
+  return sqrt(gsl_pow_2(x1-y1) + gsl_pow_2(x2-y2));
+}
+
+double dipole_bmin(double x1, double x2, double y1, double y2) {
+  double x = sqrt(x1*x1+x2*x2);
+  double y = sqrt(y1*y1+y2*y2);
+  return min(x, y);
+}
+
+double dipole_phi(double x1, double x2, double y1, double y2) {
+  double x = sqrt(x1*x1+x2*x2);
+  double y = sqrt(y1*y1+y2*y2);
+  if (x <= y) {
+    return acos((x1*(y1-x1) + x2*(y2-x2))/(x*sqrt(gsl_pow_2(y1-x1) + gsl_pow_2(y2-x2))));
+  } else {
+    return acos((y1*(x1-y1) + y2*(x2-y2))/(y*sqrt(gsl_pow_2(x1-y1) + gsl_pow_2(x2-y2))));
+  }
+}
+
+double LLbeta_dipole_amplitude(double x1, double x2, double y1, double y2, double xpom) {
+  return dipole_amplitude(dipole_r(x1, x2, y1, y2), dipole_bmin(x1, x2, y1, y2), dipole_phi(x1, x2, y1, y2), xpom);
+}
+
+double polar_Fqqg_LLbeta_integrand(double beta, double xpom, double Q2, double z, double r, double bmin, double phi, double R, double PHI) {
+  
+  if (phi > calc_max_phi(r, bmin)) {
+    return 0;
+  }
+  
+  double normalization = 2*C_f*alpha_s*Q2*sigma_0/(gsl_pow_3(M_PI)*alpha_em);
+
+  double epsilon = sqrt(z*(1-z)*Q2 + m_f*m_f);
+  double Phi_T = alpha_em*N_c/(2*M_PI*M_PI)*e_f*e_f*((z*z+gsl_pow_2(1-z))*epsilon*epsilon*gsl_pow_2(gsl_sf_bessel_K1(epsilon*r)) + m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon*r)));
+
+  //double x = beta*xpom;
+  double Qs = Q_s(xpom);
+  //double rminusR = sqrt(r*r - 2*r*R*cos(theta) + R*R);
+
+  double alpha = abs(PHI - phi);
+  if (alpha > M_PI) {
+    alpha = 2*M_PI - alpha;
+  }
+  double rminusR = sqrt(r*r + R*R - 2*r*R*cos(alpha));
+
+  double Z_B = sqrt(bmin*bmin + R*R - 2*bmin*R*cos(abs(M_PI-PHI)));
+
+  double YZ_BMIN, YZ_PHI;
+  if (bmin < Z_B) {
+    YZ_BMIN = bmin;
+    YZ_PHI = PHI;
+  } else {
+    YZ_BMIN = Z_B;
+    YZ_PHI = M_PI - acos(1/(2*R*Z_B)*(R*R+Z_B*Z_B-bmin*bmin));
+  }
+
+  double X_B = sqrt(r*r+bmin*bmin-2*r*bmin*cos(M_PI-phi));
+  double XZ_BMIN, XZ_PHI;
+  if (X_B < Z_B) {
+    XZ_BMIN = X_B;
+    XZ_PHI = M_PI - acos(1/(2*X_B*rminusR)*(X_B*X_B+rminusR*rminusR-Z_B*Z_B));
+  } else {
+    XZ_BMIN = Z_B;
+    XZ_PHI = M_PI - acos(1/(2*Z_B*rminusR)*(Z_B*Z_B+rminusR*rminusR-X_B*X_B));
+  }
+
+
+  double factor = bmin*r*r*r/(R*rminusR*rminusR);
+  double A = factor*gsl_pow_2(dipole_amplitude(Qs*R, YZ_BMIN, YZ_PHI, xpom, false) + dipole_amplitude(Qs*rminusR, XZ_BMIN, XZ_PHI, xpom, false) - dipole_amplitude(Qs*r, bmin, phi, xpom, false) - dipole_amplitude(Qs*R, YZ_BMIN, YZ_PHI, xpom, false)*dipole_amplitude(Qs*rminusR, XZ_BMIN, XZ_PHI, xpom, false));
+  cout << normalization << ", " << Phi_T << ", " << factor << ", " << A << endl;
+  return normalization*Phi_T*A;
+}
+
+struct qqg_LLbeta_parameters {
+  double beta;
+  double xpom;
+  double Q2;
+  double sigma;
+  double sigma_error;
+  double sigma_fit;
+};
+
+double integration_function_qqg_LLbeta(double *k, size_t dim, void * params) {
+  double z = k[0];
+  double r = k[1];
+  double bmin = k[2];
+  double phi = k[3];
+  double R = k[4];
+  double PHI = k[5];
+  struct qqg_LLbeta_parameters *par = (struct qqg_LLbeta_parameters *)params;
+
+  return polar_Fqqg_LLbeta_integrand(par->beta, par->xpom, par->Q2, z, r, bmin, phi, R, PHI);
+}
+
+double xpomFqqg_LLbeta(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
+
+  const int dim = 6;
+  double res, err;
+
+  const double range = 100;
+  double xl[dim] = {0, 0, 0, -M_PI, 0, -M_PI};
+  double xu[dim] = {1, range, range, M_PI, range, M_PI};
+
+  struct qqg_LLbeta_parameters params = {1, 1, 1};
+  params.beta = beta;
+  params.xpom = xpom;
+  params.Q2 = Q2;
+
+  const gsl_rng_type *qqg_LLbeta_rng;
+  gsl_rng *rng;
+
+  gsl_monte_function qqg_LLbeta_rng_G = {&integration_function_qqg_LLbeta, dim, &params};
+
+  gsl_rng_env_setup();
+  int status = 0;
+
+  qqg_LLbeta_rng = gsl_rng_default;
+  rng = gsl_rng_alloc(qqg_LLbeta_rng);
+  gsl_rng_set(rng, 1);
+
+  gsl_monte_vegas_state *T_s = gsl_monte_vegas_alloc(dim);
+  status = gsl_monte_vegas_integrate(&qqg_LLbeta_rng_G, xl, xu, dim, warmup_calls, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_warmup_error: " << status << endl; throw (status);}
+  status = gsl_monte_vegas_integrate(&qqg_LLbeta_rng_G, xl, xu, dim, integration_calls, rng, T_s, &res, &err);
+  if (status != 0) {cout << "qqg_LLQ2_integration_error: " << status << endl; throw (status);}
+
+  if (gsl_isnan(res)) {
+    res = 0;
+    cout << "nan found at xpom=" << params.xpom << endl;
+  }
+  result = res;
+  error = err;
+  fit = gsl_monte_vegas_chisq(T_s);
+  cout << "LLbeta: Q²=" << params.Q2 << ", xpom=" << params.xpom << ", beta=" << params.beta << ", res: " << result << ", err: " << error << ", fit: " << gsl_monte_vegas_chisq(T_s) << endl;
+
+  gsl_monte_vegas_free(T_s);
+
+  return 0;
+}
+
+int calc_total_xpomF_Tqqg_contribution(double beta, double xpom, double Q2, double &result, double &error, double &fit) {
+  //double fits[3];
+
+  //double LLQ2_result, LLQ2_error, LLQ2_fit;
+  //xpomFqqg_LLQ2(beta, xpom, Q2, LLQ2_result, LLQ2_error, LLQ2_fit);
+
+  double LLbeta_result, LLbeta_error, LLbeta_fit;
+  xpomFqqg_LLbeta(beta, xpom, Q2, LLbeta_result, LLbeta_error, LLbeta_fit);
+  
+  
+  result = LLbeta_result;
+  error = LLbeta_error;
+  fit = 1;
+  return 0;
+  
+  /*
+  double LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit;
+  nulbeta_xpomFqqg_LLQ2(beta, xpom, Q2, LLQ2nul_result, LLQ2nul_error, LLQ2nul_fit);
+
+  result  = LLQ2_result*LLbeta_result/LLQ2nul_result;
+  error = sqrt(gsl_pow_2(LLbeta_result/LLQ2nul_result*LLQ2_error) + gsl_pow_2(LLQ2_result/LLQ2nul_result*LLbeta_error) + gsl_pow_2(LLQ2_result*LLbeta_result/(LLQ2nul_result*LLQ2nul_result)*LLQ2nul_error));
+  fits[0] = LLQ2_fit;
+  fits[1] = LLbeta_fit;
+  fits[2] = LLQ2nul_fit;
+  if (LLQ2_fit > LLbeta_fit) {
+    if (LLQ2_fit > LLQ2nul_fit) {
+      fit = LLQ2_fit;
+    } else {
+      fit = LLQ2nul_fit;
+    }
+  } else {
+    if (LLbeta_fit > LLQ2nul_fit) {
+      fit = LLbeta_fit;
+    } else {
+      fit = LLQ2nul_fit;
+    }
+  }
+  return 0;
+  */
+}
 
 struct parameters {double Q2; double W;};
 
@@ -65,12 +577,12 @@ struct integrand_parameters {
 double integrand(double beta, void * parameters) {
   struct integrand_parameters * params = (struct integrand_parameters *)parameters;
   double W = params->W;
-
   double xpom = 4*m_f*m_f/(beta*W*W);
 
   double result, error, fit;
 
   calc_total_xpomF_Tqqg_contribution(beta, xpom, 0, result, error, fit);
+  //cout << result << endl;
 
   return result;
 }
@@ -101,19 +613,7 @@ double integrate_qqg_contribution(thread_par_struct par) {
 }
 
 int main() {
-
   gsl_set_error_handler_off();
-
-  if (nucleus_type == "Pb") {
-    r_limit = 657; // 34.64
-    b_min_limit = 328; // 17.32
-  } else if (nucleus_type == "p") {
-    r_limit = 34.64;
-    b_min_limit = 17.32;
-  } else {
-    cout << "invalid nucleus type" << endl;
-    throw 1;
-  }
 
   const int Q2_values[] = {0};
 
