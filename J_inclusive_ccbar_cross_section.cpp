@@ -244,11 +244,11 @@ int main() {
 
   TString outfile_name;
   if (print_r_limit) {
-    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".txt";
+    outfile_name = "output/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".txt";
   } else if (print_b_min_limit) {
-    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".txt";
+    outfile_name = "output/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".txt";
   } else {
-    outfile_name = "data/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
+    outfile_name = "output/J_L_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
   }
 
   ofstream L_output_file(outfile_name);
@@ -324,11 +324,11 @@ int main() {
   T_graphs->SetTitle(title);
 
   if (print_r_limit) {
-    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".txt";
+    outfile_name = "output/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_r_"+r_limit_filename_string+filename_end+".txt";
   } else if (print_b_min_limit) {
-    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".txt";
+    outfile_name = "output/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+"_b_"+b_limit_filename_string+filename_end+".txt";
   } else {
-    outfile_name = "data/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
+    outfile_name = "output/J_T_inclusive_"+dipole_amp_type+"_"+nucleus_type+filename_end+".txt";
   }
   ofstream T_output_file(outfile_name);
   T_output_file << "Q2 (GeV);x;sigma (mb);sigma error (mb)" << endl;

@@ -27,8 +27,12 @@ using namespace std;
 
 const double alpha_em = 1.0/137;
 const int N_c = 3;
-const double e_f = 1.0/3; //2.0/3
-const double m_f = 4.18; //1.27 GeV
+//charm
+//const double e_f = 2.0/3; //charm: 2.0/3, bottom: 1.0/3
+//const double m_f = 1.27; //charm: 1.27 GeV, bottom: 4.18
+//bottom
+const double e_f = 1.0/3; //charm: 2.0/3, bottom: 1.0/3
+const double m_f = 4.18; //charm: 1.27 GeV, bottom: 4.18
 
 static const double global_Q2 = 0;
 
@@ -261,11 +265,11 @@ int main() {
   T_graphs->SetTitle(title);
 
   if (print_r_limit) {
-    outfile_name = "data/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_r_"+r_limit_filename_string+filename_end+".txt";
+    outfile_name = "output/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_r_"+r_limit_filename_string+filename_end+".txt";
   } else if (print_b_min_limit) {
-    outfile_name = "data/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_b_"+b_limit_filename_string+filename_end+".txt";
+    outfile_name = "output/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+"_b_"+b_limit_filename_string+filename_end+".txt";
   } else {
-    outfile_name = "data/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".txt";
+    outfile_name = "output/J_LHC_T_inclusive_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".txt";
   }
   ofstream T_output_file(outfile_name);
   T_output_file << "W;cross section (GeV^-2);cross section error (GeV^-2)" << endl;

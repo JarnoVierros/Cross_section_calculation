@@ -6,6 +6,7 @@
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
 #include "TText.h"
+#include "TLatex.h"
 
 #include <string>
 #include <iostream>
@@ -102,11 +103,12 @@ int main() {
   vector<double> qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit;
   vector<double> charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit;
 
-  bool Jani_qqg_correction = true;
+  double unit_scaler = 1000;
+  bool Jani_qqg_correction = false;
   bool vector_dipamp = true;
   if (vector_dipamp) {
     string L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_vector_all.txt"
+        "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_L_vector_all.txt"
       };
 
     for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -114,7 +116,7 @@ int main() {
     }
 
     string charm_L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_vector_charm_all.txt"
+        "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_L_vector_charm_all.txt"
       };
 
     for (long unsigned int i=0; i<size(charm_L_prediction_filenames); i++) {
@@ -122,7 +124,7 @@ int main() {
     }
 
     string T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_vector_all.txt"
+      "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_T_vector_all.txt"
     };
 
     for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -130,7 +132,7 @@ int main() {
     }
 
     string charm_T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_vector_charm_all.txt"
+      "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_T_vector_charm_all.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
@@ -139,7 +141,7 @@ int main() {
 
     if (Jani_qqg_correction) {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all.txt"
+        "/home/jarno/Cross_section_calculation/output/old/Jani_low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -147,7 +149,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/old/Jani_low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -155,7 +157,7 @@ int main() {
       }
     } else {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
+        "/home/jarno/Cross_section_calculation/output/old/low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -163,7 +165,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/old/low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -175,7 +177,7 @@ int main() {
 
   } else {
     string L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_10k_all_diffdiff.txt"
+        "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_L_10k_all_diffdiff.txt"
       };
 
     for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -183,7 +185,7 @@ int main() {
     }
 
     string charm_L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_10k_all_diffdiff_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_L_10k_all_diffdiff_charm.txt"
       };
 
     for (long unsigned int i=0; i<size(charm_L_prediction_filenames); i++) {
@@ -191,7 +193,7 @@ int main() {
     }
 
     string T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_10k_all_diffdiff.txt"
+      "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_T_10k_all_diffdiff.txt"
     };
 
     for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -199,7 +201,7 @@ int main() {
     }
 
     string charm_T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_10k_all_diffdiff_charm.txt"
+      "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_T_10k_all_diffdiff_charm.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
@@ -208,7 +210,7 @@ int main() {
 
     if (Jani_qqg_correction) {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all.txt"
+        "/home/jarno/Cross_section_calculation/output/old/Jani_low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -216,7 +218,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/old/Jani_low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -224,7 +226,7 @@ int main() {
       }
     } else {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
+        "/home/jarno/Cross_section_calculation/output/old/low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -232,7 +234,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/old/low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -298,6 +300,7 @@ int main() {
     throw 1;
   }
 
+  TLegend* legend = new TLegend(0, 0.001, 0.175, 0.13);
 
   for (int k=0; k<size(Q2_selections); k++) {
     vector<double> x_selection, chosen_measurement_xpomF2, chosen_delta;
@@ -310,8 +313,8 @@ int main() {
         continue;
       }
       x_selection.push_back(measurement_x[i]);
-      chosen_measurement_xpomF2.push_back(measurement_xpomF2[i]);
-      chosen_delta.push_back(measurement_delta_stat[i]+measurement_delta_sys[i]);
+      chosen_measurement_xpomF2.push_back(unit_scaler*measurement_xpomF2[i]);
+      chosen_delta.push_back(unit_scaler*(measurement_delta_stat[i]+measurement_delta_sys[i]));
     }
 
 
@@ -395,13 +398,13 @@ int main() {
       }
 
       const double correction = 1;//12
-      chosen_prediction_xpomFL.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
-      chosen_prediction_xpomFT.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
+      chosen_prediction_xpomFL.push_back(unit_scaler*correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*L_sigma);
+      chosen_prediction_xpomFT.push_back(unit_scaler*correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*T_sigma);
       double combined_error = correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*beta_selections[k]*alpha_em)*sqrt(L_error*L_error + T_error*T_error);
       combined_error = sqrt(combined_error*combined_error + qqg_correction_error*qqg_correction_error);
-      chosen_prediction_error.push_back(combined_error);
-      chosen_qqg_correction.push_back(qqg_correction);
-      chosen_prediction_xpomF2.push_back(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma) + qqg_correction);
+      chosen_prediction_error.push_back(unit_scaler*combined_error);
+      chosen_qqg_correction.push_back(unit_scaler*qqg_correction);
+      chosen_prediction_xpomF2.push_back(unit_scaler*(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma) + qqg_correction));
     }
 /*
 struct plot {
@@ -421,15 +424,42 @@ struct plot {
     double* chosen_measurement_xpomF2_arr = &chosen_measurement_xpomF2[0];
     double* chosen_delta_arr = &chosen_delta[0];
 
+    vector<double> valid_prediction_x;
+    for (int m=0;m<x_selection.size();m++) {
+      if (x_selection[m] < 0.01) {
+        valid_prediction_x.push_back(x_selection[m]);
+      }
+    }
+    double* prediction_x_selection_arr = &valid_prediction_x[0];
+
+    int valid_prediction_size = valid_prediction_x.size();
+
+    vector<double> valid_chosen_prediction_xpomF2, valid_chosen_prediction_error, valid_chosen_prediction_xpomFL, valid_chosen_prediction_xpomFT, valid_chosen_qqg_correction;
+    for (int m=0;m<valid_prediction_size;m++) {
+      valid_chosen_prediction_xpomF2.push_back(chosen_prediction_xpomF2[m]);
+      valid_chosen_prediction_error.push_back(chosen_prediction_error[m]);
+      valid_chosen_prediction_xpomFL.push_back(chosen_prediction_xpomFL[m]);
+      valid_chosen_prediction_xpomFT.push_back(chosen_prediction_xpomFT[m]);
+      valid_chosen_qqg_correction.push_back(chosen_qqg_correction[m]);
+    }
+    double* chosen_prediction_xpomF2_arr = &valid_chosen_prediction_xpomF2[0];
+    double* chosen_prediction_error_arr = &valid_chosen_prediction_error[0];
+    double* chosen_prediction_xpomFL_arr = &valid_chosen_prediction_xpomFL[0];
+    double* chosen_prediction_xpomFT_arr = &valid_chosen_prediction_xpomFT[0];
+    double* chosen_qqg_correction_arr = &valid_chosen_qqg_correction[0];
+
+
     TMultiGraph* comparison_graph = new TMultiGraph();
     comparison_graph->GetXaxis()->SetLimits(x_limits[0], x_limits[1]);
-    comparison_graph->GetYaxis()->SetRangeUser(y_limits[0], y_limits[1]);
+    comparison_graph->GetYaxis()->SetRangeUser(unit_scaler*y_limits[0], unit_scaler*y_limits[1]);
     
-    comparison_graph->GetXaxis()->SetLabelSize(0.05);
-    comparison_graph->GetYaxis()->SetLabelSize(0.05);
+    comparison_graph->GetXaxis()->SetLabelSize(0.09);
+    comparison_graph->GetYaxis()->SetLabelSize(0.09);
 
-    comparison_graph->GetXaxis()->SetTitle("x");
-    comparison_graph->GetYaxis()->SetTitle("x_{pom}F_{2}^{D(3)}");
+    comparison_graph->GetXaxis()->SetLabelFont(21);
+
+    //comparison_graph->GetXaxis()->SetTitle("x");
+    //comparison_graph->GetYaxis()->SetTitle("x_{pom}F_{2}^{D(3)}");
 
     /*
     stringstream Q2_stream;
@@ -445,45 +475,44 @@ struct plot {
     measurement_data->SetTitle("Measurement data");
     comparison_graph->Add(measurement_data, "P");
 
-    double* chosen_prediction_xpomF2_arr = &chosen_prediction_xpomF2[0];
-    double* chosen_prediction_error_arr = &chosen_prediction_error[0];
-
-    TGraphErrors* prediction = new TGraphErrors(x_selection.size(), x_selection_arr, chosen_prediction_xpomF2_arr, zeroes, chosen_prediction_error_arr);
+    TGraphErrors* prediction = new TGraphErrors(valid_prediction_size, x_selection_arr, chosen_prediction_xpomF2_arr, zeroes, chosen_prediction_error_arr);
     prediction->SetTitle("Prediction");
     prediction->SetMarkerStyle(8);
     prediction->SetMarkerColor(2);
     prediction->SetLineColor(2);
     comparison_graph->Add(prediction, "C");
 
-    double* chosen_prediction_xpomFL_arr = &chosen_prediction_xpomFL[0];
-
-    TGraph* FL_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_prediction_xpomFL_arr);
-    FL_prediction->SetLineColor(7);
+    TGraph* FL_prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_prediction_xpomFL_arr);
+    FL_prediction->SetLineColor(4);
     FL_prediction->SetLineStyle(3);
     comparison_graph->Add(FL_prediction, "C");
 
-    double* chosen_prediction_xpomFT_arr = &chosen_prediction_xpomFT[0];
-
-    TGraph* FT_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_prediction_xpomFT_arr);
-    FT_prediction->SetLineColor(9);
+    TGraph* FT_prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_prediction_xpomFT_arr);
+    FT_prediction->SetLineColor(6);
     FT_prediction->SetLineStyle(2);
     comparison_graph->Add(FT_prediction, "C");
 
-    double* chosen_qqg_correction_arr = &chosen_qqg_correction[0];
-
-    TGraph* qqg_prediction = new TGraph(x_selection.size(), x_selection_arr, chosen_qqg_correction_arr);
-    qqg_prediction->SetLineColor(3);
+    TGraph* qqg_prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_qqg_correction_arr);
+    qqg_prediction->SetLineColor(7);
     qqg_prediction->SetLineStyle(4);
     comparison_graph->Add(qqg_prediction, "C");
 
     plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction, qqg_prediction, Q2_selections[k], beta_selections[k]};
     plots.push_back(new_plot);
 
+    if (k==0) {
+      legend->AddEntry(measurement_data, "measurement");
+      legend->AddEntry(prediction, "prediction", "L");
+      legend->AddEntry(FL_prediction, "longitudinal", "L");
+      legend->AddEntry(FT_prediction, "transverse", "L");
+      legend->AddEntry(qqg_prediction, "gluon emission", "L");
+    }
+
   }
 
   int figure_width = 6;
   int figure_height = 8; //8
-  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*10000, figure_height*10000);
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*100, figure_height*100);
   multicanvas->Divide(figure_width, figure_height, 0, 0);
 
   int offset = 0;
@@ -503,13 +532,15 @@ struct plot {
     stringstream Q2_stream;
     Q2_stream << setprecision(2) << plots[i].Q2;
     TString Q2_string = "Q2=" + Q2_stream.str();
-    TText* Q2_text = new TText(1e-2, 0.09, Q2_string);
+    TText* Q2_text = new TText(4e-3, unit_scaler*0.085, Q2_string);
+    Q2_text->SetTextSize(0.1);
     Q2_text->Draw("Same");
 
     stringstream beta_stream;
     beta_stream << setprecision(2) << plots[i].beta;
     TString beta_string = "beta=" + beta_stream.str();
-    TText* beta_text = new TText(1e-2, 0.08, beta_string);
+    TText* beta_text = new TText(4e-3, unit_scaler*0.075, beta_string);
+    beta_text->SetTextSize(0.1);
     beta_text->Draw("Same");
 
     /*
@@ -528,6 +559,21 @@ struct plot {
     legend->Draw();
     */
   }
+
+  multicanvas->cd(1);
+  TString y_unit_string = "#splitline{x_{P}F_{2}^{D(3)}}{(nb)}";
+  TLatex* y_unit_text = new TLatex(1.5e-4, unit_scaler*0.07, y_unit_string);
+  y_unit_text->SetTextSize(0.15);
+  y_unit_text->Draw("Same");
+
+
+  multicanvas->cd(48);
+  TString x_unit_string = "x";
+  TLatex* x_unit_text = new TLatex(4e-2, unit_scaler*0.006, x_unit_string);
+  x_unit_text->SetTextSize(0.2);
+  x_unit_text->Draw("Same");
+
+
   multicanvas->cd(0);
 
   
@@ -537,6 +583,9 @@ struct plot {
 
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
   //top_pad->Draw();
+
+  legend->SetTextSize(0.02);
+  legend->Draw("Same");
 
   TString figure_filename = "figures/F2D_data_comparison.pdf";
   multicanvas->Print(figure_filename);
