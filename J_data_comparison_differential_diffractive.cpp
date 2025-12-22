@@ -480,21 +480,25 @@ struct plot {
     prediction->SetMarkerStyle(8);
     prediction->SetMarkerColor(2);
     prediction->SetLineColor(2);
+    prediction->SetLineWidth(1);
     comparison_graph->Add(prediction, "C");
 
     TGraph* FL_prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_prediction_xpomFL_arr);
     FL_prediction->SetLineColor(4);
     FL_prediction->SetLineStyle(3);
+    FL_prediction->SetLineWidth(3);
     comparison_graph->Add(FL_prediction, "C");
 
     TGraph* FT_prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_prediction_xpomFT_arr);
     FT_prediction->SetLineColor(6);
     FT_prediction->SetLineStyle(2);
+    FT_prediction->SetLineWidth(3);
     comparison_graph->Add(FT_prediction, "C");
 
     TGraph* qqg_prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_qqg_correction_arr);
     qqg_prediction->SetLineColor(7);
     qqg_prediction->SetLineStyle(4);
+    qqg_prediction->SetLineWidth(3);
     comparison_graph->Add(qqg_prediction, "C");
 
     plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction, qqg_prediction, Q2_selections[k], beta_selections[k]};
