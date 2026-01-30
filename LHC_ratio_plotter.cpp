@@ -54,6 +54,8 @@ int main() {
 
   ratios_canvas->cd(1);
 
+
+
   TMultiGraph* ratios_graph = new TMultiGraph();
   //ratios_graph->SetTitle(title);
   
@@ -78,16 +80,19 @@ int main() {
     ratio_graph->SetTitle(graph_titles[i]);
     ratio_graph->SetLineColor(line_colors[i]);
     ratio_graph->SetLineStyle(line_styles[i]);
+    //ratio_graph->GetXaxis()->SetRangeUser(9e1, 2e4);
     ratios_graph->Add(ratio_graph);
   }
+  //ratios_graph->GetXaxis()->SetRangeUser(9e1, 2e4);
 
   ratios_graph->GetYaxis()->SetTitle("#frac{diffractive}{inclusive}");
   gPad->SetLogx();
-  //ratios_graph->GetYaxis()->SetRangeUser(0, 01);
+
   ratios_graph->Draw("AC");
   ratios_graph->GetXaxis()->SetTitle("W (GeV)");
-  
-  ratios_canvas->cd(1)->BuildLegend(0.15, 0.65, 0.4, 0.9);
+  ratios_graph->GetXaxis()->SetLimits(2.6e1, 2.1e4);
+
+  ratios_canvas->cd(1)->BuildLegend(0.15, 0.6, 0.5, 0.9);
 
 
   ratios_canvas->cd(2);
@@ -123,8 +128,9 @@ int main() {
   ratios_graph_2->Draw("AC");
   ratios_graph_2->GetXaxis()->SetTitle("W (GeV)");
   ratios_graph_2->GetYaxis()->SetTitle("#frac{diffractive}{inclusive}");
+  ratios_graph_2->GetXaxis()->SetLimits(2.6e1, 2.1e4);
   
-  ratios_canvas->cd(2)->BuildLegend(0.2, 0.5, 0.5, 0.9);
+  ratios_canvas->cd(2)->BuildLegend(0.15, 0.6, 0.5, 0.9);
 
   ratios_canvas->Print(outfile_name);
 

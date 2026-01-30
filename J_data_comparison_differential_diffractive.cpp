@@ -536,7 +536,7 @@ struct plot {
     plots.push_back(new_plot);
 
     if (k==0) {
-      legend->AddEntry(measurement_data, "q#bar{q} measurement");
+      legend->AddEntry(measurement_data, "q#bar{q}");
       legend->AddEntry(prediction, "total", "L");
       legend->AddEntry(FL_prediction, "longitudinal", "L");
       legend->AddEntry(FT_prediction, "transverse", "L");
