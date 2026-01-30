@@ -467,6 +467,11 @@ struct plot {
 
     //comparison_graph->GetXaxis()->SetLabelFont(21);
     comparison_graph->GetXaxis()->SetLabelOffset(-0.05);
+    if (k>41) {
+      comparison_graph->GetXaxis()->SetTickSize(0.04);
+    } else {
+      comparison_graph->GetXaxis()->SetTickSize(0.075);
+    }
 
     //comparison_graph->GetXaxis()->SetTitle("x");
     //comparison_graph->GetYaxis()->SetTitle("x_{pom}F_{2}^{D(3)}");
@@ -544,9 +549,9 @@ struct plot {
 
   double fig_size_x = 100;
   double fig_size_y = 100;
-  //TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*fig_size_x/(1-2*margin_fraction), figure_height*fig_size_y/(1-2*margin_fraction));
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*fig_size_x/(1-2*margin_fraction), figure_height*fig_size_y/(1-2*margin_fraction));
+  //TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 769, 1115);
   
-  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 769, 1115);
   multicanvas->Draw();
   //TPad* multipad = new TPad("multipad", "multipad", margin_fraction, margin_fraction, 1-margin_fraction, 1-margin_fraction);
   //multipad->Draw();
@@ -574,7 +579,7 @@ struct plot {
     double y1 = 1-margin_fraction-(i/figure_width+1)*1.0/figure_height*(1-2*margin_fraction);
     if (i/6==7) {y1=0;}
     double y2 = 1-margin_fraction-(i/figure_width)*1.0/figure_height*(1-2*margin_fraction);
-    cout << x1 << ", " << y1 << ", " << x2 << ", " << y2 << endl;
+    //cout << x1 << ", " << y1 << ", " << x2 << ", " << y2 << endl;
     subpads[i] = new TPad("subpad", "subpad", x1, y1, x2, y2);
     subpads[i]->SetMargin(0, 0, 0, 0);
     if (i%6==0) {
@@ -628,7 +633,6 @@ struct plot {
     legend->Draw();
     */
   }
-  cout << "done" << endl;
   
   multicanvas->cd(0);
   TString y_unit_string = "x_{P}F_{2}^{D(3)}";
