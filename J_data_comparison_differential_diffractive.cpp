@@ -531,7 +531,7 @@ struct plot {
     plots.push_back(new_plot);
 
     if (k==0) {
-      legend->AddEntry(measurement_data, "measurement");
+      legend->AddEntry(measurement_data, "q#bar{q} measurement");
       legend->AddEntry(prediction, "total", "L");
       legend->AddEntry(FL_prediction, "longitudinal", "L");
       legend->AddEntry(FT_prediction, "transverse", "L");
@@ -544,7 +544,9 @@ struct plot {
 
   double fig_size_x = 100;
   double fig_size_y = 100;
-  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*fig_size_x/(1-2*margin_fraction), figure_height*fig_size_y/(1-2*margin_fraction));
+  //TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*fig_size_x/(1-2*margin_fraction), figure_height*fig_size_y/(1-2*margin_fraction));
+  
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 769, 1115);
   multicanvas->Draw();
   //TPad* multipad = new TPad("multipad", "multipad", margin_fraction, margin_fraction, 1-margin_fraction, 1-margin_fraction);
   //multipad->Draw();
