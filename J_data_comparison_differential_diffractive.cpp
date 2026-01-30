@@ -1,12 +1,14 @@
 
 #include "TGraph.h"
 #include "TCanvas.h"
+#include "TPad.h"
 #include "TLegend.h"
 #include "TAxis.h"
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
 #include "TText.h"
 #include "TLatex.h"
+#include "TColor.h"
 
 #include <string>
 #include <iostream>
@@ -103,7 +105,7 @@ int main() {
   vector<double> qqg_low_beta_correction_Q2, qqg_low_beta_correction_beta, qqg_low_beta_correction_x, qqg_low_beta_correction_sigma, qqg_low_beta_correction_error, qqg_low_beta_correction_fit;
   vector<double> charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit;
 
-  double unit_scaler = 1000;
+  double unit_scaler = 1;
   bool Jani_qqg_correction = false;
   bool vector_dipamp = true;
   if (vector_dipamp) {
@@ -300,7 +302,11 @@ int main() {
     throw 1;
   }
 
-  TLegend* legend = new TLegend(0, 0.001, 0.175, 0.13);
+  int figure_width = 6;
+  int figure_height = 8;
+  double margin_fraction = 0.1;
+
+  TLegend* legend = new TLegend(0.5*margin_fraction, 0.5*margin_fraction, margin_fraction+0.95*(1-2*margin_fraction)/figure_width, margin_fraction+0.95*(1-2*margin_fraction)/figure_height);
 
   for (int k=0; k<size(Q2_selections); k++) {
     vector<double> x_selection, chosen_measurement_xpomF2, chosen_delta;
@@ -453,10 +459,14 @@ struct plot {
     comparison_graph->GetXaxis()->SetLimits(x_limits[0], x_limits[1]);
     comparison_graph->GetYaxis()->SetRangeUser(unit_scaler*y_limits[0], unit_scaler*y_limits[1]);
     
-    comparison_graph->GetXaxis()->SetLabelSize(0.09);
-    comparison_graph->GetYaxis()->SetLabelSize(0.09);
+    comparison_graph->GetXaxis()->SetLabelSize(0.15);
+    comparison_graph->GetYaxis()->SetLabelSize(0.15);
 
-    comparison_graph->GetXaxis()->SetLabelFont(21);
+    comparison_graph->GetXaxis()->SetNdivisions(3);
+    comparison_graph->GetYaxis()->SetNdivisions(6);
+
+    //comparison_graph->GetXaxis()->SetLabelFont(21);
+    comparison_graph->GetXaxis()->SetLabelOffset(-0.05);
 
     //comparison_graph->GetXaxis()->SetTitle("x");
     //comparison_graph->GetYaxis()->SetTitle("x_{pom}F_{2}^{D(3)}");
@@ -479,25 +489,41 @@ struct plot {
     prediction->SetTitle("Prediction");
     prediction->SetMarkerStyle(8);
     prediction->SetMarkerColor(2);
-    prediction->SetLineColor(2);
-    prediction->SetLineWidth(1);
+    prediction->SetLineWidth(2);
+
+    Int_t cred = TColor::GetFreeColorIndex();
+    TColor* color_red = new TColor(cred, 228.0/255, 26.0/255, 28.0/255);
+    prediction->SetLineColor(cred);
+
     comparison_graph->Add(prediction, "C");
 
     TGraph* FL_prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_prediction_xpomFL_arr);
-    FL_prediction->SetLineColor(4);
+
+    Int_t cblue = TColor::GetFreeColorIndex();
+    TColor* color_blue = new TColor(cblue, 55.0/255, 126.0/255, 184.0/255);
+    FL_prediction->SetLineColor(cblue);
+
     FL_prediction->SetLineStyle(3);
     FL_prediction->SetLineWidth(3);
     comparison_graph->Add(FL_prediction, "C");
 
     TGraph* FT_prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_prediction_xpomFT_arr);
-    FT_prediction->SetLineColor(6);
+
+    Int_t cgreen = TColor::GetFreeColorIndex();
+    TColor* color_green = new TColor(cgreen, 77.0/255, 175.0/255, 74.0/255);
+    FT_prediction->SetLineColor(cgreen);
+
     FT_prediction->SetLineStyle(2);
     FT_prediction->SetLineWidth(3);
     comparison_graph->Add(FT_prediction, "C");
 
     TGraph* qqg_prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_qqg_correction_arr);
-    qqg_prediction->SetLineColor(7);
-    qqg_prediction->SetLineStyle(4);
+
+    Int_t cpurple = TColor::GetFreeColorIndex();
+    TColor* color_purple = new TColor(cpurple, 152.0/255, 78.0/255, 163.0/255);
+    qqg_prediction->SetLineColor(cpurple);
+
+    qqg_prediction->SetLineStyle(8);
     qqg_prediction->SetLineWidth(3);
     comparison_graph->Add(qqg_prediction, "C");
 
@@ -506,7 +532,7 @@ struct plot {
 
     if (k==0) {
       legend->AddEntry(measurement_data, "measurement");
-      legend->AddEntry(prediction, "prediction", "L");
+      legend->AddEntry(prediction, "total", "L");
       legend->AddEntry(FL_prediction, "longitudinal", "L");
       legend->AddEntry(FT_prediction, "transverse", "L");
       legend->AddEntry(qqg_prediction, "gluon emission", "L");
@@ -514,46 +540,83 @@ struct plot {
 
   }
 
-  int figure_width = 6;
-  int figure_height = 8; //8
-  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*100, figure_height*100);
-  multicanvas->Divide(figure_width, figure_height, 0, 0);
 
+
+  double fig_size_x = 100;
+  double fig_size_y = 100;
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*fig_size_x/(1-2*margin_fraction), figure_height*fig_size_y/(1-2*margin_fraction));
+  multicanvas->Draw();
+  //TPad* multipad = new TPad("multipad", "multipad", margin_fraction, margin_fraction, 1-margin_fraction, 1-margin_fraction);
+  //multipad->Draw();
+  multicanvas->cd(0);
+  TPad* subpads[48];
+  /*
+  subpads[1] = new TPad("asd", "dsa", 0.1, 0.5, 0.3, 0.7);
+  subpads[1]->SetFillColor(1);
+  subpads[1]->Draw();
+
+  subpads[2] = new TPad("asd", "dsa", 0.6, 0.1, 0.9, 0.2);
+  subpads[2]->SetFillColor(1);
+  subpads[2]->Draw();
+  */
   int offset = 0;
-  for (int i=0; i<plots.size(); i++) {
-
-    if (i == 42) {
-      offset = 1;
+  //for (int i=0; i<plots.size(); i++) {
+  for (int i=0; i<48; i++) {
+    if (i==42) {continue;}
+    
+    multicanvas->cd(0);
+    //cout << i << endl;
+    double x1 = margin_fraction+(i%figure_width)*1.0/figure_width*(1-2*margin_fraction);
+    if (i%6==0) {x1=0;}
+    double x2 = margin_fraction+(i%figure_width+1)*1.0/figure_width*(1-2*margin_fraction);
+    double y1 = 1-margin_fraction-(i/figure_width+1)*1.0/figure_height*(1-2*margin_fraction);
+    if (i/6==7) {y1=0;}
+    double y2 = 1-margin_fraction-(i/figure_width)*1.0/figure_height*(1-2*margin_fraction);
+    cout << x1 << ", " << y1 << ", " << x2 << ", " << y2 << endl;
+    subpads[i] = new TPad("subpad", "subpad", x1, y1, x2, y2);
+    subpads[i]->SetMargin(0, 0, 0, 0);
+    if (i%6==0) {
+      subpads[i]->SetLeftMargin(margin_fraction/(margin_fraction+(1-2*margin_fraction)/figure_width));
     }
-    //gPad->SetTopMargin(0.1);
-    multicanvas->cd(i+1+offset);
-    //gPad->SetTickx(2);
+    if (i/6==7) {
+      subpads[i]->SetBottomMargin(margin_fraction/(margin_fraction+(1-2*margin_fraction)/figure_width));
+    }
+    subpads[i]->Draw();
+    subpads[i]->cd(0);
 
-    plots[i].comparison_graph->Draw("A");
+    int offset;
+    if (i>42) {
+      offset = -1;
+    } else {
+      offset = 0;
+    }
+
+    plots[i+offset].comparison_graph->Draw("A");
 
     gPad->SetLogx();
 
     stringstream Q2_stream;
-    Q2_stream << setprecision(2) << plots[i].Q2;
-    TString Q2_string = "Q2=" + Q2_stream.str();
-    TText* Q2_text = new TText(4e-3, unit_scaler*0.085, Q2_string);
-    Q2_text->SetTextSize(0.1);
+    Q2_stream << setprecision(2) << plots[i+offset].Q2;
+    TString Q2_string = "Q^{2}=" + Q2_stream.str();
+    TLatex* Q2_text = new TLatex(4e-3, unit_scaler*0.083, Q2_string);
+    Q2_text->SetTextSize(0.15);
     Q2_text->Draw("Same");
 
     stringstream beta_stream;
-    beta_stream << setprecision(2) << plots[i].beta;
-    TString beta_string = "beta=" + beta_stream.str();
-    TText* beta_text = new TText(4e-3, unit_scaler*0.075, beta_string);
-    beta_text->SetTextSize(0.1);
+    beta_stream << setprecision(2) << plots[i+offset].beta;
+    TString beta_string = "#beta=" + beta_stream.str();
+    TLatex* beta_text = new TLatex(4e-3, unit_scaler*0.070, beta_string);
+    beta_text->SetTextSize(0.15);
     beta_text->Draw("Same");
 
-    /*
+    
     float location[4];
     location[0] = 0.5;
     location[1] = 0.7;
     location[2] = 0.75;
     location[3] = 0.9;
     
+    /*
     TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
     legend->AddEntry(plots[i].measurement_data,"Measurement data");
     legend->AddEntry(plots[i].prediction,"Prediction");
@@ -563,20 +626,21 @@ struct plot {
     legend->Draw();
     */
   }
-
-  multicanvas->cd(1);
-  TString y_unit_string = "#splitline{x_{P}F_{2}^{D(3)}}{(nb)}";
-  TLatex* y_unit_text = new TLatex(1.5e-4, unit_scaler*0.07, y_unit_string);
-  y_unit_text->SetTextSize(0.15);
+  cout << "done" << endl;
+  
+  multicanvas->cd(0);
+  TString y_unit_string = "x_{P}F_{2}^{D(3)}";
+  TLatex* y_unit_text = new TLatex(0.1*margin_fraction, 1-1.05*margin_fraction, y_unit_string);
+  y_unit_text->SetTextSize(0.03);
   y_unit_text->Draw("Same");
 
 
-  multicanvas->cd(48);
+  multicanvas->cd(0);
   TString x_unit_string = "x";
-  TLatex* x_unit_text = new TLatex(4e-2, unit_scaler*0.006, x_unit_string);
-  x_unit_text->SetTextSize(0.2);
+  TLatex* x_unit_text = new TLatex(1-1.05*margin_fraction, 0.4*margin_fraction, x_unit_string);
+  x_unit_text->SetTextSize(0.03);
   x_unit_text->Draw("Same");
-
+  
 
   multicanvas->cd(0);
 
