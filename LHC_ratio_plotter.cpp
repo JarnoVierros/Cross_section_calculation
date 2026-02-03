@@ -71,6 +71,9 @@ int main() {
       if (new_ratio > 1) {
         break;
       }
+      if (numerator_W[j] > 2.1e3) {
+        continue;
+      }
       ratio[j] = numerator_sigma[j]/denominator_sigma[j];
       W[j] = numerator_W[j];
       data_size++;
@@ -90,7 +93,7 @@ int main() {
 
   ratios_graph->Draw("AC");
   ratios_graph->GetXaxis()->SetTitle("W (GeV)");
-  ratios_graph->GetXaxis()->SetLimits(2.6e1, 2.1e4);
+  ratios_graph->GetXaxis()->SetLimits(2.6e1, 2.1e3);
 
   ratios_canvas->cd(1)->BuildLegend(0.15, 0.6, 0.5, 0.9);
 
@@ -111,6 +114,9 @@ int main() {
       if (new_ratio > 1) {
         break;
       }
+      if (numerator_W[j] > 2.1e3) {
+        continue;
+      }
       ratio[j] = numerator_sigma[j]/denominator_sigma[j];
       W[j] = numerator_W[j];
       data_size++;
@@ -128,7 +134,7 @@ int main() {
   ratios_graph_2->Draw("AC");
   ratios_graph_2->GetXaxis()->SetTitle("W (GeV)");
   ratios_graph_2->GetYaxis()->SetTitle("#frac{diffractive}{inclusive}");
-  ratios_graph_2->GetXaxis()->SetLimits(2.6e1, 2.1e4);
+  ratios_graph_2->GetXaxis()->SetLimits(2.6e1, 2.1e3);
   
   ratios_canvas->cd(2)->BuildLegend(0.15, 0.6, 0.5, 0.9);
 

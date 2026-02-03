@@ -29,7 +29,7 @@ const int N_c = 3;
 const double alpha_s = 0.25;
 
 
-const bool is_charm = false;
+const bool is_charm = true;
 
 static double e_f;
 static double m_f;
@@ -40,13 +40,13 @@ static double m_f;
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 100000;
-const int integration_calls = 1000000;//100000000
+const int warmup_calls = 100;
+const int integration_calls = 1000;//100000000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
 const string nucleus_type = "p";
-string filename_end = "_all";
+string filename_end = "_all_lowres";
 bool diffraction_dipamp = true;
 
 const int i_start = 0; // number of data points to skip
@@ -556,7 +556,7 @@ int main() {
   */
   vector<double> Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values;
 
-  read_data_file("data/differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
+  read_data_file("data/expanded_differential_HERA_data.dat", Q2_values, beta_values, x_values, x_pom_F2_values, delta_stat_values, delta_sys_values);
 
   //string filename = "data/dipole_amplitude_with_IP_dependence_bk_p_diffraction.csv";
   //load_p_dipole_amplitudes(table, filename);

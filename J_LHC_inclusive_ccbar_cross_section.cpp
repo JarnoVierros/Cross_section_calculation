@@ -44,13 +44,13 @@ static double b_min_limit; // 17.32
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 const string dipole_amp_type = "bfkl";
-const string nucleus_type = "p";
+const string nucleus_type = "Pb";
 const string diffraction = "";//_diffraction
 const string filename_end = "";//_1mil
 const string particle_name = "b";
 
-const int warmup_calls = 100000;
-const int integration_calls = 1000000;
+const int warmup_calls = 10000;
+const int integration_calls = 100000;
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
@@ -232,7 +232,12 @@ int main() {
   */
 
   const int W_steps = 50; //50, 200 for export
-  const double W_start = 3e1;
+  double W_start = 3e1;
+  if (particle_name == "b") {
+    W_start = 86;
+  } else {
+    W_start = 3e1;
+  }
   const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
 

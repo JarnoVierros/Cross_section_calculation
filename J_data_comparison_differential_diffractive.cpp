@@ -110,7 +110,7 @@ int main() {
   bool vector_dipamp = true;
   if (vector_dipamp) {
     string L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_L_vector_all.txt"
+        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_vector_all.txt"
       };
 
     for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -118,7 +118,7 @@ int main() {
     }
 
     string charm_L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_L_vector_charm_all.txt"
+        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_vector_charm_all.txt"
       };
 
     for (long unsigned int i=0; i<size(charm_L_prediction_filenames); i++) {
@@ -126,7 +126,7 @@ int main() {
     }
 
     string T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_T_vector_all.txt"
+      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_vector_all.txt"
     };
 
     for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -134,7 +134,7 @@ int main() {
     }
 
     string charm_T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_T_vector_charm_all.txt"
+      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_vector_charm_all.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
@@ -143,7 +143,7 @@ int main() {
 
     if (Jani_qqg_correction) {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/Jani_low_beta_corrections_all.txt"
+        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -151,7 +151,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/Jani_low_beta_corrections_all_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -159,7 +159,7 @@ int main() {
       }
     } else {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/low_beta_corrections_all.txt"
+        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -167,7 +167,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/low_beta_corrections_all_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -179,7 +179,7 @@ int main() {
 
   } else {
     string L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_L_10k_all_diffdiff.txt"
+        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_10k_all_diffdiff.txt"
       };
 
     for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -187,7 +187,7 @@ int main() {
     }
 
     string charm_L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_L_10k_all_diffdiff_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_10k_all_diffdiff_charm.txt"
       };
 
     for (long unsigned int i=0; i<size(charm_L_prediction_filenames); i++) {
@@ -195,7 +195,7 @@ int main() {
     }
 
     string T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_T_10k_all_diffdiff.txt"
+      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_10k_all_diffdiff.txt"
     };
 
     for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -203,7 +203,7 @@ int main() {
     }
 
     string charm_T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/old/differential_diffractive_T_10k_all_diffdiff_charm.txt"
+      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_10k_all_diffdiff_charm.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
@@ -212,7 +212,7 @@ int main() {
 
     if (Jani_qqg_correction) {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/Jani_low_beta_corrections_all.txt"
+        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -220,7 +220,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/Jani_low_beta_corrections_all_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -228,7 +228,7 @@ int main() {
       }
     } else {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/low_beta_corrections_all.txt"
+        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -236,7 +236,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/old/low_beta_corrections_all_charm.txt"
+        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -247,7 +247,7 @@ int main() {
   }
 
   vector<double> measurement_Q2, measurement_beta, measurement_x, measurement_xpomF2, measurement_delta_stat, measurement_delta_sys;
-  string measurement_filename = "data/differential_HERA_data.dat";
+  string measurement_filename = "data/expanded_differential_HERA_data.dat";
 
   read_data_file(measurement_filename, measurement_Q2, measurement_beta, measurement_x, measurement_xpomF2, measurement_delta_stat, measurement_delta_sys);
 
@@ -323,14 +323,11 @@ int main() {
       chosen_delta.push_back(unit_scaler*(measurement_delta_stat[i]+measurement_delta_sys[i]));
     }
 
-
     vector<double> chosen_prediction_xpomF2, chosen_prediction_xpomFL, chosen_prediction_xpomFT, chosen_prediction_error, chosen_qqg_correction;
-
     for (int i=0; i<x_selection.size(); i++) {
       double L_sigma, L_error, T_sigma, T_error, qqg_correction, qqg_correction_error;
       double L_found = false, T_found = false, qqg_found = false;
       for (int j=0; j<L_prediction_Q2.size(); j++) {
-
         if (L_prediction_Q2[j] != Q2_selections[k]) {
           continue;
         }
@@ -384,6 +381,7 @@ int main() {
         }
         break;
       }
+
       if (!L_found) {
         cout << "Warning: L prediction not found" << endl;
         L_sigma = 0;

@@ -39,8 +39,8 @@ const double normalization = 8/(2*M_PI)*alpha_em*N_c*e_f*e_f;
 static double r_limit; // 34.64
 static double b_min_limit; // 17.32
 
-const int warmup_calls = 100000;
-const int integration_calls = 1000000;
+const int warmup_calls = 10000;
+const int integration_calls = 100000;
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
@@ -207,7 +207,12 @@ int main() {
 
   
   const int W_steps = 50;
-  const double W_start = 3e1;
+  double W_start = 3e1;
+  if (particle_name == "b") {
+    W_start = 86;
+  } else {
+    W_start = 3e1;
+  }
   const double W_stop = 2e4;
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
 
