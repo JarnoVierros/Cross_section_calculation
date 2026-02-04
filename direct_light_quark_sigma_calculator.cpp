@@ -28,7 +28,7 @@ const double alpha_em = 1.0/137;
 const int N_c = 3;
 
 static double e_f, m_f;
-const bool charm = true;
+const bool charm = false;
 
 static double normalization;
 
@@ -39,7 +39,7 @@ const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
 const int warmup_calls = 10000;
-const int integration_calls = 100000;//20 000 000
+const int integration_calls = 300000;//20 000 000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
@@ -48,7 +48,7 @@ string filename_end = "_all";
 bool diffraction_dipamp = true;
 
 const int i_start = 0; // number of data points to skip
-const int data_inclusion_count = 226;
+const int data_inclusion_count = 272;
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;

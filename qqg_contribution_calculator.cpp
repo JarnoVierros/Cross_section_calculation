@@ -40,8 +40,8 @@ static double m_f;
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
 
-const int warmup_calls = 100;
-const int integration_calls = 1000;//100000000
+const int warmup_calls = 1000;
+const int integration_calls = 10000;//100000000
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
@@ -50,7 +50,7 @@ string filename_end = "_all_lowres";
 bool diffraction_dipamp = true;
 
 const int i_start = 0; // number of data points to skip
-const int data_inclusion_count = 226;
+const int data_inclusion_count = 272;
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;
