@@ -4,23 +4,26 @@
 #include <gsl/gsl_monte_vegas.h>
 #include <gsl/gsl_sf_bessel.h>
 
+#include <linterp.h>
+
 #include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TAxis.h"
-#include "TGraphErrors.h"
 #include "TMultiGraph.h"
-#include "TText.h"
 #include "TLatex.h"
 
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <ostream>
+#include <sstream>
+#include <thread>
 using namespace std;
 
 #include "direct_dipole_amp_reader.h"
-
 const double alpha_em = 1.0/137;
 const int N_c = 3;
 const double e_f = 2.0/3;
@@ -37,7 +40,11 @@ static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> current_tabl
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bk_table;
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> bfkl_table;
 
-static InterpMultilinear<4, double>* interpolator;
+//static InterpMultilinear<4, double>* interpolator;
+static InterpMultilinear<4, double>* bk_interpolator;
+static InterpMultilinear<4, double>* bfkl_interpolator;
+
+static string dipole_model;
 
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
@@ -48,12 +55,18 @@ double epsilon(double z, double Q2) {
 }
 
 double dipole_amplitude(double r, double b_min, double phi, double x) {
-
   if (calc_max_phi(r, b_min) < phi) {
     return 0;
   } else {
     array<double, 4> args = {log(r), log(b_min), phi, log(x)};
-    return exp(interpolator->interp(args.begin()));
+    //return exp(interpolator->interp(args.begin()));
+    if (dipole_model == "bk") {
+      return exp(bk_interpolator->interp(args.begin()));
+    } else if (dipole_model == "bfkl") {
+      return exp(bfkl_interpolator->interp(args.begin()));
+    } else {
+      throw exception();
+    }
   }
 }
 
@@ -98,24 +111,29 @@ int main() {
   //const double Q2_selection = 2000;
 
   //const double integration_radius = 100;
-  const int warmup_calls = 100000; //10000
-  const int integration_calls = 300000; //100000
+  const int warmup_calls = 100000; //100000
+  const int integration_calls = 300000; //300000
   const int integration_iterations = 1;
 
   const string data_filename = "data/HERA_data.dat";
 
   string bk_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bk_p.csv";
-  create_p_interpolator(bk_table, interpolator);
+  load_p_dipole_amplitudes(bk_table, bk_dipamp_filename);
+  create_p_interpolator(bk_table, bk_interpolator);
 
   string bfkl_dipamp_filename = "data/dipole_amplitude_with_IP_dependence_bfkl_p.csv";
-  create_p_interpolator(bfkl_table, interpolator);
+  load_p_dipole_amplitudes(bfkl_table, bfkl_dipamp_filename);
+  create_p_interpolator(bfkl_table, bfkl_interpolator);
 
   current_table = bk_table;
+  string current_filename = bk_dipamp_filename;
+  //load_p_dipole_amplitudes(current_table, current_filename);
+  //create_p_interpolator(current_table, interpolator);
 
-  double chisq = 0;
-  int ndf = 0;
+  //double chisq = 0;
+  //int ndf = 0;
 
-  double Q2_selections[8] = {2.5, 5, 7, 12, 18, 32, 60, 120};
+  double Q2_selections[6] = {2.5, 5, 7, 12, 18, 32};
   
   TMultiGraph* comparison_graphs[size(Q2_selections)];
   TGraphErrors* measurement_datas[size(Q2_selections)];
@@ -269,6 +287,10 @@ int main() {
       ///BK model
 
       current_table = bk_table;
+      dipole_model = "bk";
+      //current_filename = bk_dipamp_filename;
+      //load_p_dipole_amplitudes(current_table, current_filename);
+      //create_p_interpolator(current_table, interpolator);
 
       gsl_monte_vegas_state *bk_L_s = gsl_monte_vegas_alloc(dim);
 
@@ -302,13 +324,16 @@ int main() {
       double F_T = Q2_values[j]/(4*M_PI*M_PI*alpha_em)*sigma_T*correction;
       double F_2 = F_L + F_T;
       double sigma_r = F_2 - y_values[j]*y_values[j]/(1+gsl_pow_2(1-y_values[j]))*F_L;
-
       bk_model_sigma[j] = sigma_r;
 
 
       //BFKL model
 
       current_table = bfkl_table;
+      dipole_model = "bfkl";
+      //current_filename = bfkl_dipamp_filename;
+      //load_p_dipole_amplitudes(current_table, current_filename);
+      //create_p_interpolator(current_table, interpolator);
 
       gsl_monte_vegas_state *bfkl_L_s = gsl_monte_vegas_alloc(dim);
 
@@ -361,11 +386,14 @@ int main() {
     bfkl_model_fits[n]->SetLineStyle(2);
     comparison_graphs[n]->Add(bfkl_model_fits[n], "PC");
 
-    comparison_graphs[n]->GetXaxis()->SetLimits(1e-5, 1e-1);
-    comparison_graphs[n]->GetYaxis()->SetRangeUser(0, 0.7);
+    comparison_graphs[n]->GetXaxis()->SetLimits(1e-5, 2e-2);
+    comparison_graphs[n]->GetYaxis()->SetRangeUser(0, 0.5);
+
+    comparison_graphs[n]->GetXaxis()->SetLabelSize(0.05);
+    comparison_graphs[n]->GetYaxis()->SetLabelSize(0.05);
 
     gsl_rng_free(rng);
-
+    /*
     for (long unsigned int j=0; j<size(Q2_values); j++) {
       //if (x_values[j] > 1e-3) {
       //  continue;
@@ -376,16 +404,46 @@ int main() {
         ndf++;
       }
     }
+    */
   }
 
-  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 4*10000, 3*10000);
-  multicanvas->Divide(4, 2, 0, 0);
+  /////////////////////////////////////////////////////////////////////////
 
-  for (long unsigned int i=0; i<size(Q2_selections); i++) {
+  int figure_width = 3;
+  int figure_height = 2;
+  double fig_size_x = 200;
+  double fig_size_y = 200;
+  double margin_fraction = 0.07;
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*fig_size_x/(1-2*margin_fraction), figure_height*fig_size_y/(1-2*margin_fraction));
+  //TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 769, 1115);
+  
+  multicanvas->Draw();
+  //TPad* multipad = new TPad("multipad", "multipad", margin_fraction, margin_fraction, 1-margin_fraction, 1-margin_fraction);
+  //multipad->Draw();
+  multicanvas->cd(0);
+  TPad* subpads[figure_width*figure_height];
 
-    cout << "Q2=" << Q2_selections[i] << endl;
-
-    multicanvas->cd(i+1);
+  for (int i=0; i<figure_width*figure_height; i++) {
+    
+    multicanvas->cd(0);
+    //cout << i << endl;
+    double x1 = margin_fraction+(i%figure_width)*1.0/figure_width*(1-2*margin_fraction);
+    if (i%figure_width==0) {x1=0;}
+    double x2 = margin_fraction+(i%figure_width+1)*1.0/figure_width*(1-2*margin_fraction);
+    double y1 = 1-margin_fraction-(i/figure_width+1)*1.0/figure_height*(1-2*margin_fraction);
+    if (i/figure_width==figure_height-1) {y1=0;}
+    double y2 = 1-margin_fraction-(i/figure_width)*1.0/figure_height*(1-2*margin_fraction);
+    //cout << x1 << ", " << y1 << ", " << x2 << ", " << y2 << endl;
+    subpads[i] = new TPad("subpad", "subpad", x1, y1, x2, y2);
+    subpads[i]->SetMargin(0, 0, 0, 0);
+    if (i%figure_width==0) {
+      subpads[i]->SetLeftMargin(margin_fraction/(margin_fraction+(1-2*margin_fraction)/figure_width));
+    }
+    if (i/figure_width==figure_height-1) {
+      subpads[i]->SetBottomMargin(margin_fraction/(margin_fraction+(1-2*margin_fraction)/figure_width));
+    }
+    subpads[i]->Draw();
+    subpads[i]->cd(0);
 
     comparison_graphs[i]->Draw("A");
 
@@ -394,12 +452,14 @@ int main() {
     stringstream Q2_stream;
     int precision = 0;
     if (Q2_selections[i] == 2.5) {
-      precision = 2;
+      precision = 1;
     }
     Q2_stream << fixed << setprecision(precision) << Q2_selections[i];
-    TString Q2_string = "Q2=" + Q2_stream.str();
-    TText* Q2_text = new TText(2e-5, 0.6, Q2_string);
+    TString Q2_string = "Q^{2}=" + Q2_stream.str();
+    TLatex* Q2_text = new TLatex(3e-3, 0.4, Q2_string);
+    Q2_text->SetTextSize(0.08);
     Q2_text->Draw("Same");
+    
     
     if (i == 0) {
       double dummy_arr[1] = {0};
@@ -411,7 +471,7 @@ int main() {
       TGraph* dummy_bfkl_prediction = new TGraph(1, dummy_arr, dummy_arr);
       dummy_bfkl_prediction->SetLineStyle(2);
 
-      float location[4] = {0.3, 0.4, 0.95, 0.8};
+      float location[4] = {0.25, 0.5, 0.75, 0.9};
       TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
 
       legend->AddEntry(dummy_measurement,"H1 and ZEUS data", "PE");
@@ -420,16 +480,20 @@ int main() {
       legend->SetTextSize(0.06);
       legend->Draw();
     }
+
   }
+
+  /////////////////////////////////////////////////////////////////////////
+
   multicanvas->cd(0);
   
 
-  TLatex* x_title = new TLatex(0.94, 0.023, "x");
-  x_title->SetTextSize(0.03);
+  TLatex* x_title = new TLatex(0.92, 0.023, "x");
+  x_title->SetTextSize(0.06);
   x_title->Draw("Same");
 
-  TLatex* y_title = new TLatex(0.001, 0.91, "#sigma_{r}^{c#bar{c}}");
-  y_title->SetTextSize(0.025);
+  TLatex* y_title = new TLatex(0.002, 0.90, "#sigma_{r}^{c#bar{c}}");
+  y_title->SetTextSize(0.06);
   y_title->Draw("Same");
 
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
@@ -438,7 +502,8 @@ int main() {
   TString figure_filename = "figures/J_inclusive_sigma_r_data_comparison_shifted_x.pdf";
   multicanvas->Print(figure_filename);
 
-  cout << "chisq=" << chisq << ", ndf=" << ndf << ", chisq/ndf=" << chisq/ndf << endl;
+  //cout << "chisq=" << chisq << ", ndf=" << ndf << ", chisq/ndf=" << chisq/ndf << endl;
+
   
   return 0;
 }
