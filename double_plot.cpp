@@ -42,26 +42,26 @@ int main() {
   string b_filenames[4];
 
   if (diffractive) {
-    c_filenames[0] = "data/diff_LHC_T_sigma_W_c_bk_Pb"+diff_dipole+".txt";
-    c_filenames[1] = "data/diff_LHC_T_sigma_W_c_bfkl_Pb"+diff_dipole+".txt";
-    c_filenames[2] = "data/diff_LHC_T_sigma_W_c_bk_p"+diff_dipole+".txt";
-    c_filenames[3] = "data/diff_LHC_T_sigma_W_c_bfkl_p"+diff_dipole+".txt";
+    c_filenames[0] = "output/diff_LHC_T_sigma_W_c_bk_Pb"+diff_dipole+".txt";
+    c_filenames[1] = "output/diff_LHC_T_sigma_W_c_bfkl_Pb"+diff_dipole+".txt";
+    c_filenames[2] = "output/diff_LHC_T_sigma_W_c_bk_p"+diff_dipole+".txt";
+    c_filenames[3] = "output/diff_LHC_T_sigma_W_c_bfkl_p"+diff_dipole+".txt";
 
-    b_filenames[0] = "data/diff_LHC_T_sigma_W_b_bk_Pb"+diff_dipole+".txt";
-    b_filenames[1] = "data/diff_LHC_T_sigma_W_b_bfkl_Pb"+diff_dipole+".txt";
-    b_filenames[2] = "data/diff_LHC_T_sigma_W_b_bk_p"+diff_dipole+".txt";
-    b_filenames[3] = "data/diff_LHC_T_sigma_W_b_bfkl_p"+diff_dipole+".txt";
+    b_filenames[0] = "output/diff_LHC_T_sigma_W_b_bk_Pb"+diff_dipole+".txt";
+    b_filenames[1] = "output/diff_LHC_T_sigma_W_b_bfkl_Pb"+diff_dipole+".txt";
+    b_filenames[2] = "output/diff_LHC_T_sigma_W_b_bk_p"+diff_dipole+".txt";
+    b_filenames[3] = "output/diff_LHC_T_sigma_W_b_bfkl_p"+diff_dipole+".txt";
   } else {
 
-    c_filenames[0] = "data/J_LHC_T_inclusive_c_bk_Pb"+diff_dipole+".txt";
-    c_filenames[1] = "data/J_LHC_T_inclusive_c_bfkl_Pb"+diff_dipole+".txt";
-    c_filenames[2] = "data/J_LHC_T_inclusive_c_bk_p"+diff_dipole+".txt";
-    c_filenames[3] = "data/J_LHC_T_inclusive_c_bfkl_p"+diff_dipole+".txt";
+    c_filenames[0] = "output/J_LHC_T_inclusive_c_bk_Pb"+diff_dipole+".txt";
+    c_filenames[1] = "output/J_LHC_T_inclusive_c_bfkl_Pb"+diff_dipole+".txt";
+    c_filenames[2] = "output/J_LHC_T_inclusive_c_bk_p"+diff_dipole+".txt";
+    c_filenames[3] = "output/J_LHC_T_inclusive_c_bfkl_p"+diff_dipole+".txt";
 
-    b_filenames[0] = "data/J_LHC_T_inclusive_b_bk_Pb"+diff_dipole+".txt";
-    b_filenames[1] = "data/J_LHC_T_inclusive_b_bfkl_Pb"+diff_dipole+".txt";
-    b_filenames[2] = "data/J_LHC_T_inclusive_b_bk_p"+diff_dipole+".txt";
-    b_filenames[3] = "data/J_LHC_T_inclusive_b_bfkl_p"+diff_dipole+".txt";
+    b_filenames[0] = "output/J_LHC_T_inclusive_b_bk_Pb"+diff_dipole+".txt";
+    b_filenames[1] = "output/J_LHC_T_inclusive_b_bfkl_Pb"+diff_dipole+".txt";
+    b_filenames[2] = "output/J_LHC_T_inclusive_b_bk_p"+diff_dipole+".txt";
+    b_filenames[3] = "output/J_LHC_T_inclusive_b_bfkl_p"+diff_dipole+".txt";
   }
 
   int filecount = size(c_filenames);
@@ -317,26 +317,26 @@ int main() {
 
 
   if (diffractive) {
-    c_filenames[0] = "data/diff_LHC_T_sigma_W_c_bk_Pb"+diff_dipole+".txt";
-    c_filenames[1] = "data/diff_LHC_T_sigma_W_c_bfkl_Pb"+diff_dipole+".txt";
-    c_filenames[2] = "data/diff_LHC_T_sigma_W_c_bk_p"+diff_dipole+".txt";
-    c_filenames[3] = "data/diff_LHC_T_sigma_W_c_bfkl_p"+diff_dipole+".txt";
+    c_filenames[0] = "output/diff_LHC_T_sigma_W_c_bk_Pb"+diff_dipole+".txt";
+    c_filenames[1] = "output/diff_LHC_T_sigma_W_c_bfkl_Pb"+diff_dipole+".txt";
+    c_filenames[2] = "output/diff_LHC_T_sigma_W_c_bk_p"+diff_dipole+".txt";
+    c_filenames[3] = "output/diff_LHC_T_sigma_W_c_bfkl_p"+diff_dipole+".txt";
 
-    b_filenames[0] = "data/diff_LHC_T_sigma_W_b_bk_Pb"+diff_dipole+".txt";
-    b_filenames[1] = "data/diff_LHC_T_sigma_W_b_bfkl_Pb"+diff_dipole+".txt";
-    b_filenames[2] = "data/diff_LHC_T_sigma_W_b_bk_p"+diff_dipole+".txt";
-    b_filenames[3] = "data/diff_LHC_T_sigma_W_b_bfkl_p"+diff_dipole+".txt";
+    b_filenames[0] = "output/diff_LHC_T_sigma_W_b_bk_Pb"+diff_dipole+".txt";
+    b_filenames[1] = "output/diff_LHC_T_sigma_W_b_bfkl_Pb"+diff_dipole+".txt";
+    b_filenames[2] = "output/diff_LHC_T_sigma_W_b_bk_p"+diff_dipole+".txt";
+    b_filenames[3] = "output/diff_LHC_T_sigma_W_b_bfkl_p"+diff_dipole+".txt";
   } else {
 
-    c_filenames[0] = "data/J_LHC_T_inclusive_c_bk_Pb"+diff_dipole+".txt";
-    c_filenames[1] = "data/J_LHC_T_inclusive_c_bfkl_Pb"+diff_dipole+".txt";
-    c_filenames[2] = "data/J_LHC_T_inclusive_c_bk_p"+diff_dipole+".txt";
-    c_filenames[3] = "data/J_LHC_T_inclusive_c_bfkl_p"+diff_dipole+".txt";
+    c_filenames[0] = "output/J_LHC_T_inclusive_c_bk_Pb"+diff_dipole+".txt";
+    c_filenames[1] = "output/J_LHC_T_inclusive_c_bfkl_Pb"+diff_dipole+".txt";
+    c_filenames[2] = "output/J_LHC_T_inclusive_c_bk_p"+diff_dipole+".txt";
+    c_filenames[3] = "output/J_LHC_T_inclusive_c_bfkl_p"+diff_dipole+".txt";
 
-    b_filenames[0] = "data/J_LHC_T_inclusive_b_bk_Pb"+diff_dipole+".txt";
-    b_filenames[1] = "data/J_LHC_T_inclusive_b_bfkl_Pb"+diff_dipole+".txt";
-    b_filenames[2] = "data/J_LHC_T_inclusive_b_bk_p"+diff_dipole+".txt";
-    b_filenames[3] = "data/J_LHC_T_inclusive_b_bfkl_p"+diff_dipole+".txt";
+    b_filenames[0] = "output/J_LHC_T_inclusive_b_bk_Pb"+diff_dipole+".txt";
+    b_filenames[1] = "output/J_LHC_T_inclusive_b_bfkl_Pb"+diff_dipole+".txt";
+    b_filenames[2] = "output/J_LHC_T_inclusive_b_bk_p"+diff_dipole+".txt";
+    b_filenames[3] = "output/J_LHC_T_inclusive_b_bfkl_p"+diff_dipole+".txt";
   }
 
   vector<double> right_c_x[filecount], right_c_sigma[filecount], right_c_sigma_error[filecount];

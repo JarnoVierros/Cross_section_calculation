@@ -36,7 +36,7 @@ int main() {
     "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_b_bfkl_p.txt",
     "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_b_bk_p.txt",
   };
-  vector<TString> graph_titles = {"PbPb#rightarrowc#bar{c} bfkl", "PbPb#rightarrowc#bar{c} bk", "pp#rightarrowc#bar{c} bfkl", "pp#rightarrowc#bar{c} bk", "PbPb#rightarrowb#bar{b} bfkl", "PbPb#rightarrowb#bar{b} bk", "pp#rightarrowb#bar{b} bfkl", "pp#rightarrowb#bar{b} bk"};
+  vector<TString> graph_titles = {"#gammaPb#rightarrowc#bar{c}X bfkl", "#gammaPb#rightarrowc#bar{c}X bk", "#gammap#rightarrowc#bar{c}X bfkl", "#gammap#rightarrowc#bar{c}X bk", "#gammaPb#rightarrowb#bar{b}X bfkl", "#gammaPb#rightarrowb#bar{b}X bk", "#gammap#rightarrowb#bar{b}X bfkl", "#gammap#rightarrowb#bar{b}X bk"};
   vector<int> line_colors = {2, 2, 4, 4, 2, 2, 4, 4};
   vector<int> line_styles = {2, 1, 5, 7, 2, 1, 5, 7};
 
@@ -88,12 +88,14 @@ int main() {
   }
   //ratios_graph->GetXaxis()->SetRangeUser(9e1, 2e4);
 
-  ratios_graph->GetYaxis()->SetTitle("#frac{diffractive}{inclusive}");
+  ratios_graph->GetYaxis()->SetTitle("#frac{#gammaA#rightarrowc#bar{c}AX}{#gammaA#rightarrowc#bar{c}X}");
   gPad->SetLogx();
 
   ratios_graph->Draw("AC");
   ratios_graph->GetXaxis()->SetTitle("W (GeV)");
   ratios_graph->GetXaxis()->SetLimits(2.6e1, 2.1e3);
+  ratios_graph->GetYaxis()->SetTitleSize(0.04);
+  ratios_graph->GetXaxis()->SetTitleSize(0.04);
 
   ratios_canvas->cd(1)->BuildLegend(0.15, 0.6, 0.5, 0.9);
 
@@ -133,8 +135,10 @@ int main() {
   //ratios_graph_2->GetYaxis()->SetRangeUser(0, 01);
   ratios_graph_2->Draw("AC");
   ratios_graph_2->GetXaxis()->SetTitle("W (GeV)");
-  ratios_graph_2->GetYaxis()->SetTitle("#frac{diffractive}{inclusive}");
+  ratios_graph_2->GetYaxis()->SetTitle("#frac{#gammaA#rightarrowb#bar{b}AX}{#gammaA#rightarrowb#bar{b}X}");
   ratios_graph_2->GetXaxis()->SetLimits(2.6e1, 2.1e3);
+  ratios_graph_2->GetYaxis()->SetTitleSize(0.04);
+  ratios_graph_2->GetXaxis()->SetTitleSize(0.04);
   
   ratios_canvas->cd(2)->BuildLegend(0.15, 0.6, 0.5, 0.9);
 

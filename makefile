@@ -42,6 +42,7 @@ all: inclusive_ccbar_cross_section.cpp intQ2_inclusive_ccbar_cross_section.cpp
 	make F2_light_sigma_calculator
 	make direct_integrated_diffractive_sigma
 	make double_plot
+	make single_plot
 	make rapidity_LHC_inclusive_D0
 
 Jb_inclusive_ccbar_cross_section: Jb_inclusive_ccbar_cross_section.cpp
@@ -168,6 +169,9 @@ LHC_multiplotter: LHC_multiplotter.cpp
 
 double_plot: double_plot.cpp
 	g++ double_plot.cpp $$(root-config --glibs --cflags --libs) -o double_plot.exe
+
+single_plot: single_plot.cpp
+	g++ single_plot.cpp $$(root-config --glibs --cflags --libs) -o single_plot.exe
 
 LHC_multiplotter_2: LHC_multiplotter_2.cpp
 	g++ LHC_multiplotter_2.cpp $$(root-config --glibs --cflags --libs) -o LHC_multiplotter_2.exe
