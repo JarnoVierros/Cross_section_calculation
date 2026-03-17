@@ -6,12 +6,12 @@
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_errno.h>
 
-#include "TGraph.h"
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TAxis.h"
-#include "TMultiGraph.h"
-#include "TGraphErrors.h"
+//#include "TGraph.h"
+//#include "TCanvas.h"
+//#include "TLegend.h"
+//#include "TAxis.h"
+//#include "TMultiGraph.h"
+//#include "TGraphErrors.h"
 
 #include <string>
 #include <iostream>

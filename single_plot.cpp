@@ -31,7 +31,7 @@ void zero_array(double array[], int size) {
 
 const double min_b_W = 83.6; //83.6
 
-string nucleus = "p";
+string nucleus = "Pb";
 bool diffractive = false;
 string diff_dipole = ""; //_diffraction
 string particle_name = "b";

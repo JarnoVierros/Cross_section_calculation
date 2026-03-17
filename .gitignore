@@ -5,4 +5,4 @@ figures/
 *.nb
 /data/
 /output/
-boost/
+boost_1_90_0/

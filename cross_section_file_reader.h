@@ -188,3 +188,62 @@ void split_by_Q2(vector<double> &new_Q2, vector<vector<double>> &new_x, vector<v
     new_sigma_error.push_back(current_sigma_error);
     new_Q2.push_back(current_Q2);
 }
+
+void read_Phi_file(string filename, vector<double> &P2, vector<double> &y, vector<double> &xpom, vector<double> &result, vector<double> &error) {
+
+    ifstream data_file(filename);
+    string line;
+
+    bool first_line = true;
+    while (getline (data_file, line)) {
+        if (first_line) {
+            first_line = false;
+            continue;
+        }
+        string P2_string = "";
+        long unsigned int i = 0;
+        while (line[i] != ';') {
+            P2_string += line[i];
+            i++;
+        }
+        i++;
+        double P2_value = stod(P2_string);
+
+        string y_value_string = "";
+        while (line[i] != ';') {
+            y_value_string += line[i];
+            i++;
+        }
+        i++;
+        double y_value = stod(y_value_string);
+
+        string xpom_value_string = "";
+        while (line[i] != ';') {
+            xpom_value_string += line[i];
+            i++;
+        }
+        i++;
+        double xpom_value = stod(xpom_value_string);
+
+        string result_string = "";
+        while (line[i] != ';') {
+            result_string += line[i];
+            i++;
+        }
+        i++;
+        double result_value = stod(result_string);
+
+        string error_string = "";
+        while (i < line.size()) {
+            error_string += line[i];
+            i++;
+        }
+        double error_value = stod(error_string);
+
+        P2.push_back(P2_value);
+        y.push_back(y_value);
+        xpom.push_back(xpom_value);
+        result.push_back(result_value);
+        error.push_back(error_value);
+    }
+}

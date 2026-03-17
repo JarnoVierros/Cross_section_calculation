@@ -1,0 +1,28 @@
+[
+  {
+    "arguments": [
+      "/home/jarno/miniconda3/envs/rootenv/bin/g++",
+      "-c",
+      "-pthread",
+      "-pthread",
+      "-std=c++20",
+      "-m64",
+      "-fsized-deallocation",
+      "-I/home/jarno/miniconda3/envs/rootenv/include",
+      "-I",
+      ".",
+      "-I",
+      "/usr/local/include",
+      "-I",
+      "/home/jarno/Programs/Cross_section_calculation/boost_1_90_0",
+      "-I",
+      "/home/jarno/Programs/gsl-2.8/gsl",
+      "-o",
+      "direct_light_quark_sigma_calculator.exe",
+      "direct_light_quark_sigma_calculator.cpp"
+    ],
+    "directory": "/home/jarno/Programs/Cross_section_calculation",
+    "file": "/home/jarno/Programs/Cross_section_calculation/direct_light_quark_sigma_calculator.cpp",
+    "output": "/home/jarno/Programs/Cross_section_calculation/direct_light_quark_sigma_calculator.exe"
+  }
+]

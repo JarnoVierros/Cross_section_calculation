@@ -596,7 +596,8 @@ void load_p_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 30>
     rapidcsv::Document doc(filename);
     
     vector<double> r = doc.GetColumn<double>("r [GeV^-1]");
-    vector<double> b_min = doc.GetColumn<double>("b_min [GeV^-1]");
+    //vector<double> b_min = doc.GetColumn<double>("b_min [GeV^-1]");
+    vector<double> b_min = doc.GetColumn<double>("b_0 [GeV^-1]");
     vector<double> phi = doc.GetColumn<double>("phi");
     vector<double> Y = doc.GetColumn<double>("Y");
     vector<double> N = doc.GetColumn<double>("N");
@@ -655,4 +656,155 @@ void load_Pb_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 40
     }
     cout << "Table ready" << endl;
     return;
+}
+
+
+const int Phi_P2_size = 100;
+const int Phi_y_size = 50;
+const int Phi_xpom_size = 50;
+
+void load_Phi_table(array<array<array<array<double, 4>, Phi_xpom_size>, Phi_y_size>, Phi_P2_size> &table, string filename) {
+    cout << "Reading " << filename << endl;
+    rapidcsv::Document doc(filename, rapidcsv::LabelParams(0, 0), rapidcsv::SeparatorParams(';'));
+    
+    vector<double> P2 = doc.GetColumn<double>("P2");
+    vector<double> y = doc.GetColumn<double>("y");
+    vector<double> xpom = doc.GetColumn<double>("xpom");
+    vector<double> result = doc.GetColumn<double>("result");
+    vector<double> error = doc.GetColumn<double>("error");
+    vector<double> fit = doc.GetColumn<double>("fit");
+
+    cout << "Data read successfully" << endl;
+
+    for (int i=0; i<Phi_P2_size; i++) {
+            for (int j=0; j<Phi_y_size; j++) {
+                for (int k=0; k<Phi_xpom_size; k++) {
+                    int index = i*Phi_y_size*Phi_xpom_size + j*Phi_xpom_size + k;
+                    table[i][j][k][0] = P2[index];
+                    table[i][j][k][1] = y[index];
+                    table[i][j][k][2] = xpom[index];
+                    table[i][j][k][3] = result[index];
+            }
+        }
+    }
+    cout << "Table ready" << endl;
+    return;
+}
+
+void create_p_interpolator(array<array<array<array<double, 4>, Phi_xpom_size>, Phi_y_size>, Phi_P2_size> &table, InterpMultilinear<3, double>* &return_interp_ML) {
+    std::vector<double> P2_vec, y_vec, xpom_vec;
+
+    array<int, 3> grid_sizes;
+    grid_sizes[0] = Phi_P2_size;
+    grid_sizes[1] = Phi_y_size;
+    grid_sizes[2] = Phi_xpom_size;
+    
+    int num_elements = grid_sizes[0]*grid_sizes[1]*grid_sizes[2];
+
+    std::vector<double> result_vec(num_elements);
+
+    for (int i=0; i<grid_sizes[0]; i++) {
+        P2_vec.push_back(table[i][0][0][0]);
+    }
+
+    for (int i=0; i<grid_sizes[1]; i++) {
+        y_vec.push_back(table[0][i][0][1]);
+    }
+
+    for (int i=0; i<grid_sizes[2]; i++) {
+        xpom_vec.push_back(log(table[0][0][i][2]));
+    }
+
+    std::vector<std::vector<double>::iterator> grid_iter_list;
+    grid_iter_list.push_back(P2_vec.begin());
+    grid_iter_list.push_back(y_vec.begin());
+    grid_iter_list.push_back(xpom_vec.begin());
+
+    cout << endl;
+
+    for (int i=0; i<grid_sizes[0]; i++) {
+        for (int j=0; j<grid_sizes[1]; j++) {
+            for (int k=0; k<grid_sizes[2]; k++) {
+                result_vec[i*grid_sizes[1]*grid_sizes[2] + j*grid_sizes[2] + k] = log(table[i][j][k][3]);
+            }
+        }
+    }
+
+    return_interp_ML = new InterpMultilinear<3, double>(grid_iter_list.begin(), grid_sizes.begin(), result_vec.data(), result_vec.data() + num_elements);
+}
+
+
+
+const int Phi2A_P2_size = 30;
+const int Phi2A_y_size = 30;
+const int Phi2A_xpom_size = 30;
+
+void load_Phi2A_table(array<array<array<array<double, 4>, Phi2A_xpom_size>, Phi2A_y_size>, Phi2A_P2_size> &table, string filename) {
+    cout << "Reading " << filename << endl;
+    rapidcsv::Document doc(filename, rapidcsv::LabelParams(0, 0), rapidcsv::SeparatorParams(';'));
+    
+    vector<double> P2 = doc.GetColumn<double>("P2");
+    vector<double> y = doc.GetColumn<double>("y");
+    vector<double> xpom = doc.GetColumn<double>("xpom");
+    vector<double> result = doc.GetColumn<double>("result");
+    vector<double> error = doc.GetColumn<double>("error");
+    vector<double> fit = doc.GetColumn<double>("fit");
+
+    cout << "Data read successfully" << endl;
+
+    for (int i=0; i<Phi2A_P2_size; i++) {
+            for (int j=0; j<Phi2A_y_size; j++) {
+                for (int k=0; k<Phi2A_xpom_size; k++) {
+                    int index = i*Phi2A_y_size*Phi2A_xpom_size + j*Phi2A_xpom_size + k;
+                    table[i][j][k][0] = P2[index];
+                    table[i][j][k][1] = y[index];
+                    table[i][j][k][2] = xpom[index];
+                    table[i][j][k][3] = result[index];
+            }
+        }
+    }
+    cout << "Table ready" << endl;
+    return;
+}
+
+void create_p_interpolator(array<array<array<array<double, 4>, Phi2A_xpom_size>, Phi2A_y_size>, Phi2A_P2_size> &table, InterpMultilinear<3, double>* &return_interp_ML) {
+    std::vector<double> P2_vec, y_vec, xpom_vec;
+
+    array<int, 3> grid_sizes;
+    grid_sizes[0] = Phi2A_P2_size;
+    grid_sizes[1] = Phi2A_y_size;
+    grid_sizes[2] = Phi2A_xpom_size;
+    
+    int num_elements = grid_sizes[0]*grid_sizes[1]*grid_sizes[2];
+
+    std::vector<double> result_vec(num_elements);
+
+    for (int i=0; i<grid_sizes[0]; i++) {
+        P2_vec.push_back(table[i][0][0][0]);
+    }
+
+    for (int i=0; i<grid_sizes[1]; i++) {
+        y_vec.push_back(table[0][i][0][1]);
+    }
+
+    for (int i=0; i<grid_sizes[2]; i++) {
+        xpom_vec.push_back(log(table[0][0][i][2]));
+    }
+
+    std::vector<std::vector<double>::iterator> grid_iter_list;
+    grid_iter_list.push_back(P2_vec.begin());
+    grid_iter_list.push_back(y_vec.begin());
+    grid_iter_list.push_back(xpom_vec.begin());
+
+    cout << endl;
+
+    for (int i=0; i<grid_sizes[0]; i++) {
+        for (int j=0; j<grid_sizes[1]; j++) {
+            for (int k=0; k<grid_sizes[2]; k++) {
+                result_vec[i*grid_sizes[1]*grid_sizes[2] + j*grid_sizes[2] + k] = log(table[i][j][k][3]);
+            }
+        }
+    }
+
+    return_interp_ML = new InterpMultilinear<3, double>(grid_iter_list.begin(), grid_sizes.begin(), result_vec.data(), result_vec.data() + num_elements);
 }

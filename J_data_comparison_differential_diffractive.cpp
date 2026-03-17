@@ -6,15 +6,16 @@
 #include "TAxis.h"
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
-#include "TText.h"
+//#include "TText.h"
 #include "TLatex.h"
 #include "TColor.h"
 
+#include <cmath>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-using namespace std;
+//using namespace std;
 
 #include "cross_section_file_reader.h"
 
@@ -110,7 +111,7 @@ int main() {
   bool vector_dipamp = true;
   if (vector_dipamp) {
     string L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_vector_all.txt"
+        "output/differential_diffractive_L_vector_all.txt"
       };
 
     for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -118,7 +119,7 @@ int main() {
     }
 
     string charm_L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_vector_charm_all.txt"
+        "output/differential_diffractive_L_vector_charm_all.txt"
       };
 
     for (long unsigned int i=0; i<size(charm_L_prediction_filenames); i++) {
@@ -126,7 +127,7 @@ int main() {
     }
 
     string T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_vector_all.txt"
+      "output/differential_diffractive_T_vector_all.txt"
     };
 
     for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -134,7 +135,7 @@ int main() {
     }
 
     string charm_T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_vector_charm_all.txt"
+      "output/differential_diffractive_T_vector_charm_all.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
@@ -143,7 +144,7 @@ int main() {
 
     if (Jani_qqg_correction) {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all.txt"
+        "output/Jani_low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -151,7 +152,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all_charm.txt"
+        "output/Jani_low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -159,7 +160,7 @@ int main() {
       }
     } else {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
+        "output/low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -167,7 +168,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
+        "output/low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -179,7 +180,7 @@ int main() {
 
   } else {
     string L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_10k_all_diffdiff.txt"
+        "output/differential_diffractive_L_10k_all_diffdiff.txt"
       };
 
     for (long unsigned int i=0; i<size(L_prediction_filenames); i++) {
@@ -187,7 +188,7 @@ int main() {
     }
 
     string charm_L_prediction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/differential_diffractive_L_10k_all_diffdiff_charm.txt"
+        "output/differential_diffractive_L_10k_all_diffdiff_charm.txt"
       };
 
     for (long unsigned int i=0; i<size(charm_L_prediction_filenames); i++) {
@@ -195,7 +196,7 @@ int main() {
     }
 
     string T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_10k_all_diffdiff.txt"
+      "output/differential_diffractive_T_10k_all_diffdiff.txt"
     };
 
     for (long unsigned int i=0; i<size(T_prediction_filenames); i++) {
@@ -203,7 +204,7 @@ int main() {
     }
 
     string charm_T_prediction_filenames[] = {
-      "/home/jarno/Cross_section_calculation/output/differential_diffractive_T_10k_all_diffdiff_charm.txt"
+      "output/differential_diffractive_T_10k_all_diffdiff_charm.txt"
     };
 
     for (long unsigned int i=0; i<size(charm_T_prediction_filenames); i++) {
@@ -212,7 +213,7 @@ int main() {
 
     if (Jani_qqg_correction) {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all.txt"
+        "output/Jani_low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -220,7 +221,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/Jani_low_beta_corrections_all_charm.txt"
+        "output/Jani_low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -228,7 +229,7 @@ int main() {
       }
     } else {
       string qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all.txt"
+        "output/low_beta_corrections_all.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -236,7 +237,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "/home/jarno/Cross_section_calculation/output/low_beta_corrections_all_charm.txt"
+        "output/low_beta_corrections_all_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -420,10 +421,13 @@ struct plot {
 };
 */
 
-    double zeroes[x_selection.size()];
+    vector<double> zeroes_vec;
+    zeroes_vec.resize(x_selection.size());
     for (int i=0; i<x_selection.size(); i++) {
-      zeroes[i] = 0;
+      zeroes_vec[i] = 0;
     }
+    double* zeroes = &zeroes_vec[0];
+
     double* x_selection_arr = &x_selection[0];
     double* chosen_measurement_xpomF2_arr = &chosen_measurement_xpomF2[0];
     double* chosen_delta_arr = &chosen_delta[0];
@@ -574,9 +578,9 @@ struct plot {
     double x1 = margin_fraction+(i%figure_width)*1.0/figure_width*(1-2*margin_fraction);
     if (i%6==0) {x1=0;}
     double x2 = margin_fraction+(i%figure_width+1)*1.0/figure_width*(1-2*margin_fraction);
-    double y1 = 1-margin_fraction-(i/figure_width+1)*1.0/figure_height*(1-2*margin_fraction);
+    double y1 = 1-margin_fraction-int(i/figure_width+1)*1.0/figure_height*(1-2*margin_fraction);
     if (i/6==7) {y1=0;}
-    double y2 = 1-margin_fraction-(i/figure_width)*1.0/figure_height*(1-2*margin_fraction);
+    double y2 = 1-margin_fraction-int(i/figure_width)*1.0/figure_height*(1-2*margin_fraction);
     //cout << x1 << ", " << y1 << ", " << x2 << ", " << y2 << endl;
     subpads[i] = new TPad("subpad", "subpad", x1, y1, x2, y2);
     subpads[i]->SetMargin(0, 0, 0, 0);
