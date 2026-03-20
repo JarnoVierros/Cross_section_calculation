@@ -28,7 +28,7 @@ const double alpha_em = 1.0/137;
 const int N_c = 3;
 
 static double e_f, m_f;
-const bool charm = false;
+const bool charm = true;
 
 static double normalization;
 
@@ -48,7 +48,7 @@ string filename_end = "_all";
 bool diffraction_dipamp = true;
 
 const int i_start = 0; // number of data points to skip
-const int data_inclusion_count = 272;
+const int data_inclusion_count = 287;
 
 const int debug_precision = 10;
 const double max_theta_root_excess = 1e-6;

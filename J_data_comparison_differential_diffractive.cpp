@@ -107,7 +107,7 @@ int main() {
   vector<double> charm_qqg_low_beta_correction_Q2, charm_qqg_low_beta_correction_beta, charm_qqg_low_beta_correction_x, charm_qqg_low_beta_correction_sigma, charm_qqg_low_beta_correction_error, charm_qqg_low_beta_correction_fit;
 
   double unit_scaler = 1;
-  bool Jani_qqg_correction = false;
+  bool Jani_qqg_correction = true;
   bool vector_dipamp = true;
   if (vector_dipamp) {
     string L_prediction_filenames[] = {
@@ -144,7 +144,7 @@ int main() {
 
     if (Jani_qqg_correction) {
       string qqg_low_beta_correction_filenames[] = {
-        "output/Jani_low_beta_corrections_all.txt"
+        "output/J_low_beta_corrections.txt"
       };
 
       for (long unsigned int i=0; i<size(qqg_low_beta_correction_filenames); i++) {
@@ -152,7 +152,7 @@ int main() {
       }
 
       string charm_qqg_low_beta_correction_filenames[] = {
-        "output/Jani_low_beta_corrections_all_charm.txt"
+        "output/J_low_beta_corrections_charm.txt"
       };
 
       for (long unsigned int i=0; i<size(charm_qqg_low_beta_correction_filenames); i++) {
@@ -310,7 +310,7 @@ int main() {
   TLegend* legend = new TLegend(0.5*margin_fraction, 0.5*margin_fraction, margin_fraction+0.95*(1-2*margin_fraction)/figure_width, margin_fraction+0.95*(1-2*margin_fraction)/figure_height);
 
   for (int k=0; k<size(Q2_selections); k++) {
-    vector<double> x_selection, chosen_measurement_xpomF2, chosen_delta;
+    vector<double> x_selection, chosen_measurement_xpomF2, chosen_delta, chosen_beta;
 
     for (int i=0; i<measurement_Q2.size(); i++) {
       if (measurement_Q2[i] != Q2_selections[k]) {
@@ -320,6 +320,7 @@ int main() {
         continue;
       }
       x_selection.push_back(measurement_x[i]);
+      chosen_beta.push_back(measurement_beta[i]);
       chosen_measurement_xpomF2.push_back(unit_scaler*measurement_xpomF2[i]);
       chosen_delta.push_back(unit_scaler*(measurement_delta_stat[i]+measurement_delta_sys[i]));
     }
@@ -328,9 +329,11 @@ int main() {
     for (int i=0; i<x_selection.size(); i++) {
       double L_sigma, L_error, T_sigma, T_error, qqg_correction, qqg_correction_error;
       double L_found = false, T_found = false, qqg_found = false;
+      //cout << "looking for Q2=" << Q2_selections[k] << ", beta=" << beta_selections[k] << ", x=" << x_selection[i] << endl;
       for (int j=0; j<L_prediction_Q2.size(); j++) {
+        //cout << j << " Q2=" << L_prediction_Q2[j] << ", beta=" << L_prediction_beta[j] << ", x=" << L_prediction_x[j] << endl;
         if (L_prediction_Q2[j] != Q2_selections[k]) {
-          continue;
+          continue; //looking for Q2=75, beta=0.9, x=0.0237
         }
         if (L_prediction_beta[j] != beta_selections[k]) {
           continue;
@@ -374,8 +377,13 @@ int main() {
         if (qqg_low_beta_correction_x[j] != x_selection[i]) {
           continue;
         }
-        qqg_correction = qqg_low_beta_correction_sigma[j] + charm_qqg_low_beta_correction_sigma[j];
-        qqg_correction_error = sqrt(qqg_low_beta_correction_error[j]*qqg_low_beta_correction_error[j] + charm_qqg_low_beta_correction_error[j]*charm_qqg_low_beta_correction_error[j]);
+        if (Jani_qqg_correction) {
+          qqg_correction = qqg_low_beta_correction_sigma[j];
+          qqg_correction_error = sqrt(qqg_low_beta_correction_error[j]*qqg_low_beta_correction_error[j]);
+        } else {
+          qqg_correction = qqg_low_beta_correction_sigma[j] + charm_qqg_low_beta_correction_sigma[j];
+          qqg_correction_error = sqrt(qqg_low_beta_correction_error[j]*qqg_low_beta_correction_error[j] + charm_qqg_low_beta_correction_error[j]*charm_qqg_low_beta_correction_error[j]);
+        }
         qqg_found = true;
         if (qqg_correction < 0) {
           qqg_correction = 0;
@@ -385,18 +393,21 @@ int main() {
 
       if (!L_found) {
         cout << "Warning: L prediction not found" << endl;
+        cout << "Q2=" << Q2_selections[k] << ", beta=" << beta_selections[k] << ", x=" << x_selection[i] << endl;
         L_sigma = 0;
       }
       if (!T_found) {
         cout << "Warning: T prediction not found" << endl;
+        cout << "Q2=" << Q2_selections[k] << ", beta=" << beta_selections[k] << ", x=" << x_selection[i] << endl;
         T_sigma = 0;
       }
       if (!qqg_found) {
         cout << "Warning: qqg correction not found" << endl;
+        cout << "Q2=" << Q2_selections[k] << ", beta=" << beta_selections[k] << ", x=" << x_selection[i] << endl;
         qqg_correction = 0;
       }
 
-      const double Jani_dipamp_normalization = 1.0/20; //1.0/40
+      const double Jani_dipamp_normalization = 8.0; //1.0/40
       if (Jani_qqg_correction) {
         qqg_correction = Jani_dipamp_normalization*qqg_correction;
         qqg_correction_error = Jani_dipamp_normalization*qqg_correction_error;
@@ -434,7 +445,7 @@ struct plot {
 
     vector<double> valid_prediction_x;
     for (int m=0;m<x_selection.size();m++) {
-      if (x_selection[m] < 0.01) {
+      if (x_selection[m]/chosen_beta[m] <= 0.01) {
         valid_prediction_x.push_back(x_selection[m]);
       }
     }

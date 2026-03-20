@@ -4,6 +4,8 @@ all:
 	make Phi_generator_polar
 	make Phi_generator_jv
 	make Phi_plotter
+	make J_qqg_contribution_calculator
+	make J_data_comparison_differential_diffractive
 
 clean:
 	-rm -f *.exe
@@ -11,7 +13,6 @@ clean:
 
 direct_light_quark_sigma_calculator: direct_light_quark_sigma_calculator.cpp
 	g++ direct_light_quark_sigma_calculator.cpp $$(root-config --glibs --cflags --libs) -lgsl -o direct_light_quark_sigma_calculator.exe
-
 
 single_plot: single_plot.cpp
 	g++ single_plot.cpp $$(root-config --glibs --cflags --libs) -lgsl -o single_plot.exe
@@ -30,3 +31,7 @@ Phi_generator_jv: Phi_generator_jv.cpp
 
 Phi_plotter: Phi_plotter.cpp
 	g++ Phi_plotter.cpp $$(root-config --glibs --cflags --libs) -lgsl -o Phi_plotter.exe
+
+J_qqg_contribution_calculator: J_qqg_contribution_calculator.cpp
+	g++ J_qqg_contribution_calculator.cpp $$(root-config --glibs --cflags --libs) -lgsl -o J_qqg_contribution_calculator.exe
+

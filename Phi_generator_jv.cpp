@@ -27,22 +27,27 @@ const int Phi_n = 2;
 const bool A_dipole = true;
 const string filename_end = "_p_bk_2A";
 
+const bool append = false;
+
 
 // 50000000*50*20*20 too much
 
 const int warmup_calls = 100; //10000
-const int integration_calls = 1000; //100000
+const int integration_calls = 10000; //100000
 const int integration_iterations = 1;
 
-const int P2_resolution = 30; //100
-const double min_P2 = 0.01;
-const double max_P2 = 100;
+const double subint_error = 0.01;
+const int subint_max_iterations = 1000;
 
-const int y_resolution = 30; //50
-const double y_min = 0.01;
-const double y_max = 1;
+const int P2_resolution = 15; //100
+const double P2_start = 1e-4;
+const double P2_stop = 75;
 
-const int xpom_resolution = 30; //50
+const int y_resolution = 15; //50
+const double y_start = 1e-4;
+const double y_stop = 1;
+
+const int xpom_resolution = 15; //50
 const double xpom_start = 1e-4;
 const double xpom_stop = 0.01;
 
@@ -121,7 +126,13 @@ double f(double j, void * params) {
 //static int phi_counter = 0;
 double Phi_integrand(double r, double R, double v, double b, double theta, double P2, double y, double xpom) {
     
-    int n = 1000;
+    double integrand = P2*P2*y*y;
+    if (integrand == 0) {
+        return 0;
+    }
+    integrand *= r*R*b;
+
+    int n = subint_max_iterations;
     gsl_integration_workspace* workspace = gsl_integration_workspace_alloc(n);
     gsl_integration_qawo_table* qawo_table = gsl_integration_qawo_table_alloc(Phi_n, 2*M_PI, GSL_INTEG_COSINE, n);
 
@@ -140,17 +151,19 @@ double Phi_integrand(double r, double R, double v, double b, double theta, doubl
     F.params = &subint_params;
 
     double result, error;
-    gsl_integration_qawo(&F, 0, 0, 0.01, n, workspace, qawo_table, &result, &error);
+    gsl_integration_qawo(&F, 0, 0, subint_error, n, workspace, qawo_table, &result, &error);
 
     //cout << "sub_result=" << result << ", sub_error=" << error << ", rer_error=" << error/result << endl;
 
     gsl_integration_workspace_free(workspace);
     gsl_integration_qawo_table_free(qawo_table);
 
+    integrand *= result;
+
     //phi_counter += 1;
     //cout << phi_counter << endl;
 
-    return result;
+    return integrand;
 
 }
 
@@ -160,6 +173,14 @@ double g(double *k, size_t dim, void * params) {
 }
 
 void integrate(thread_par_struct par) {
+
+    if (par.P2*par.y == 0) {
+        par.result = 0;
+        par.error = 0;
+        par.fit = 0;
+        cout << "zero point" << endl;
+        return;
+    }
 
     const int dim = 5;
     double res, err;
@@ -244,19 +265,21 @@ int main() {
         throw 1;
     }
 
-    vector<double> P2_steps, y_steps;
+    vector<double> P2_steps, y_steps, xpom_steps;
 
+    const double P2_step = 1.0/(P2_resolution-1)*log10(P2_stop/P2_start);
     for (int i=0; i<P2_resolution; i++) {
-        P2_steps.push_back(min_P2 + 1.0*i/(P2_resolution-1)*(max_P2-min_P2));
+        double P2 = pow(10, log10(P2_start) + i*P2_step);
+        P2_steps.push_back(P2);
     }
+
+    const double y_step = 1.0/(y_resolution-1)*log10(y_stop/y_start);
     for (int i=0; i<y_resolution; i++) {
-        y_steps.push_back(y_min + 1.0*i/(y_resolution-1)*(y_max-y_min));
+        double y = pow(10, log10(y_start) + i*y_step);
+        y_steps.push_back(y);
     }
 
     const double xpom_step = 1.0/(xpom_resolution-1)*log10(xpom_stop/xpom_start);
-
-    vector<double> xpom_steps;
-
     for (int i=0; i<xpom_resolution; i++) {
         double xpom = pow(10, log10(xpom_start) + i*xpom_step);
         xpom_steps.push_back(xpom);
@@ -267,9 +290,13 @@ int main() {
     //double results[P2_resolution*y_resolution*xpom_resolution], errors[P2_resolution*y_resolution*xpom_resolution], fits[P2_resolution*y_resolution*xpom_resolution];
 
     TString out_filename = "output/Phi_table" + filename_end + ".txt";
-    ofstream output_file(out_filename);
-    output_file << "P2;y;xpom;result;error;fit" << endl;
-    output_file.close();
+
+    if (!append){
+        ofstream output_file(out_filename);
+        output_file << "P2;y;xpom;result;error;fit" << endl;
+        output_file.close();
+    }
+
 
 
     static auto t1 = chrono::high_resolution_clock::now();
@@ -341,6 +368,7 @@ int main() {
     //cout << "final clearing of threads, threads: " << current_threads << endl;
     threads.clear();
 
+    ofstream output_file;
     output_file.open(out_filename, ios::app);
     //output_file << "P2;y;xpom;result;error;fit" << endl;
 

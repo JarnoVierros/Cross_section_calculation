@@ -659,13 +659,13 @@ void load_Pb_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 40
 }
 
 
-const int Phi_P2_size = 100;
-const int Phi_y_size = 50;
-const int Phi_xpom_size = 50;
+const int Phi_P2_size = 30;
+const int Phi_y_size = 30;
+const int Phi_xpom_size = 30;
 
 void load_Phi_table(array<array<array<array<double, 4>, Phi_xpom_size>, Phi_y_size>, Phi_P2_size> &table, string filename) {
     cout << "Reading " << filename << endl;
-    rapidcsv::Document doc(filename, rapidcsv::LabelParams(0, 0), rapidcsv::SeparatorParams(';'));
+    rapidcsv::Document doc(filename, rapidcsv::LabelParams(0, -1), rapidcsv::SeparatorParams(';'));
     
     vector<double> P2 = doc.GetColumn<double>("P2");
     vector<double> y = doc.GetColumn<double>("y");
@@ -691,7 +691,7 @@ void load_Phi_table(array<array<array<array<double, 4>, Phi_xpom_size>, Phi_y_si
     return;
 }
 
-void create_p_interpolator(array<array<array<array<double, 4>, Phi_xpom_size>, Phi_y_size>, Phi_P2_size> &table, InterpMultilinear<3, double>* &return_interp_ML) {
+void create_Phi_interpolator(array<array<array<array<double, 4>, Phi_xpom_size>, Phi_y_size>, Phi_P2_size> &table, InterpMultilinear<3, double>* &return_interp_ML) {
     std::vector<double> P2_vec, y_vec, xpom_vec;
 
     array<int, 3> grid_sizes;
@@ -704,11 +704,11 @@ void create_p_interpolator(array<array<array<array<double, 4>, Phi_xpom_size>, P
     std::vector<double> result_vec(num_elements);
 
     for (int i=0; i<grid_sizes[0]; i++) {
-        P2_vec.push_back(table[i][0][0][0]);
+        P2_vec.push_back(log(table[i][0][0][0]));
     }
 
     for (int i=0; i<grid_sizes[1]; i++) {
-        y_vec.push_back(table[0][i][0][1]);
+        y_vec.push_back(log(table[0][i][0][1]));
     }
 
     for (int i=0; i<grid_sizes[2]; i++) {
@@ -725,7 +725,12 @@ void create_p_interpolator(array<array<array<array<double, 4>, Phi_xpom_size>, P
     for (int i=0; i<grid_sizes[0]; i++) {
         for (int j=0; j<grid_sizes[1]; j++) {
             for (int k=0; k<grid_sizes[2]; k++) {
-                result_vec[i*grid_sizes[1]*grid_sizes[2] + j*grid_sizes[2] + k] = log(table[i][j][k][3]);
+                if (table[i][j][k][3] > 0) {
+                    result_vec[i*grid_sizes[1]*grid_sizes[2] + j*grid_sizes[2] + k] = log(table[i][j][k][3]);
+                } else {
+                    result_vec[i*grid_sizes[1]*grid_sizes[2] + j*grid_sizes[2] + k] = log(1e-30);
+                }
+                
             }
         }
     }
@@ -735,13 +740,13 @@ void create_p_interpolator(array<array<array<array<double, 4>, Phi_xpom_size>, P
 
 
 
-const int Phi2A_P2_size = 30;
-const int Phi2A_y_size = 30;
-const int Phi2A_xpom_size = 30;
+const int Phi2A_P2_size = 15;
+const int Phi2A_y_size = 15;
+const int Phi2A_xpom_size = 15;
 
 void load_Phi2A_table(array<array<array<array<double, 4>, Phi2A_xpom_size>, Phi2A_y_size>, Phi2A_P2_size> &table, string filename) {
     cout << "Reading " << filename << endl;
-    rapidcsv::Document doc(filename, rapidcsv::LabelParams(0, 0), rapidcsv::SeparatorParams(';'));
+    rapidcsv::Document doc(filename, rapidcsv::LabelParams(0, -1), rapidcsv::SeparatorParams(';'));
     
     vector<double> P2 = doc.GetColumn<double>("P2");
     vector<double> y = doc.GetColumn<double>("y");
@@ -767,7 +772,7 @@ void load_Phi2A_table(array<array<array<array<double, 4>, Phi2A_xpom_size>, Phi2
     return;
 }
 
-void create_p_interpolator(array<array<array<array<double, 4>, Phi2A_xpom_size>, Phi2A_y_size>, Phi2A_P2_size> &table, InterpMultilinear<3, double>* &return_interp_ML) {
+void create_Phi2A_interpolator(array<array<array<array<double, 4>, Phi2A_xpom_size>, Phi2A_y_size>, Phi2A_P2_size> &table, InterpMultilinear<3, double>* &return_interp_ML) {
     std::vector<double> P2_vec, y_vec, xpom_vec;
 
     array<int, 3> grid_sizes;
@@ -780,11 +785,11 @@ void create_p_interpolator(array<array<array<array<double, 4>, Phi2A_xpom_size>,
     std::vector<double> result_vec(num_elements);
 
     for (int i=0; i<grid_sizes[0]; i++) {
-        P2_vec.push_back(table[i][0][0][0]);
+        P2_vec.push_back(log(table[i][0][0][0]));
     }
 
     for (int i=0; i<grid_sizes[1]; i++) {
-        y_vec.push_back(table[0][i][0][1]);
+        y_vec.push_back(log(table[0][i][0][1]));
     }
 
     for (int i=0; i<grid_sizes[2]; i++) {
@@ -801,7 +806,12 @@ void create_p_interpolator(array<array<array<array<double, 4>, Phi2A_xpom_size>,
     for (int i=0; i<grid_sizes[0]; i++) {
         for (int j=0; j<grid_sizes[1]; j++) {
             for (int k=0; k<grid_sizes[2]; k++) {
-                result_vec[i*grid_sizes[1]*grid_sizes[2] + j*grid_sizes[2] + k] = log(table[i][j][k][3]);
+                if (table[i][j][k][3] > 0) {
+                    result_vec[i*grid_sizes[1]*grid_sizes[2] + j*grid_sizes[2] + k] = log(table[i][j][k][3]);
+                } else {
+                    result_vec[i*grid_sizes[1]*grid_sizes[2] + j*grid_sizes[2] + k] = log(1e-30);
+                }
+                
             }
         }
     }
