@@ -21,7 +21,7 @@ static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
 static InterpMultilinear<4, double>* interpolator;
 
 const string dipole_amp_type = "bk";
-const string nucleus_type = "p";
+const string nucleus_type = "Pb";
 const bool diffraction_dipamp = true;
 const int Phi_n = 1;
 const bool A_dipole = false;
@@ -32,19 +32,19 @@ const bool append = false;
 
 // 50000000*50*20*20 too much
 
-const int warmup_calls = 10000; //10000
-const int integration_calls = 100000; //100000
+const int warmup_calls = 100000; //10000
+const int integration_calls = 1000000; //100000
 const int integration_iterations = 1;
 
-const int P2_resolution = 30; //100
+const int P2_resolution = 5; //100
 const double P2_start = 1e-4; 
 const double P2_stop = 75; //75
 
-const int y_resolution = 30; //50
+const int y_resolution = 5; //50
 const double y_start = 1e-4;
 const double y_stop = 1; //1
 
-const int xpom_resolution = 30; //50
+const int xpom_resolution = 5; //50
 const double xpom_start = 1e-4;
 const double xpom_stop = 0.01;
 
@@ -96,16 +96,52 @@ double Phi_integrand(double r, double phi, double R, double PHI, double b, doubl
     integrand *= cos(Phi_n*(phi-PHI));
     //cout << "3: " << cos(Phi_n*(phi_r-phi_R)) << endl;
 
-    double eff_r = r;
-    double eff_bmin = sqrt(b*b+r*b*cos(phi-theta)+1.0/4*r*r);
-    double eff_phi = acos(-(b*cos(phi-theta)+1.0/2*r)/eff_bmin);
+
+    double eff_r1 = r*cos(phi);
+    double eff_r2 = r*sin(phi);
+    double eff_b1 = b*cos(theta)+0.5*eff_r1;
+    double eff_b2 = b*sin(theta)+0.5*eff_r2;
+
+    double eff_x1 = eff_b1+0.5*eff_r1;
+    double eff_x2 = eff_b2+0.5*eff_r2;
+    double eff_y1 = eff_b1-0.5*eff_r1;
+    double eff_y2 = eff_b2-0.5*eff_r2;
+
+    double eff_x = sqrt(eff_x1*eff_x1+eff_x2+eff_x2);
+    double eff_y = sqrt(eff_y1*eff_y1+eff_y2+eff_y2);
+
+    if (eff_x > eff_y) {
+        eff_r1 = -1*eff_r1;
+        eff_r2 = -1*eff_r2;
+    }
+
+    double eff_r = sqrt(eff_r1*eff_r1+eff_r2*eff_r2);
+    double eff_bmin = sqrt(gsl_pow_2(eff_b1+0.5*eff_r1)+gsl_pow_2(eff_b2+0.5*eff_r2));
+    double eff_phi = acos(-(eff_r1*(eff_b1+0.5*eff_r1)+eff_r2*(eff_b2+0.5*eff_r2))/(eff_bmin*eff_r));
 
     double N_r = dipole_amplitude(eff_r, eff_bmin, eff_phi, xpom);
 
+    eff_r1 = R*cos(PHI);
+    eff_r2 = R*sin(PHI);
+    eff_b1 = b*cos(theta)+0.5*eff_r1;
+    eff_b2 = b*sin(theta)+0.5*eff_r2;
 
-    eff_r = R;
-    eff_bmin = sqrt(b*b+R*b*cos(PHI-theta)+1.0/4*R*R);
-    eff_phi = acos(-(b*cos(PHI-theta)+1.0/2*R)/eff_bmin);
+    eff_x1 = eff_b1+0.5*eff_r1;
+    eff_x2 = eff_b2+0.5*eff_r2;
+    eff_y1 = eff_b1-0.5*eff_r1;
+    eff_y2 = eff_b2-0.5*eff_r2;
+
+    eff_x = sqrt(eff_x1*eff_x1+eff_x2+eff_x2);
+    eff_y = sqrt(eff_y1*eff_y1+eff_y2+eff_y2);
+
+    if (eff_x > eff_y) {
+        eff_r1 = -1*eff_r1;
+        eff_r2 = -1*eff_r2;
+    }
+
+    eff_r = sqrt(eff_r1*eff_r1+eff_r2*eff_r2);
+    eff_bmin = sqrt(gsl_pow_2(eff_b1+0.5*eff_r1)+gsl_pow_2(eff_b2+0.5*eff_r2));
+    eff_phi = acos(-(eff_r1*(eff_b1+0.5*eff_r1)+eff_r2*(eff_b2+0.5*eff_r2))/(eff_bmin*eff_r));
 
     double N_R = dipole_amplitude(eff_r, eff_bmin, eff_phi, xpom);
 
@@ -198,11 +234,11 @@ int main() {
     filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+".csv";
     }
     if (nucleus_type == "p") {
-    load_p_dipole_amplitudes(p_table, filename);
-    create_p_interpolator(p_table, interpolator);
+        load_p_dipole_amplitudes(p_table, filename);
+        create_p_interpolator(p_table, interpolator);
     } else if (nucleus_type == "Pb") {
-    load_Pb_dipole_amplitudes(Pb_table, filename);
-    create_Pb_interpolator(Pb_table, interpolator);
+        load_Pb_dipole_amplitudes(Pb_table, filename);
+        create_Pb_interpolator(Pb_table, interpolator);
     } else {
     throw 1;
     }

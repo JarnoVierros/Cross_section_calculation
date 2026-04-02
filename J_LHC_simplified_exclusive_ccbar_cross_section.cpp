@@ -28,8 +28,8 @@ const double alpha_em = 1.0/137;
 const int N_c = 3;
 
 //bottom
-const double e_f = 1.0/3; //2.0/3
-const double m_f = 4.18; //1.27 GeV
+const double e_f = 2.0/3; //1.0/3
+const double m_f = 1.27; // GeV 4.18
 //charm
 //const double e_f = 2.0/3; //
 //const double m_f = 1.27; // GeV
@@ -39,15 +39,15 @@ const double normalization = 8/(2*M_PI)*alpha_em*N_c*e_f*e_f;
 static double r_limit; // 34.64
 static double b_min_limit; // 17.32
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int warmup_calls = 100000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
 const string dipole_amp_type = "bk";
-const string nucleus_type = "p";
+const string nucleus_type = "Pb";
 const string diffraction = "_diffraction";//_diffraction this tells it to use diffractive dipole amplitude
 const string filename_end = "";
-const string particle_name = "b";
+const string particle_name = "c";
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
 static array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> Pb_table;
@@ -217,11 +217,9 @@ int main() {
   const double W_step = 1.0/(W_steps-1)*log10(W_stop/W_start);
 
   string filename;
-  if (dipole_amp_type == "vector") {
-    filename = "data/bk_p_mu02_0.66.csv";
-  } else {
-    filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+diffraction+".csv";
-  }
+
+  filename = "data/dipole_amplitude_with_IP_dependence_"+dipole_amp_type+"_"+nucleus_type+diffraction+".csv";
+
   if (nucleus_type == "p") {
     if (diffraction=="_diffraction" && dipole_amp_type == "bfkl") {
       load_Pb_dipole_amplitudes(Pb_table, filename);

@@ -594,13 +594,23 @@ double get_raw_p_dipole_amplitude(array<array<array<array<array<double, 5>, 81>,
 void load_p_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> &table, string filename, double plot=false) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
+    vector<double> r, b_min, phi, Y, N;
     
-    vector<double> r = doc.GetColumn<double>("r [GeV^-1]");
-    //vector<double> b_min = doc.GetColumn<double>("b_min [GeV^-1]");
-    vector<double> b_min = doc.GetColumn<double>("b_0 [GeV^-1]");
-    vector<double> phi = doc.GetColumn<double>("phi");
-    vector<double> Y = doc.GetColumn<double>("Y");
-    vector<double> N = doc.GetColumn<double>("N");
+    try {
+        r = doc.GetColumn<double>("r [GeV^-1]");
+        //vector<double> b_min = doc.GetColumn<double>("b_min [GeV^-1]");
+        b_min = doc.GetColumn<double>("b_0 [GeV^-1]");
+        phi = doc.GetColumn<double>("phi");
+        Y = doc.GetColumn<double>("Y");
+        N = doc.GetColumn<double>("N");
+    } catch (...) {
+        r = doc.GetColumn<double>("r [GeV^-1]");
+        b_min = doc.GetColumn<double>("b_min [GeV^-1]");
+        phi = doc.GetColumn<double>("phi");
+        Y = doc.GetColumn<double>("Y");
+        N = doc.GetColumn<double>("N");
+    }
+
 
     cout << "Data read successfully" << endl;
     
@@ -628,12 +638,23 @@ void load_p_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 30>
 void load_Pb_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 40>, 40>, 40> &table, string filename, double plot=false) {
     cout << "Reading " << filename << endl;
     rapidcsv::Document doc(filename);
-    
-    vector<double> r = doc.GetColumn<double>("r [GeV^-1]");
-    vector<double> b_min = doc.GetColumn<double>("b_min [GeV^-1]");
-    vector<double> phi = doc.GetColumn<double>("phi");
-    vector<double> Y = doc.GetColumn<double>("Y");
-    vector<double> N = doc.GetColumn<double>("N");
+    vector<double> r, b_min, phi, Y, N;
+
+    try {
+        r = doc.GetColumn<double>("r [GeV^-1]");
+        //vector<double> b_min = doc.GetColumn<double>("b_min [GeV^-1]");
+        b_min = doc.GetColumn<double>("b_0 [GeV^-1]");
+        phi = doc.GetColumn<double>("phi");
+        Y = doc.GetColumn<double>("Y");
+        N = doc.GetColumn<double>("N");
+    } catch (...) {
+        r = doc.GetColumn<double>("r [GeV^-1]");
+        b_min = doc.GetColumn<double>("b_min [GeV^-1]");
+        phi = doc.GetColumn<double>("phi");
+        Y = doc.GetColumn<double>("Y");
+        N = doc.GetColumn<double>("N");
+    }
+
 
     cout << "Data read successfully" << endl;
     
@@ -659,9 +680,9 @@ void load_Pb_dipole_amplitudes(array<array<array<array<array<double, 5>, 81>, 40
 }
 
 
-const int Phi_P2_size = 30;
-const int Phi_y_size = 30;
-const int Phi_xpom_size = 30;
+const int Phi_P2_size = 5;
+const int Phi_y_size = 5;
+const int Phi_xpom_size = 5;
 
 void load_Phi_table(array<array<array<array<double, 4>, Phi_xpom_size>, Phi_y_size>, Phi_P2_size> &table, string filename) {
     cout << "Reading " << filename << endl;
@@ -740,9 +761,9 @@ void create_Phi_interpolator(array<array<array<array<double, 4>, Phi_xpom_size>,
 
 
 
-const int Phi2A_P2_size = 15;
-const int Phi2A_y_size = 15;
-const int Phi2A_xpom_size = 15;
+const int Phi2A_P2_size = 5;
+const int Phi2A_y_size = 5;
+const int Phi2A_xpom_size = 5;
 
 void load_Phi2A_table(array<array<array<array<double, 4>, Phi2A_xpom_size>, Phi2A_y_size>, Phi2A_P2_size> &table, string filename) {
     cout << "Reading " << filename << endl;

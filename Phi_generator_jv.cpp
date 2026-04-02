@@ -39,15 +39,15 @@ const int integration_iterations = 1;
 const double subint_error = 0.01;
 const int subint_max_iterations = 1000;
 
-const int P2_resolution = 15; //100
+const int P2_resolution = 5; //100
 const double P2_start = 1e-4;
 const double P2_stop = 75;
 
-const int y_resolution = 15; //50
+const int y_resolution = 5; //50
 const double y_start = 1e-4;
 const double y_stop = 1;
 
-const int xpom_resolution = 15; //50
+const int xpom_resolution = 5; //50
 const double xpom_start = 1e-4;
 const double xpom_stop = 0.01;
 
@@ -90,9 +90,58 @@ double sub_integrand(double j, double r, double R, double v, double b, double th
     integrand *= gsl_sf_bessel_Kn(Phi_n, r*P*sqrt(y))*gsl_sf_bessel_Kn(Phi_n, R*P*sqrt(y));
     //cout << "r=" << r << ", R=" << R << ", P=" << P << ", y=" << y << endl;
     //cout << "2: " << gsl_sf_bessel_Kn(Phi_n, r*P*sqrt(y))*gsl_sf_bessel_Kn(Phi_n, R*P*sqrt(y)) << endl;
-    //integrand *= cos(Phi_n*j);
+    integrand *= cos(Phi_n*j);
     //cout << "3: " << cos(Phi_n*(phi_r-phi_R)) << endl;
 
+    double eff_r1 = r*cos(j+v);
+    double eff_r2 = r*sin(j+v);
+    double eff_b1 = b*cos(theta)+0.5*eff_r1;
+    double eff_b2 = b*sin(theta)+0.5*eff_r2;
+
+    double eff_x1 = eff_b1+0.5*eff_r1;
+    double eff_x2 = eff_b2+0.5*eff_r2;
+    double eff_y1 = eff_b1-0.5*eff_r1;
+    double eff_y2 = eff_b2-0.5*eff_r2;
+
+    double eff_x = sqrt(eff_x1*eff_x1+eff_x2+eff_x2);
+    double eff_y = sqrt(eff_y1*eff_y1+eff_y2+eff_y2);
+
+    if (eff_x > eff_y) {
+        eff_r1 = -1*eff_r1;
+        eff_r2 = -1*eff_r2;
+    }
+
+    double eff_r = sqrt(eff_r1*eff_r1+eff_r2*eff_r2);
+    double eff_bmin = sqrt(gsl_pow_2(eff_b1+0.5*eff_r1)+gsl_pow_2(eff_b2+0.5*eff_r2));
+    double eff_phi = acos(-(eff_r1*(eff_b1+0.5*eff_r1)+eff_r2*(eff_b2+0.5*eff_r2))/(eff_bmin*eff_r));
+
+    double N_r = dipole_amplitude(eff_r, eff_bmin, eff_phi, xpom);
+
+    eff_r1 = R*cos(v-j);
+    eff_r2 = R*sin(v-j);
+    eff_b1 = b*cos(theta)+0.5*eff_r1;
+    eff_b2 = b*sin(theta)+0.5*eff_r2;
+
+    eff_x1 = eff_b1+0.5*eff_r1;
+    eff_x2 = eff_b2+0.5*eff_r2;
+    eff_y1 = eff_b1-0.5*eff_r1;
+    eff_y2 = eff_b2-0.5*eff_r2;
+
+    eff_x = sqrt(eff_x1*eff_x1+eff_x2+eff_x2);
+    eff_y = sqrt(eff_y1*eff_y1+eff_y2+eff_y2);
+
+    if (eff_x > eff_y) {
+        eff_r1 = -1*eff_r1;
+        eff_r2 = -1*eff_r2;
+    }
+
+    eff_r = sqrt(eff_r1*eff_r1+eff_r2*eff_r2);
+    eff_bmin = sqrt(gsl_pow_2(eff_b1+0.5*eff_r1)+gsl_pow_2(eff_b2+0.5*eff_r2));
+    eff_phi = acos(-(eff_r1*(eff_b1+0.5*eff_r1)+eff_r2*(eff_b2+0.5*eff_r2))/(eff_bmin*eff_r));
+
+    double N_R = dipole_amplitude(eff_r, eff_bmin, eff_phi, xpom);
+
+    /*
     double eff_r = r;
     double eff_bmin = sqrt(b*b+r*b*cos(j+v-theta)+1.0/4*r*r);
     double eff_phi = acos(-(b*cos(j+v-theta)+1.0/2*r)/eff_bmin);
@@ -105,6 +154,7 @@ double sub_integrand(double j, double r, double R, double v, double b, double th
     eff_phi = acos(-(b*cos(v-j-theta)+1.0/2*R)/eff_bmin);
 
     double N_R = dipole_amplitude(eff_r, eff_bmin, eff_phi, xpom);
+    */
 
     if (A_dipole) {
         N_r = 1 - pow(1-N_r, C_A/C_F);

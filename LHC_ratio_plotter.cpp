@@ -13,28 +13,29 @@ using namespace std;
 
 #include "cross_section_file_reader.h"
 
+const string main_dir = "/home/jarno/Programs/Cross_section_calculation";
 
 int main() {
 
   vector<string> numerator_filenames = {
-    "/home/jarno/Cross_section_calculation/output/diff_LHC_T_sigma_W_c_bfkl_Pb_diffraction.txt",
-    "/home/jarno/Cross_section_calculation/output/diff_LHC_T_sigma_W_c_bk_Pb_diffraction.txt",
-    "/home/jarno/Cross_section_calculation/output/diff_LHC_T_sigma_W_c_bfkl_p_diffraction.txt",
-    "/home/jarno/Cross_section_calculation/output/diff_LHC_T_sigma_W_c_bk_p_diffraction.txt",
-    "/home/jarno/Cross_section_calculation/output/diff_LHC_T_sigma_W_b_bfkl_Pb_diffraction.txt",
-    "/home/jarno/Cross_section_calculation/output/diff_LHC_T_sigma_W_b_bk_Pb_diffraction.txt",
-    "/home/jarno/Cross_section_calculation/output/diff_LHC_T_sigma_W_b_bfkl_p_diffraction.txt",
-    "/home/jarno/Cross_section_calculation/output/diff_LHC_T_sigma_W_b_bk_p_diffraction.txt",
+    main_dir + "/output/diff_LHC_T_sigma_W_c_bfkl_Pb_diffraction.txt",
+    main_dir + "/output/diff_LHC_T_sigma_W_c_bk_Pb_diffraction.txt",
+    main_dir + "/output/diff_LHC_T_sigma_W_c_bfkl_p_diffraction.txt",
+    main_dir + "/output/diff_LHC_T_sigma_W_c_bk_p_diffraction.txt",
+    main_dir + "/output/diff_LHC_T_sigma_W_b_bfkl_Pb_diffraction.txt",
+    main_dir + "/output/diff_LHC_T_sigma_W_b_bk_Pb_diffraction.txt",
+    main_dir + "/output/diff_LHC_T_sigma_W_b_bfkl_p_diffraction.txt",
+    main_dir + "/output/diff_LHC_T_sigma_W_b_bk_p_diffraction.txt",
   };
   vector<string> denominator_filenames = {
-    "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_c_bfkl_Pb.txt",
-    "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_c_bk_Pb.txt",
-    "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_c_bfkl_p.txt",
-    "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_c_bk_p.txt",
-    "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_b_bfkl_Pb.txt",
-    "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_b_bk_Pb.txt",
-    "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_b_bfkl_p.txt",
-    "/home/jarno/Cross_section_calculation/output/J_LHC_T_inclusive_b_bk_p.txt",
+    main_dir + "/output/J_LHC_T_inclusive_c_bfkl_Pb.txt",
+    main_dir + "/output/J_LHC_T_inclusive_c_bk_Pb.txt",
+    main_dir + "/output/J_LHC_T_inclusive_c_bfkl_p.txt",
+    main_dir + "/output/J_LHC_T_inclusive_c_bk_p.txt",
+    main_dir + "/output/J_LHC_T_inclusive_b_bfkl_Pb.txt",
+    main_dir + "/output/J_LHC_T_inclusive_b_bk_Pb.txt",
+    main_dir + "/output/J_LHC_T_inclusive_b_bfkl_p.txt",
+    main_dir + "/output/J_LHC_T_inclusive_b_bk_p.txt",
   };
   vector<TString> graph_titles = {"#gammaPb#rightarrowc#bar{c}X bfkl", "#gammaPb#rightarrowc#bar{c}X bk", "#gammap#rightarrowc#bar{c}X bfkl", "#gammap#rightarrowc#bar{c}X bk", "#gammaPb#rightarrowb#bar{b}X bfkl", "#gammaPb#rightarrowb#bar{b}X bk", "#gammap#rightarrowb#bar{b}X bfkl", "#gammap#rightarrowb#bar{b}X bk"};
   vector<int> line_colors = {2, 2, 4, 4, 2, 2, 4, 4};
@@ -77,7 +78,7 @@ int main() {
       ratio[j] = numerator_sigma[j]/denominator_sigma[j];
       W[j] = numerator_W[j];
       data_size++;
-      //cout << W[j] << ", " << ratio[j] << endl;
+      cout << W[j] << ", " << ratio[j] << endl;
     }
     TGraph* ratio_graph = new TGraph(data_size, W, ratio);
     ratio_graph->SetTitle(graph_titles[i]);

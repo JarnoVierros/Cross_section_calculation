@@ -28,11 +28,11 @@ using namespace std;
 const double alpha_em = 1.0/137;
 const int N_c = 3;
 //charm
-//const double e_f = 2.0/3; //charm: 2.0/3, bottom: 1.0/3
-//const double m_f = 1.27; //charm: 1.27 GeV, bottom: 4.18
+const double e_f = 2.0/3; //charm: 2.0/3, bottom: 1.0/3
+const double m_f = 1.27; //charm: 1.27 GeV, bottom: 4.18
 //bottom
-const double e_f = 1.0/3; //charm: 2.0/3, bottom: 1.0/3
-const double m_f = 4.18; //charm: 1.27 GeV, bottom: 4.18
+//const double e_f = 1.0/3; //charm: 2.0/3, bottom: 1.0/3
+//const double m_f = 4.18; //charm: 1.27 GeV, bottom: 4.18
 
 static const double global_Q2 = 0;
 
@@ -43,14 +43,14 @@ static double b_min_limit; // 17.32
 
 const bool print_r_limit = false;
 const bool print_b_min_limit = false;
-const string dipole_amp_type = "bfkl";
+const string dipole_amp_type = "bk";
 const string nucleus_type = "Pb";
 const string diffraction = "";//_diffraction
 const string filename_end = "";//_1mil
-const string particle_name = "b";
+const string particle_name = "c";
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int warmup_calls = 100000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
 static array<array<array<array<array<double, 5>, 81>, 30>, 30>, 30> p_table;
