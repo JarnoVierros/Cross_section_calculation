@@ -53,5 +53,8 @@ LHC_ratio_plotter_old: LHC_ratio_plotter_old.cpp
 J_LHC_simplified_exclusive_ccbar_cross_section: J_LHC_simplified_exclusive_ccbar_cross_section.cpp
 	g++ J_LHC_simplified_exclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs) -lgsl -o J_LHC_simplified_exclusive_ccbar_cross_section.exe
 
+J_LHC_simplified_exclusive_ccbar_cross_section_Mx2: J_LHC_simplified_exclusive_ccbar_cross_section_Mx2.cpp
+	g++ J_LHC_simplified_exclusive_ccbar_cross_section_Mx2.cpp $$(root-config --glibs --cflags --libs) -lgsl -o J_LHC_simplified_exclusive_ccbar_cross_section_Mx2.exe
+
 J_LHC_inclusive_ccbar_cross_section: J_LHC_inclusive_ccbar_cross_section.cpp
 	g++ J_LHC_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs) -lgsl -o J_LHC_inclusive_ccbar_cross_section.exe

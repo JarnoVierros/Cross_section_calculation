@@ -12,6 +12,7 @@
 #include "TAxis.h"
 #include "TMultiGraph.h"
 #include "TGraphErrors.h"
+#include "gsl/gsl_pow_int.h"
 
 #include <string>
 #include <iostream>
@@ -39,11 +40,11 @@ const double normalization = 8/(2*M_PI)*alpha_em*N_c*e_f*e_f;
 static double r_limit; // 34.64
 static double b_min_limit; // 17.32
 
-const int warmup_calls = 10000;
-const int integration_calls = 100000;
+const int warmup_calls = 100000;
+const int integration_calls = 1000000;
 const int integration_iterations = 1;
 
-const string dipole_amp_type = "bk";
+const string dipole_amp_type = "bfkl";
 const string nucleus_type = "Pb";
 const string diffraction = "_diffraction";//_diffraction this tells it to use diffractive dipole amplitude
 const string filename_end = "";
@@ -62,35 +63,52 @@ double epsilon(double z, double Q2) {
   return sqrt(epsilon2(z, Q2));
 }
 
-double dipole_amplitude(double r, double b_min, double phi, double W, double Q2) {
-  double shifted_x = (Q2+4*m_f*m_f)/(W*W+Q2);
+double dipole_amplitude(double r, double b_min, double phi, double W, double Q2, double Mx2) {
+  double x_pom = (Q2+Mx2)/(W*W+Q2);
 
   if (calc_max_phi(r, b_min) < phi) {
     return 0;
   } else {
-    array<double, 4> args = {log(r), log(b_min), phi, log(shifted_x)};
+    array<double, 4> args = {log(r), log(b_min), phi, log(x_pom)};
     return exp(interpolator->interp(args.begin()));
   }
 }
-
+/*
 double L_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
   return r*b_min*4*Q2*z*z*gsl_pow_2(1-z)*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r))*gsl_pow_2(dipole_amplitude(r, b_min, phi, W, Q2));;
 }
+*/
+double T_integrand(double r, double r_phi, double R, double R_phi, double b, double phi, double z, double Mx2, double Q2, double W) {
+  if (z*(1-z)*Mx2 < m_f*m_f) {
+    return 0;
+  }
+  double norm = alpha_em*N_c*e_f*e_f/(gsl_pow_3(2*M_PI));
+  double abs_r_R = sqrt(gsl_pow_2(r*cos(r_phi)-R*cos(R_phi))+gsl_pow_2(r*sin(r_phi)-R*sin(R_phi)));
+  double H = m_f*m_f*gsl_sf_bessel_K0(epsilon(z, Q2)*r)*gsl_sf_bessel_K0(epsilon(z, Q2)*R) + epsilon(z, Q2)*epsilon(z, Q2)*(z*z+gsl_pow_2(1-z))*cos(r_phi-R_phi)*gsl_sf_bessel_K1(epsilon(z, Q2)*r)*gsl_sf_bessel_K1(epsilon(z, Q2)*R);
+  
+  double b_min_1 = sqrt(b*b + r*b*cos(r_phi - phi) + r*r/4);
+  double phi_1 = acos(-(b*cos(r_phi-phi)+r/2)/b_min_1);
+  double N1 = dipole_amplitude(r, b_min_1, phi_1, W, Q2, Mx2);
 
-double T_integrand(double r, double b_min, double phi, double z, double Q2, double W) {
-  return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*gsl_pow_2(dipole_amplitude(r, b_min, phi, W, Q2));
+  double b_min_2 = sqrt(b*b + R*b*cos(R_phi - phi) + R*R/4);
+  double phi_2 = acos(-(b*cos(R_phi-phi)+R/2)/b_min_2);
+  double N2 = dipole_amplitude(R, b_min_2, phi_2, W, Q2, Mx2);
+  
+  return norm*r*R*b*gsl_sf_bessel_J0(sqrt(z*(1-z)*Mx2-m_f*m_f)*abs_r_R)*z*(1-z)*H*N1*N2;
+  
+  //return r*b_min*(m_f*m_f*gsl_pow_2(gsl_sf_bessel_K0(epsilon(z, Q2)*r)) + epsilon2(z, Q2)*(z*z+gsl_pow_2(1-z))*gsl_pow_2(gsl_sf_bessel_K1(epsilon(z, Q2)*r)))*gsl_pow_2(dipole_amplitude(r, b_min, phi, W, Q2));
 }
 
 struct parameters {double Q2; double W;};
-
+/*
 double L_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
   return normalization*L_integrand(k[0], k[1], k[2], k[3], par->Q2, par->W);
 }
-
+*/
 double T_g(double *k, size_t dim, void * params) {
   struct parameters *par = (struct parameters *)params;
-  return normalization*T_integrand(k[0], k[1], k[2], k[3], par->Q2, par->W);
+  return normalization*T_integrand(k[0], k[1], k[2], k[3], k[4], k[5], k[6], k[7], par->Q2, par->W);
 }
 
 struct thread_par_struct
@@ -102,6 +120,7 @@ struct thread_par_struct
   thread_par_struct(double a1, double a2, double &a3, double &a4) : Q2(a1), W(a2), sigma(a3), sigma_error(a4) {}
 };
 
+/*
 void integrate_for_L_sigma(thread_par_struct par) {
 
   const int dim = 4;
@@ -144,14 +163,15 @@ void integrate_for_L_sigma(thread_par_struct par) {
 
   gsl_monte_vegas_free(L_s);
 }
+*/
 
 void integrate_for_T_sigma(thread_par_struct par) {
 
-  const int dim = 4;
+  const int dim = 8;
   double res, err;
 
-  double xl[4] = {0, 0, 0, 0};
-  double xu[4] = {r_limit, b_min_limit, M_PI, 1};
+  double xl[dim] = {0, 0, 0, 0, 0, 0, 0, 4*m_f*m_f};
+  double xu[dim] = {r_limit, 2*M_PI, r_limit, 2*M_PI, b_min_limit, 2*M_PI, 1, 1e3};
 
   struct parameters params = {1, 1};
   params.Q2 = par.Q2;
@@ -238,7 +258,7 @@ int main() {
   TMultiGraph* T_graphs = new TMultiGraph();
   T_graphs->SetTitle("Diffractive transverse cross section;W (GeV);cross section (mb)");
 
-  ofstream T_output_file("output/diff_LHC_T_sigma_W_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+".txt");
+  ofstream T_output_file("output/diff_LHC_T_sigma_W_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".txt");
   T_output_file << "W (GeV);sigma (mb);sigma error (mb)" << endl;
 
   cout << "Starting T integration" << endl;
@@ -286,7 +306,7 @@ int main() {
 
   T_sigma_canvas->BuildLegend(0.2, 0.55, 0.35, 0.9);
 
-  TString fig_filename = "figures/diff_LHC_T_sigma_W_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+".pdf";
+  TString fig_filename = "figures/diff_LHC_T_sigma_W_"+particle_name+"_"+dipole_amp_type+"_"+nucleus_type+diffraction+filename_end+".pdf";
   T_sigma_canvas->Print(fig_filename);
 
   return 0;

@@ -420,7 +420,8 @@ int main() {
       combined_error = sqrt(combined_error*combined_error + qqg_correction_error*qqg_correction_error);
       chosen_prediction_error.push_back(unit_scaler*combined_error);
       chosen_qqg_correction.push_back(unit_scaler*qqg_correction);
-      chosen_prediction_xpomF2.push_back(unit_scaler*(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma) + qqg_correction));
+      //chosen_prediction_xpomF2.push_back(unit_scaler*(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma) + qqg_correction));
+      chosen_prediction_xpomF2.push_back(unit_scaler*(correction*Q2_selections[k]*Q2_selections[k]/(pow(2*M_PI, 2)*alpha_em*beta_selections[k])*(L_sigma + T_sigma)));
     }
 /*
 struct plot {
@@ -543,7 +544,7 @@ struct plot {
 
     qqg_prediction->SetLineStyle(8);
     qqg_prediction->SetLineWidth(3);
-    comparison_graph->Add(qqg_prediction, "C");
+    //comparison_graph->Add(qqg_prediction, "C");
 
     plot new_plot = {comparison_graph, measurement_data, prediction, FL_prediction, FT_prediction, qqg_prediction, Q2_selections[k], beta_selections[k]};
     plots.push_back(new_plot);
@@ -553,7 +554,7 @@ struct plot {
       legend->AddEntry(prediction, "total", "L");
       legend->AddEntry(FL_prediction, "longitudinal", "L");
       legend->AddEntry(FT_prediction, "transverse", "L");
-      legend->AddEntry(qqg_prediction, "gluon emission", "L");
+      //legend->AddEntry(qqg_prediction, "gluon emission", "L");
     }
 
   }
