@@ -5,6 +5,7 @@
 #include "TAxis.h"
 #include "TMultiGraph.h"
 #include "TLatex.h"
+#include "TMathText.h"
 
 #include <string>
 #include <iostream>
@@ -31,25 +32,35 @@ void zero_array(double array[], int size) {
 
 const double min_b_W = 83.6; //83.6
 
-string nucleus = "Pb";
-bool diffractive = true;
-string diff_dipole = "_diffraction"; //_diffraction
+string nucleus = "p";
+bool diffractive = false;
+string diff_dipole;
 string particle_name = "c";
+
+double linewidth = 3;
 
 int main() {
 
+  if (diffractive) {
+    diff_dipole = "_diffraction";
+  } else {
+    diff_dipole = "";
+  }
 
   vector<TString> graph_titles;
+  /*
   if (nucleus == "Pb" && diffractive) {
-    graph_titles = {"#gammaPb#rightarrowc#bar{c}PbX bk", "#gammaPb#rightarrowc#bar{c}PbX bfkl", "#gammaPb#rightarrowb#bar{b}PbX bk", "#gammaPb#rightarrowb#bar{b}PbX bfkl"};
+    graph_titles = {"\\gamma Pb\\rightarrow c\\bar{c}PbX bk", "\\gamma Pb\\rightarrow c\\bar{c}PbX bfkl", "\\gamma Pb\\rightarrow b\\bar{b}PbX bk", "\\gamma Pb\\rightarrow b\\bar{b}PbX bfkl"};
   } else if (nucleus == "Pb" && !diffractive) {
-    graph_titles = {"#gammaPb#rightarrowc#bar{c}X bk", "#gammaPb#rightarrowc#bar{c}X bfkl", "#gammaPb#rightarrowb#bar{b}X bk", "#gammaPb#rightarrowb#bar{b}X bfkl"};
+    graph_titles = {"\\gamma Pb\\rightarrow c\\bar{c}X bk", "\\gamma Pb\\rightarrow c\\bar{c}X bfkl", "\\gamma Pb\\rightarrow b\\bar{b}X bk", "\\gamma Pb\\rightarrow b\\bar{b}X bfkl"};
   } else if (nucleus == "p" && diffractive) {
-    graph_titles = {"#gammap#rightarrowc#bar{c}pX bk", "#gammap#rightarrowc#bar{c}pX bfkl", "#gammap#rightarrowb#bar{b}pX bk", "#gammap#rightarrowb#bar{b}pX bfkl"};
+    graph_titles = {"\\gamma p\\rightarrow c\\bar{c}pX bk", "\\gamma p\\rightarrow c\\bar{c}pX bfkl", "\\gamma p\\rightarrow b\\bar{b}pX bk", "\\gamma p\\rightarrow b\\bar{b}pX bfkl"};
   } else if (nucleus == "p" && !diffractive) {
-    graph_titles = {"#gammap#rightarrowc#bar{c}X bk", "#gammap#rightarrowc#bar{c}X bfkl", "#gammap#rightarrowb#bar{b}X bk", "#gammap#rightarrowb#bar{b}X bfkl"};
+    graph_titles = {"\\gamma p\\rightarrow c\\bar{c}X bk", "\\gamma p\\rightarrow c\\bar{c}X bfkl", "\\gamma p\\rightarrow b\\bar{b}X bk", "\\gamma p\\rightarrow b\\bar{b}X bfkl"};
   }
-  
+  */
+
+  graph_titles = {"c\\bar{c}\\ BK", "c\\bar{c}\\ BFKL", "b\\bar{b}\\ BK", "b\\bar{b}\\ BFKL"};
 
   string c_filenames[4];
   string b_filenames[4];
@@ -123,6 +134,8 @@ int main() {
 
   TCanvas *double_canvas = new TCanvas("double_canvas", "", 0.5*1.5*2000, 1.5*800);
 
+  double_canvas->SetBottomMargin(0.12);
+
   //double_canvas->Draw();
   //double_canvas->cd();
   /*
@@ -158,6 +171,7 @@ int main() {
       TGraph* c_BK_Q20_graph = new TGraph(c_x[0].size(), c_BK_Pb_Q20_x_arr, c_BK_sigma_tot_Pb_Q20);
       c_BK_Q20_graph->SetTitle(graph_titles[0]); //Pb BK
       c_BK_Q20_graph->SetLineColor(2);
+      c_BK_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(c_BK_Q20_graph);
       double c_BFKL_Pb_Q20_x_arr[c_x[2].size()];
       vector_to_array(c_BFKL_Pb_Q20_x_arr, c_x[2]);
@@ -166,6 +180,7 @@ int main() {
       c_BFKL_Q20_graph->SetTitle(graph_titles[1]); //Pb BFKL
       c_BFKL_Q20_graph->SetLineColor(2);
       c_BFKL_Q20_graph->SetLineStyle(2);
+      c_BFKL_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(c_BFKL_Q20_graph);
 
       double b_BK_Pb_Q20_x_arr[b_x[0].size()];
@@ -175,6 +190,7 @@ int main() {
       b_BK_Q20_graph->SetTitle(graph_titles[2]); //Pb BK
       b_BK_Q20_graph->SetLineColor(4);
       b_BK_Q20_graph->SetLineStyle(7);
+      b_BK_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(b_BK_Q20_graph);
 
       double b_BFKL_Pb_Q20_x_arr[b_x[0].size()];
@@ -184,6 +200,7 @@ int main() {
       b_BFKL_Q20_graph->SetTitle(graph_titles[3]); //Pb BFKL
       b_BFKL_Q20_graph->SetLineColor(4);
       b_BFKL_Q20_graph->SetLineStyle(3);
+      b_BFKL_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(b_BFKL_Q20_graph);
     }
 
@@ -194,6 +211,7 @@ int main() {
       TGraph* c_BK_p_Q20_graph = new TGraph(c_x[0].size(), c_BK_p_Q20_x_arr, c_BK_sigma_tot_p_Q20);
       c_BK_p_Q20_graph->SetTitle(graph_titles[0]); //p BK
       c_BK_p_Q20_graph->SetLineColor(2);
+      c_BK_p_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(c_BK_p_Q20_graph);
 
       double c_BFKL_p_Q20_x_arr[c_x[2].size()];
@@ -203,6 +221,7 @@ int main() {
       c_BFKL_p_Q20_graph->SetTitle(graph_titles[1]); //p BFKL
       c_BFKL_p_Q20_graph->SetLineColor(2);
       c_BFKL_p_Q20_graph->SetLineStyle(2);
+      c_BFKL_p_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(c_BFKL_p_Q20_graph);
 
 
@@ -212,6 +231,7 @@ int main() {
       b_BK_p_Q20_graph->SetTitle(graph_titles[2]); //p BK
       b_BK_p_Q20_graph->SetLineColor(4);
       b_BK_p_Q20_graph->SetLineStyle(7);
+      b_BK_p_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(b_BK_p_Q20_graph);
 
       double b_BFKL_p_Q20_x_arr[b_x[0].size()];
@@ -221,6 +241,7 @@ int main() {
       b_BFKL_p_Q20_graph->SetTitle(graph_titles[3]); //p BFKL
       b_BFKL_p_Q20_graph->SetLineColor(4);
       b_BFKL_p_Q20_graph->SetLineStyle(3);
+      b_BFKL_p_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(b_BFKL_p_Q20_graph);
     }
 
@@ -228,25 +249,51 @@ int main() {
 
     gPad->SetLogx();
     gPad->SetLogy();
-    left_comparison_graph->GetXaxis()->SetTitle("W (GeV)");
+    left_comparison_graph->GetXaxis()->SetTitle("#it{W} [GeV]");
     if (diffractive) {
-      left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}"+nucleus+"X} (nb)";
+      //left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}"+nucleus+"X} [nb]";
+      left_title = "#it{#sigma} [nb]";
     } else {
-      left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}X} (nb)";
+      //left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}X} [nb]";
+      left_title = "#it{#sigma} [nb]";
     }
+
+    left_comparison_graph->GetYaxis()->SetLabelSize(0.05);
+    left_comparison_graph->GetXaxis()->SetLabelSize(0.05);
+
     left_comparison_graph->GetYaxis()->SetTitle(left_title);
-    left_comparison_graph->GetYaxis()->SetTitleSize(0.045);
-    left_comparison_graph->GetYaxis()->SetTitleOffset(0.95);
+    left_comparison_graph->GetYaxis()->SetTitleSize(0.05);
+    left_comparison_graph->GetYaxis()->SetTitleOffset(1);
+
+    left_comparison_graph->GetXaxis()->SetTitleOffset(1.2);
+    left_comparison_graph->GetXaxis()->SetTitleSize(0.05);
 
     if (false) {
       double_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
     } else {
-      double_canvas->BuildLegend(0.14, 0.7, 0.415, 0.9);
+      double_canvas->BuildLegend(0.14, 0.65, 0.35, 0.9);
     }
 
     //left_comparison_graph->GetXaxis()->SetLabelOffset(-0.05);
     left_comparison_graph->GetXaxis()->SetTitleOffset(1.2);
+    
+    if (nucleus == "Pb") {
+      TLatex* Q2_text = new TLatex(3e3, 3e4, "Q^{2} = 0 \\text{ GeV}^{2}\\");
+      Q2_text->Draw("same");
+      TLatex* gamma = new TLatex(1.5e3, 1.5e4, "#gamma");
+      gamma->Draw("same");
+      TLatex* process_text = new TLatex(1.5e3, 1.5e4, "\\ \\ \\, + \\text{Pb}\\rightarrow q\\bar{q} + X");
+      process_text->Draw("same");
+    } else {
+      TLatex* Q2_text = new TLatex(3e3, 2.5e2, "Q^{2} = 0 \\text{ GeV}^{2}\\");
+      Q2_text->Draw("same");
+      TLatex* gamma = new TLatex(2e3, 1e2, "#gamma");
+      gamma->Draw("same");
+      TLatex* process_text = new TLatex(2e3, 1e2, "\\ \\ \\, + \\text{p}\\rightarrow q\\bar{q} + X");
+      process_text->Draw("same");
+    }
 
+    /*
     if (particle_name == "c") {
       if (diff_dipole=="_diffraction") {
         if (diffractive) {
@@ -324,6 +371,7 @@ int main() {
         }
       }
     }
+    */
   } else {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -427,6 +475,7 @@ int main() {
       TGraph* c_BK_Q20_graph = new TGraph(right_c_x[0].size(), c_BK_Pb_Q20_x_arr, right_c_BK_sigma_tot_Pb_Q20);
       c_BK_Q20_graph->SetTitle(graph_titles[0]); //Pb BK
       c_BK_Q20_graph->SetLineColor(2);
+      c_BK_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(c_BK_Q20_graph);
 
       double c_BFKL_Pb_Q20_x_arr[right_c_x[2].size()];
@@ -436,6 +485,7 @@ int main() {
       c_BFKL_Q20_graph->SetTitle(graph_titles[1]); //Pb BFKL
       c_BFKL_Q20_graph->SetLineColor(2);
       c_BFKL_Q20_graph->SetLineStyle(2);
+      c_BFKL_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(c_BFKL_Q20_graph);
 
 
@@ -446,6 +496,7 @@ int main() {
       b_BK_Q20_graph->SetTitle(graph_titles[2]); //Pb BK
       b_BK_Q20_graph->SetLineColor(4);
       b_BK_Q20_graph->SetLineStyle(7);
+      b_BK_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(b_BK_Q20_graph);
 
       double b_BFKL_Pb_Q20_x_arr[right_b_x[0].size()];
@@ -455,6 +506,7 @@ int main() {
       b_BFKL_Q20_graph->SetTitle(graph_titles[3]); //Pb BFKL
       b_BFKL_Q20_graph->SetLineColor(4);
       b_BFKL_Q20_graph->SetLineStyle(3);
+      b_BFKL_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(b_BFKL_Q20_graph);
     }
 
@@ -465,6 +517,7 @@ int main() {
       TGraph* c_BK_p_Q20_graph = new TGraph(right_c_x[0].size(), c_BK_p_Q20_x_arr, right_c_BK_sigma_tot_p_Q20);
       c_BK_p_Q20_graph->SetTitle(graph_titles[0]); //p BK
       c_BK_p_Q20_graph->SetLineColor(2);
+      c_BK_p_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(c_BK_p_Q20_graph);
 
       double c_BFKL_p_Q20_x_arr[right_c_x[2].size()];
@@ -474,6 +527,7 @@ int main() {
       c_BFKL_p_Q20_graph->SetTitle(graph_titles[1]); //p BFKL
       c_BFKL_p_Q20_graph->SetLineColor(2);
       c_BFKL_p_Q20_graph->SetLineStyle(2);
+      c_BFKL_p_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(c_BFKL_p_Q20_graph);
 
 
@@ -485,6 +539,7 @@ int main() {
       b_BK_p_Q20_graph->SetTitle(graph_titles[2]); //p BK
       b_BK_p_Q20_graph->SetLineColor(4);
       b_BK_p_Q20_graph->SetLineStyle(7);
+      b_BK_p_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(b_BK_p_Q20_graph);
 
       double b_BFKL_p_Q20_x_arr[right_b_x[0].size()];
@@ -494,6 +549,7 @@ int main() {
       b_BFKL_p_Q20_graph->SetTitle(graph_titles[3]); //p BFKL
       b_BFKL_p_Q20_graph->SetLineColor(4);
       b_BFKL_p_Q20_graph->SetLineStyle(3);
+      b_BFKL_p_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(b_BFKL_p_Q20_graph);
     }
     //right_comparison_graph->GetYaxis()->SetLimits(3e-1, 5e4);
@@ -501,24 +557,48 @@ int main() {
 
     gPad->SetLogx();
     gPad->SetLogy();
-    right_comparison_graph->GetXaxis()->SetTitle("W (GeV)");
+    right_comparison_graph->GetXaxis()->SetTitle("#it{W} [GeV]");
     if (diffractive) {
-      right_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}"+nucleus+"X} (nb)";
+      //left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}"+nucleus+"X} [nb]";
+      right_title = "#it{#sigma} [nb]";
     } else {
-      right_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}X} (nb)";
+      //left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}X} [nb]";
+      right_title = "#it{#sigma} [nb]";
     }
+
+    right_comparison_graph->GetYaxis()->SetLabelSize(0.05);
+    right_comparison_graph->GetXaxis()->SetLabelSize(0.05);
+
     right_comparison_graph->GetYaxis()->SetTitle(right_title);
-    right_comparison_graph->GetYaxis()->SetTitleSize(0.045);
-    right_comparison_graph->GetYaxis()->SetTitleOffset(0.95);
+    right_comparison_graph->GetYaxis()->SetTitleSize(0.05);
+    right_comparison_graph->GetYaxis()->SetTitleOffset(1);
+
+    right_comparison_graph->GetXaxis()->SetTitleOffset(1.2);
+    right_comparison_graph->GetXaxis()->SetTitleSize(0.05);
 
     if (false) {
       double_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
     } else {
-      double_canvas->BuildLegend(0.14, 0.7, 0.45, 0.9);
+      double_canvas->BuildLegend(0.14, 0.65, 0.35, 0.9);
     }
 
-    right_comparison_graph->GetXaxis()->SetTitleOffset(1.2);
 
+    if (nucleus == "Pb") {
+      TLatex* Q2_text = new TLatex(3e3, 3e3, "Q^{2} = 0 \\text{ GeV}^{2}\\");
+      Q2_text->Draw("same");
+      TLatex* gamma = new TLatex(7e2, 1e3, "#gamma");
+      gamma->Draw("same");
+      TLatex* process_text = new TLatex(7e2, 1e3, "\\ \\ \\, + \\text{Pb}\\rightarrow q\\bar{q} + \\text{Pb} + X");
+      process_text->Draw("same");
+    } else {
+      TLatex* Q2_text = new TLatex(3e3, 10, "Q^{2} = 0 \\text{ GeV}^{2}\\");
+      Q2_text->Draw("same");
+      TLatex* gamma = new TLatex(1.25e3, 3, "#gamma");
+      gamma->Draw("same");
+      TLatex* process_text = new TLatex(1.25e3, 3, "\\ \\ \\, + \\text{p}\\rightarrow q\\bar{q} + \\text{p} + X");
+      process_text->Draw("same");
+    }
+    /*
     if (particle_name == "c") {
       if (diff_dipole=="_diffraction") {
         if (diffractive) {
@@ -596,6 +676,7 @@ int main() {
         }
       }
     }
+    */
     
   }
 
@@ -610,7 +691,7 @@ int main() {
   } else {
     filename += "_inclusive";
   }
-  filename += ".pdf";
+  filename += ".ps";
   double_canvas->Print(filename);
   return 0;
 }

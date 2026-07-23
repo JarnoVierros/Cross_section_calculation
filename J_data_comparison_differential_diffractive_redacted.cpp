@@ -281,25 +281,25 @@ int main() {
 */
 
   double Q2_selections[] = {
-    4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 
-    7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 
-    9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 
-    12, 12, 12, 12, 12, 12, 
-    18, 18, 18, 18, 18, 18, 
-    28, 28, 28, 28, 28, 28, 
-    45, 45, 45, 45, 45, 45, 
-        75, 75, 75, 75, 75
+    4.5, 4.5, 4.5, 4.5, 
+    7.5, 7.5, 7.5, 7.5, 
+    9.0, 9.0, 9.0, 9.0, 
+    12, 12, 12, 12, 
+    18, 18, 18, 18, 
+    28, 28, 28, 28, 
+    45, 45, 45, 45, 
+    75, 75, 75, 75
     };
 
   double beta_selections[] = {
-    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
-    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
-    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
-    0.04, 0.1, 0.2, 0.4, 0.65, 0.9,
-    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
-    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
-    0.04, 0.1, 0.2, 0.4, 0.65, 0.9, 
-          0.1, 0.2, 0.4, 0.65, 0.9
+    0.2, 0.4, 0.65, 0.9, 
+    0.2, 0.4, 0.65, 0.9, 
+    0.2, 0.4, 0.65, 0.9, 
+    0.2, 0.4, 0.65, 0.9,
+    0.2, 0.4, 0.65, 0.9, 
+    0.2, 0.4, 0.65, 0.9, 
+    0.2, 0.4, 0.65, 0.9, 
+    0.2, 0.4, 0.65, 0.9
     };
 
   if (size(Q2_selections) != size(beta_selections)) {
@@ -307,11 +307,11 @@ int main() {
     throw 1;
   }
 
-  int figure_width = 6;
+  int figure_width = 4;
   int figure_height = 8;
-  double margin_fraction = 0.1;
+  double margin_fraction = 0.11;
 
-  TLegend* legend = new TLegend(0.5*margin_fraction, 0.5*margin_fraction, margin_fraction+0.95*(1-2*margin_fraction)/figure_width, margin_fraction+0.95*(1-2*margin_fraction)/figure_height);
+  TLegend* legend = new TLegend(0, 0.1, 1, 0.3);
 
   for (int k=0; k<size(Q2_selections); k++) {
     vector<double> x_selection, chosen_measurement_xpomF2, chosen_delta, chosen_beta;
@@ -476,6 +476,7 @@ struct plot {
     TMultiGraph* comparison_graph = new TMultiGraph();
     comparison_graph->GetXaxis()->SetLimits(x_limits[0], x_limits[1]);
     comparison_graph->GetYaxis()->SetRangeUser(unit_scaler*y_limits[0], unit_scaler*y_limits[1]);
+    //comparison_graph->GetYaxis()->SetRangeUser(0, 12345);
     
     comparison_graph->GetXaxis()->SetLabelFont(43);
     comparison_graph->GetYaxis()->SetLabelFont(43);
@@ -493,6 +494,18 @@ struct plot {
     comparison_graph->GetYaxis()->ChangeLabel(-1, -1, 0, -1, -1, -1, -1);
 
     comparison_graph->GetYaxis()->SetLabelOffset(0.02);
+
+    comparison_graph->GetXaxis()->SetTickSize(0.1);
+
+    if (k==28) {
+      comparison_graph->GetXaxis()->SetTickSize(0.075);
+    } else if (k>27) {
+      comparison_graph->GetXaxis()->SetTickSize(0.05);
+    } else if (k%4==0) {
+      comparison_graph->GetXaxis()->SetTickSize(0.15);
+    } else {
+      comparison_graph->GetXaxis()->SetTickSize(0.10);
+    }
 
     //comparison_graph->GetXaxis()->SetLabelFont(21);
     //comparison_graph->GetXaxis()->SetLabelOffset(-0.05);
@@ -576,16 +589,21 @@ struct plot {
 
 
 
-  double fig_size_x = 100;
+  double fig_size_x = 130;
   double fig_size_y = 100;
-  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*fig_size_x/(1-2*margin_fraction), figure_height*fig_size_y/(1-2*margin_fraction));
-  //TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 769, 1115);
-  
+  double legend_width = 100;
+  TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*fig_size_x/(1-2*margin_fraction)+legend_width, figure_height*fig_size_y/(1-2*margin_fraction));
   multicanvas->Draw();
-  //TPad* multipad = new TPad("multipad", "multipad", margin_fraction, margin_fraction, 1-margin_fraction, 1-margin_fraction);
-  //multipad->Draw();
   multicanvas->cd(0);
-  TPad* subpads[48];
+
+  TPad* plots_pad = new TPad("plots_pad", "plots_pad", 0, 0, figure_width*fig_size_x/(1-2*margin_fraction)/(figure_width*fig_size_x/(1-2*margin_fraction)+legend_width), 1);
+  plots_pad->SetMargin(0, 0, 0, 0);
+  plots_pad->Draw();
+  plots_pad->cd(0);
+
+  //TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 769, 1115);
+
+  TPad* subpads[32];
   /*
   subpads[1] = new TPad("asd", "dsa", 0.1, 0.5, 0.3, 0.7);
   subpads[1]->SetFillColor(1);
@@ -597,35 +615,27 @@ struct plot {
   */
   int offset = 0;
   //for (int i=0; i<plots.size(); i++) {
-  for (int i=0; i<48; i++) {
-    if (i==42) {continue;}
+  for (int i=0; i<32; i++) {
     
-    multicanvas->cd(0);
+    plots_pad->cd(0);
     //cout << i << endl;
     double x1 = margin_fraction+(i%figure_width)*1.0/figure_width*(1-2*margin_fraction);
-    if (i%6==0) {x1=0;}
+    if (i%4==0) {x1=0;}
     double x2 = margin_fraction+(i%figure_width+1)*1.0/figure_width*(1-2*margin_fraction);
     double y1 = 1-margin_fraction-int(i/figure_width+1)*1.0/figure_height*(1-2*margin_fraction);
-    if (i/6==7) {y1=0;}
+    if (i/4==7) {y1=0;}
     double y2 = 1-margin_fraction-int(i/figure_width)*1.0/figure_height*(1-2*margin_fraction);
     //cout << x1 << ", " << y1 << ", " << x2 << ", " << y2 << endl;
     subpads[i] = new TPad("subpad", "subpad", x1, y1, x2, y2);
     subpads[i]->SetMargin(0, 0, 0, 0);
-    if (i%6==0) {
+    if (i%4==0) {
       subpads[i]->SetLeftMargin(margin_fraction/(margin_fraction+(1-2*margin_fraction)/figure_width));
     }
-    if (i/6==7) {
-      subpads[i]->SetBottomMargin(margin_fraction/(margin_fraction+(1-2*margin_fraction)/figure_width));
+    if (i/4==7) {
+      subpads[i]->SetBottomMargin(margin_fraction/(margin_fraction+(1-2*margin_fraction)/figure_height));
     }
     subpads[i]->Draw();
     subpads[i]->cd(0);
-
-    int offset;
-    if (i>42) {
-      offset = -1;
-    } else {
-      offset = 0;
-    }
 
     plots[i+offset].comparison_graph->Draw("A");
 
@@ -643,24 +653,24 @@ struct plot {
     double beta_x = 1.5e-4;
     double beta_y = 0.070;
 
-    if (i == 5) {
-      Q2_string = "#it{Q}^{2}    = " + Q2_stream.str() + " GeV^{2}";
-      beta_string = "#it{#beta}      = " + beta_stream.str();
+    if (i == 3) {
+      Q2_string = "              #it{Q}^{2} = " + Q2_stream.str() + " GeV^{2}";
+      beta_string = "              #it{#beta} = " + beta_stream.str();
       Q2_x = 8e-5;
       beta_x = 8e-5;
-    } else if (i == 7) {
-      Q2_x = 1e-4;
-      beta_x = 1e-4;
-    } else if (i == 10) {
+    //} else if (i == 7) {
+    //  Q2_x = 1e-4;
+    //  beta_x = 1e-4;
+    } else if (i == 6) {
       Q2_string = "#it{Q}^{2}=" + Q2_stream.str() + " GeV^{2}";
       Q2_x = 3e-4;
       beta_x = 3e-4;
-    } else if (i == 11) {
-      Q2_string = "#it{Q}^{2}  = " + Q2_stream.str() + " GeV^{2}";
-      beta_string = "#it{#beta}    = " + beta_stream.str();
-      Q2_x = 1e-4;
-      beta_x = 1e-4;
-    } else if (i == 22) {
+    } else if (i == 7) {
+      Q2_string = "             #it{Q}^{2} = " + Q2_stream.str() + " GeV^{2}";
+      beta_string = "             #it{#beta} = " + beta_stream.str();
+      Q2_x = 8e-5;
+      beta_x = 8e-5;
+    } else if (i == 14) {
       Q2_string = "#it{Q}^{2} = " + Q2_stream.str() + " GeV^{2}";
       beta_string = "#it{#beta}   = " + beta_stream.str();
       Q2_x = 1e-4;
@@ -688,24 +698,22 @@ struct plot {
     */
   }
   
-  multicanvas->cd(0);
+  plots_pad->cd(0);
   TString y_unit_string = "x_{\\mathbb{P}}F_{2}^{D(3)}";
-  TLatex* y_unit_text = new TLatex(0.36*margin_fraction, 0.5, y_unit_string);
+  TLatex* y_unit_text = new TLatex(0.37*margin_fraction, 0.5, y_unit_string);
   y_unit_text->SetTextAngle(90);
   y_unit_text->SetTextSize(24);
   y_unit_text->Draw("Same");
 
 
-  multicanvas->cd(0);
+  plots_pad->cd(0);
   TString x_unit_string = "#it{x}";
-  TLatex* x_unit_text = new TLatex(0.5, 0.4*margin_fraction, x_unit_string);
-  x_unit_text->SetTextSize(24);
+  TLatex* x_unit_text = new TLatex(0.5, 0.5*margin_fraction, x_unit_string);
+  x_unit_text->SetTextSize(26);
   x_unit_text->Draw("Same");
   
 
   multicanvas->cd(0);
-
-  
 
   //TText* title = new TText(0.48, 0.9, "Title");
   //title->Draw("Same");
@@ -713,7 +721,11 @@ struct plot {
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
   //top_pad->Draw();
 
-  legend->SetTextSize(0.025);
+  TPad* legend_pad = new TPad("legend_pad", "legend_pad", 0.8, 0, 1, 1);
+  legend_pad->SetMargin(0, 0, 0, 0);
+  legend_pad->Draw();
+  legend_pad->cd(0);
+  legend->SetTextSize(0.14);
   legend->Draw("Same");
 
   TString figure_filename = "figures/F2D_data_comparison.ps";

@@ -3,6 +3,7 @@
 #include "TLegend.h"
 #include "TAxis.h"
 #include "TMultiGraph.h"
+#include "TLatex.h"
 
 #include <string>
 #include <iostream>
@@ -16,6 +17,8 @@ using namespace std;
 const string main_dir = "/home/jarno/Programs/Cross_section_calculation";
 
 int main() {
+
+  double linewidth = 2;
 
   vector<string> numerator_filenames = {
     main_dir + "/output/diff_LHC_T_sigma_W_c_bfkl_Pb_diffraction.txt",
@@ -37,7 +40,7 @@ int main() {
     main_dir + "/output/J_LHC_T_inclusive_b_bfkl_p.txt",
     main_dir + "/output/J_LHC_T_inclusive_b_bk_p.txt",
   };
-  vector<TString> graph_titles = {"#gammaPb#rightarrowc#bar{c}X bfkl", "#gammaPb#rightarrowc#bar{c}X bk", "#gammap#rightarrowc#bar{c}X bfkl", "#gammap#rightarrowc#bar{c}X bk", "#gammaPb#rightarrowb#bar{b}X bfkl", "#gammaPb#rightarrowb#bar{b}X bk", "#gammap#rightarrowb#bar{b}X bfkl", "#gammap#rightarrowb#bar{b}X bk"};
+  vector<TString> graph_titles = {"Pb bfkl", "Pb bk", "p bfkl", "p bk", "Pb bfkl", "Pb bk", "p bfkl", "p bk"};
   vector<int> line_colors = {2, 2, 4, 4, 2, 2, 4, 4};
   vector<int> line_styles = {2, 1, 5, 7, 2, 1, 5, 7};
 
@@ -48,14 +51,17 @@ int main() {
   //numerator_filename = "data/diff_LHC_T_sigma_W_c_bk_Pb_diffraction.txt";
   //denominator_filename = "data/J_LHC_T_inclusive_c_bk_Pb.txt";
   //title = "Diffractive c#bar{c} cross section divided by the inclusive cross section";
-  outfile_name = "figures/diffractive_inclusive_ccbar_ratio.pdf";
+  outfile_name = "figures/diffractive_inclusive_ccbar_ratio.ps";
 
   TCanvas* ratios_canvas = new TCanvas("ratios_canvas", "", 1000, 2*600);
+  //ratios_canvas->SetBottomMargin(0.3);
+  //ratios_canvas->SetLeftMargin(0.3);
   ratios_canvas->Divide(1, 2);
 
   ratios_canvas->cd(1);
 
-
+  ratios_canvas->cd(1)->SetBottomMargin(0.14);
+  ratios_canvas->cd(1)->SetLeftMargin(0.15);
 
   TMultiGraph* ratios_graph = new TMultiGraph();
   //ratios_graph->SetTitle(title);
@@ -78,30 +84,47 @@ int main() {
       ratio[j] = numerator_sigma[j]/denominator_sigma[j];
       W[j] = numerator_W[j];
       data_size++;
-      cout << W[j] << ", " << ratio[j] << endl;
+      //cout << W[j] << ", " << ratio[j] << endl;
     }
     TGraph* ratio_graph = new TGraph(data_size, W, ratio);
     ratio_graph->SetTitle(graph_titles[i]);
     ratio_graph->SetLineColor(line_colors[i]);
     ratio_graph->SetLineStyle(line_styles[i]);
+    ratio_graph->SetLineWidth(linewidth);
+    ratio_graph->SetMarkerSize(0);
     //ratio_graph->GetXaxis()->SetRangeUser(9e1, 2e4);
     ratios_graph->Add(ratio_graph);
   }
   //ratios_graph->GetXaxis()->SetRangeUser(9e1, 2e4);
 
-  ratios_graph->GetYaxis()->SetTitle("#frac{#gammaA#rightarrowc#bar{c}AX}{#gammaA#rightarrowc#bar{c}X}");
+  ratios_graph->GetYaxis()->SetTitle("#frac{#it{#sigma}_{diffractive}}{#it{#sigma}_{inclusive}}");
   gPad->SetLogx();
 
   ratios_graph->Draw("AC");
-  ratios_graph->GetXaxis()->SetTitle("W (GeV)");
+  ratios_graph->GetXaxis()->SetTitle("#it{W} [GeV]");
   ratios_graph->GetXaxis()->SetLimits(2.6e1, 2.1e3);
-  ratios_graph->GetYaxis()->SetTitleSize(0.04);
-  ratios_graph->GetXaxis()->SetTitleSize(0.04);
+  ratios_graph->GetYaxis()->SetTitleSize(0.06);
+  ratios_graph->GetXaxis()->SetTitleSize(0.06);
+  ratios_graph->GetYaxis()->SetLabelSize(0.05);
+  ratios_graph->GetXaxis()->SetLabelSize(0.05);
 
-  ratios_canvas->cd(1)->BuildLegend(0.15, 0.6, 0.5, 0.9);
+  ratios_canvas->cd(1)->BuildLegend(0.2, 0.6, 0.4, 0.9);
 
+  TLatex* Q2_text = new TLatex(3.5e1, 0.5, "Q^{2}=0\\text{ GeV}^{2}");
+  Q2_text->SetTextSize(0.06);
+  Q2_text->Draw("same");
+  TLatex* gamma = new TLatex(3.5e1, 0.4, "#gamma");
+  gamma->SetTextSize(0.06);
+  gamma->Draw("same");
+  TLatex* process_text = new TLatex(3.5e1, 0.4, "\\ \\ \\, +\\text{Pb}/\\text{p} \\rightarrow c\\bar{c}+X");
+  process_text->SetTextSize(0.06);
+  process_text->Draw("same");
 
   ratios_canvas->cd(2);
+
+  ratios_canvas->cd(2)->SetBottomMargin(0.14);
+  ratios_canvas->cd(2)->SetLeftMargin(0.15);
+
   TMultiGraph* ratios_graph_2 = new TMultiGraph();
   //ratios_graph->SetTitle(title);
   
@@ -129,19 +152,33 @@ int main() {
     ratio_graph->SetTitle(graph_titles[i]);
     ratio_graph->SetLineColor(line_colors[i]);
     ratio_graph->SetLineStyle(line_styles[i]);
+    ratio_graph->SetLineWidth(linewidth);
+    ratio_graph->SetMarkerSize(0);
     ratios_graph_2->Add(ratio_graph);
   }
 
   gPad->SetLogx();
   //ratios_graph_2->GetYaxis()->SetRangeUser(0, 01);
   ratios_graph_2->Draw("AC");
-  ratios_graph_2->GetXaxis()->SetTitle("W (GeV)");
-  ratios_graph_2->GetYaxis()->SetTitle("#frac{#gammaA#rightarrowb#bar{b}AX}{#gammaA#rightarrowb#bar{b}X}");
+  ratios_graph_2->GetXaxis()->SetTitle("#it{W} [GeV]");
+  ratios_graph_2->GetYaxis()->SetTitle("#frac{#it{#sigma}_{diffractive}}{#it{#sigma}_{inclusive}}");
   ratios_graph_2->GetXaxis()->SetLimits(2.6e1, 2.1e3);
-  ratios_graph_2->GetYaxis()->SetTitleSize(0.04);
-  ratios_graph_2->GetXaxis()->SetTitleSize(0.04);
-  
-  ratios_canvas->cd(2)->BuildLegend(0.15, 0.6, 0.5, 0.9);
+  ratios_graph_2->GetYaxis()->SetTitleSize(0.06);
+  ratios_graph_2->GetXaxis()->SetTitleSize(0.06);
+  ratios_graph_2->GetYaxis()->SetLabelSize(0.05);
+  ratios_graph_2->GetXaxis()->SetLabelSize(0.05);
+
+  ratios_canvas->cd(2)->BuildLegend(0.2, 0.6, 0.4, 0.9);
+
+  Q2_text = new TLatex(3.5e1, 0.09, "Q^{2}=0\\text{ GeV}^{2}");
+  Q2_text->SetTextSize(0.06);
+  Q2_text->Draw("same");
+  gamma = new TLatex(3.5e1, 0.075, "#gamma");
+  gamma->SetTextSize(0.06);
+  gamma->Draw("same");
+  process_text = new TLatex(3.5e1, 0.075, "\\ \\ \\, +\\text{Pb}/\\text{p} \\rightarrow b\\bar{b}+X");
+  process_text->SetTextSize(0.06);
+  process_text->Draw("same");
 
   ratios_canvas->Print(outfile_name);
 

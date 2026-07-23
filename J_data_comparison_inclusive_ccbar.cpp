@@ -13,6 +13,9 @@
 #include "TAxis.h"
 #include "TMultiGraph.h"
 #include "TLatex.h"
+#include "TStyle.h"
+#include "TGaxis.h"
+#include "TF1.h"
 
 #include <string>
 #include <iostream>
@@ -108,11 +111,13 @@ int main() {
 
   gsl_set_error_handler_off();
 
+  gStyle->SetTextFont(43);
+
   //const double Q2_selection = 2000;
 
   //const double integration_radius = 100;
-  const int warmup_calls = 100000; //100000
-  const int integration_calls = 300000; //300000
+  const int warmup_calls = 1000; //100000
+  const int integration_calls = 10000; //300000
   const int integration_iterations = 1;
 
   const string data_filename = "data/HERA_data.dat";
@@ -139,9 +144,8 @@ int main() {
   TGraphErrors* measurement_datas[size(Q2_selections)];
   TGraph* bk_model_fits[size(Q2_selections)];
   TGraph* bfkl_model_fits[size(Q2_selections)];
-
   
-  for (int n=0; n<12; n++) {
+  for (int n=0; n<6; n++) {
 
     double Q2_selection = Q2_selections[n];
 
@@ -389,8 +393,22 @@ int main() {
     comparison_graphs[n]->GetXaxis()->SetLimits(1e-5, 2e-2);
     comparison_graphs[n]->GetYaxis()->SetRangeUser(0, 0.5);
 
-    comparison_graphs[n]->GetXaxis()->SetLabelSize(0.05);
-    comparison_graphs[n]->GetYaxis()->SetLabelSize(0.05);
+    //comparison_graphs[n]->GetXaxis()->SetTextFont(42);
+
+    comparison_graphs[n]->GetXaxis()->SetLabelFont(43);
+    comparison_graphs[n]->GetYaxis()->SetLabelFont(43);
+
+    comparison_graphs[n]->GetXaxis()->SetLabelSize(12);
+    comparison_graphs[n]->GetYaxis()->SetLabelSize(10);
+
+    //comparison_graphs[n]->GetYaxis()->SetTickSize
+
+    comparison_graphs[n]->GetXaxis()->ChangeLabel(1, -1, 0, -1, -1, -1, -1);
+
+    if (n != 3) {
+      comparison_graphs[n]->GetYaxis()->ChangeLabel(1, -1, 0, -1, -1, -1, -1);
+    }
+    comparison_graphs[n]->GetYaxis()->ChangeLabel(-1, -1, 0, -1, -1, -1, -1);
 
     gsl_rng_free(rng);
     /*
@@ -407,13 +425,22 @@ int main() {
     */
   }
 
+  /*
+0, 0.5, 0.366667, 0.9
+0.366667, 0.5, 0.633333, 0.9
+0.633333, 0.5, 0.9, 0.9
+0, 0, 0.366667, 0.5
+0.366667, 0, 0.633333, 0.5
+0.633333, 0, 0.9, 0.5
+  */
+
   /////////////////////////////////////////////////////////////////////////
 
   int figure_width = 3;
   int figure_height = 2;
-  double fig_size_x = 200;
-  double fig_size_y = 200;
-  double margin_fraction = 0.07;
+  double fig_size_x = 150;
+  double fig_size_y = 150;
+  double margin_fraction = 0.1;//0.1
   TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", figure_width*fig_size_x/(1-2*margin_fraction), figure_height*fig_size_y/(1-2*margin_fraction));
   //TCanvas* multicanvas = new TCanvas("multicanvas", "multipads", 769, 1115);
   
@@ -433,15 +460,18 @@ int main() {
     double y1 = 1-margin_fraction-(i/figure_width+1)*1.0/figure_height*(1-2*margin_fraction);
     if (i/figure_width==figure_height-1) {y1=0;}
     double y2 = 1-margin_fraction-(i/figure_width)*1.0/figure_height*(1-2*margin_fraction);
-    //cout << x1 << ", " << y1 << ", " << x2 << ", " << y2 << endl;
+    cout << x1 << ", " << y1 << ", " << x2 << ", " << y2 << endl;
     subpads[i] = new TPad("subpad", "subpad", x1, y1, x2, y2);
     subpads[i]->SetMargin(0, 0, 0, 0);
+
+    
     if (i%figure_width==0) {
       subpads[i]->SetLeftMargin(margin_fraction/(margin_fraction+(1-2*margin_fraction)/figure_width));
     }
     if (i/figure_width==figure_height-1) {
       subpads[i]->SetBottomMargin(margin_fraction/(margin_fraction+(1-2*margin_fraction)/figure_width));
     }
+    
     subpads[i]->Draw();
     subpads[i]->cd(0);
 
@@ -455,11 +485,21 @@ int main() {
       precision = 1;
     }
     Q2_stream << fixed << setprecision(precision) << Q2_selections[i];
-    TString Q2_string = "Q^{2}=" + Q2_stream.str();
-    TLatex* Q2_text = new TLatex(3e-3, 0.4, Q2_string);
-    Q2_text->SetTextSize(0.08);
+    TString Q2_string = "#it{Q}^{2} = " + Q2_stream.str() + " GeV^{2}";
+    TLatex* Q2_text;
+    if (i==5) {
+      Q2_text = new TLatex(1.5e-5, 0.43, Q2_string);
+    } else {
+      Q2_text = new TLatex(3e-4, 0.43, Q2_string);
+    }
+    //Q2_text->SetTextFont(43);
+    Q2_text->SetTextSize(12);
+    //Q2_text->SetTextSize(0.08);
     Q2_text->Draw("Same");
     
+    //TGaxis* axis = new TGaxis(1e-4, 0.05, 1e-2, 0.45, "f1");
+    //axis->Draw();
+
     
     if (i == 0) {
       double dummy_arr[1] = {0};
@@ -471,13 +511,13 @@ int main() {
       TGraph* dummy_bfkl_prediction = new TGraph(1, dummy_arr, dummy_arr);
       dummy_bfkl_prediction->SetLineStyle(2);
 
-      float location[4] = {0.25, 0.5, 0.75, 0.9};
+      float location[4] = {0.33, 0.4, 0.9, 0.8};
       TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
 
       legend->AddEntry(dummy_measurement,"H1 and ZEUS data", "PE");
       legend->AddEntry(dummy_bk_prediction,"BK prediction", "L");
       legend->AddEntry(dummy_bfkl_prediction,"BFKL prediction", "L");
-      legend->SetTextSize(0.06);
+      legend->SetTextSize(0.08);
       legend->Draw();
     }
 
@@ -487,14 +527,18 @@ int main() {
 
   multicanvas->cd(0);
   
-
-  TLatex* x_title = new TLatex(0.92, 0.023, "x");
-  x_title->SetTextSize(0.06);
+  
+  TLatex* x_title = new TLatex(0.5, 0.05, "#it{x}");
+  //x_title->SetTextFont(43);
+  x_title->SetTextSize(20);
   x_title->Draw("Same");
 
-  TLatex* y_title = new TLatex(0.002, 0.90, "#sigma_{r}^{c#bar{c}}");
-  y_title->SetTextSize(0.06);
+  TLatex* y_title = new TLatex(0.04, 0.50, "#it{#sigma}_{red}^{#it{c#bar{c}}}");
+  //y_title->SetTextFont(43);
+  y_title->SetTextSize(20);
+  y_title->SetTextAngle(90);
   y_title->Draw("Same");
+  
 
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
   //top_pad->Draw();

@@ -23,6 +23,9 @@ single_plot: single_plot.cpp
 J_data_comparison_differential_diffractive: J_data_comparison_differential_diffractive.cpp
 	g++ J_data_comparison_differential_diffractive.cpp $$(root-config --glibs --cflags --libs) -lgsl -o J_data_comparison_differential_diffractive.exe
 
+J_data_comparison_differential_diffractive_redacted: J_data_comparison_differential_diffractive_redacted.cpp
+	g++ J_data_comparison_differential_diffractive_redacted.cpp $$(root-config --glibs --cflags --libs) -lgsl -o J_data_comparison_differential_diffractive_redacted.exe
+
 Phi_generator: Phi_generator.cpp
 	g++ Phi_generator.cpp $$(root-config --glibs --cflags --libs) -lgsl -o Phi_generator.exe
 
@@ -58,3 +61,7 @@ J_LHC_simplified_exclusive_ccbar_cross_section_Mx2: J_LHC_simplified_exclusive_c
 
 J_LHC_inclusive_ccbar_cross_section: J_LHC_inclusive_ccbar_cross_section.cpp
 	g++ J_LHC_inclusive_ccbar_cross_section.cpp $$(root-config --glibs --cflags --libs) -lgsl -o J_LHC_inclusive_ccbar_cross_section.exe
+
+J_data_comparison_inclusive_ccbar: J_data_comparison_inclusive_ccbar.cpp
+	g++ J_data_comparison_inclusive_ccbar.cpp $$(root-config --glibs --cflags --libs) -lgsl -o J_data_comparison_inclusive_ccbar.exe
+
