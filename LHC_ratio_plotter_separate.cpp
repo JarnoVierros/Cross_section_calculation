@@ -55,7 +55,7 @@ int main() {
   outfile_name_2 = "figures/diffractive_inclusive_bbbar_ratio.ps";
 
 
-  TCanvas* top_canvas = new TCanvas("top_canvas", "", 0.5*1.5*2000, 1.5*800);
+  TCanvas* top_canvas = new TCanvas("top_canvas", "", 0.9/0.8*0.5*1.5*2000, 1.5*800);
   top_canvas->SetBottomMargin(0.14);
   top_canvas->SetLeftMargin(0.2);
 
@@ -121,7 +121,7 @@ int main() {
   top_canvas->Print(outfile_name_1);
 
   
-  TCanvas* bottom_canvas = new TCanvas("bottom_canvas", "", 0.5*1.5*2000, 1.5*800);
+  TCanvas* bottom_canvas = new TCanvas("bottom_canvas", "", 0.9/0.8*0.5*1.5*2000, 1.5*800);
   bottom_canvas->SetBottomMargin(0.14);
   bottom_canvas->SetLeftMargin(0.2);
 
