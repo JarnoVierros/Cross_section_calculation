@@ -18,7 +18,7 @@ const string main_dir = "/home/jarno/Cross_section_calculation";
 
 int main() {
 
-  double linewidth = 2;
+  double linewidth = 3;
 
   vector<string> numerator_filenames = {
     main_dir + "/output/diff_LHC_T_sigma_W_c_bfkl_Pb_diffraction.txt",
@@ -55,9 +55,9 @@ int main() {
   outfile_name_2 = "figures/diffractive_inclusive_bbbar_ratio.ps";
 
 
-  TCanvas* top_canvas = new TCanvas("top_canvas", "", 1000, 600);
+  TCanvas* top_canvas = new TCanvas("top_canvas", "", 0.5*1.5*2000, 1.5*800);
   top_canvas->SetBottomMargin(0.14);
-  top_canvas->SetLeftMargin(0.15);
+  top_canvas->SetLeftMargin(0.2);
 
   TMultiGraph* ratios_graph = new TMultiGraph();
   //ratios_graph->SetTitle(title);
@@ -99,29 +99,31 @@ int main() {
   ratios_graph->Draw("AC");
   ratios_graph->GetXaxis()->SetTitle("#it{W} [GeV]");
   ratios_graph->GetXaxis()->SetLimits(2.6e1, 2.1e3);
-  ratios_graph->GetYaxis()->SetTitleSize(0.06);
-  ratios_graph->GetXaxis()->SetTitleSize(0.06);
+  ratios_graph->GetYaxis()->SetTitleSize(0.05);
+  ratios_graph->GetXaxis()->SetTitleSize(0.05);
   ratios_graph->GetYaxis()->SetLabelSize(0.05);
   ratios_graph->GetXaxis()->SetLabelSize(0.05);
 
-  top_canvas->BuildLegend(0.2, 0.6, 0.4, 0.9);
+  ratios_graph->GetXaxis()->SetTitleOffset(1.3);
 
-  TLatex* Q2_text = new TLatex(3.5e1, 0.5, "Q^{2}=0\\text{ GeV}^{2}");
+  top_canvas->BuildLegend(0.25, 0.6, 0.45, 0.9);
+
+  TLatex* Q2_text = new TLatex(3.5e1, 0.4, "Q^{2}=0\\text{ GeV}^{2}");
   Q2_text->SetTextSize(0.06);
   Q2_text->Draw("same");
-  TLatex* gamma = new TLatex(3.5e1, 0.4, "#gamma");
+  TLatex* gamma = new TLatex(3.5e1, 0.5, "#gamma");
   gamma->SetTextSize(0.06);
   gamma->Draw("same");
-  TLatex* process_text = new TLatex(3.5e1, 0.4, "\\ \\, +\\text{Pb}/\\text{p} \\rightarrow c\\bar{c}+X");
+  TLatex* process_text = new TLatex(3.5e1, 0.5, "\\ \\, +\\text{Pb}/\\text{p} \\rightarrow c\\bar{c}+X");
   process_text->SetTextSize(0.06);
   process_text->Draw("same");
 
   top_canvas->Print(outfile_name_1);
 
   
-  TCanvas* bottom_canvas = new TCanvas("bottom_canvas", "", 1000, 600);
+  TCanvas* bottom_canvas = new TCanvas("bottom_canvas", "", 0.5*1.5*2000, 1.5*800);
   bottom_canvas->SetBottomMargin(0.14);
-  bottom_canvas->SetLeftMargin(0.15);
+  bottom_canvas->SetLeftMargin(0.2);
 
   TMultiGraph* ratios_graph_2 = new TMultiGraph();
   //ratios_graph->SetTitle(title);
@@ -161,20 +163,22 @@ int main() {
   ratios_graph_2->GetXaxis()->SetTitle("#it{W} [GeV]");
   ratios_graph_2->GetYaxis()->SetTitle("#frac{#it{#sigma}_{diffractive}}{#it{#sigma}_{inclusive}}");
   ratios_graph_2->GetXaxis()->SetLimits(2.6e1, 2.1e3);
-  ratios_graph_2->GetYaxis()->SetTitleSize(0.06);
-  ratios_graph_2->GetXaxis()->SetTitleSize(0.06);
+  ratios_graph_2->GetYaxis()->SetTitleSize(0.05);
+  ratios_graph_2->GetXaxis()->SetTitleSize(0.05);
   ratios_graph_2->GetYaxis()->SetLabelSize(0.05);
   ratios_graph_2->GetXaxis()->SetLabelSize(0.05);
 
-  bottom_canvas->BuildLegend(0.2, 0.6, 0.4, 0.9);
+  ratios_graph_2->GetXaxis()->SetTitleOffset(1.3);
 
-  Q2_text = new TLatex(3.5e1, 0.09, "Q^{2}=0\\text{ GeV}^{2}");
+  bottom_canvas->BuildLegend(0.25, 0.6, 0.45, 0.9);
+
+  Q2_text = new TLatex(3.5e1, 0.075, "Q^{2}=0\\text{ GeV}^{2}");
   Q2_text->SetTextSize(0.06);
   Q2_text->Draw("same");
-  gamma = new TLatex(3.5e1, 0.075, "#gamma");
+  gamma = new TLatex(3.5e1, 0.09, "#gamma");
   gamma->SetTextSize(0.06);
   gamma->Draw("same");
-  process_text = new TLatex(3.5e1, 0.075, "\\ \\, +\\text{Pb}/\\text{p} \\rightarrow b\\bar{b}+X");
+  process_text = new TLatex(3.5e1, 0.09, "\\ \\, +\\text{Pb}/\\text{p} \\rightarrow b\\bar{b}+X");
   process_text->SetTextSize(0.06);
   process_text->Draw("same");
 
