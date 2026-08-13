@@ -44,24 +44,20 @@ int main() {
   vector<int> line_colors = {2, 2, 4, 4, 2, 2, 4, 4};
   vector<int> line_styles = {2, 1, 5, 7, 2, 1, 5, 7};
 
-  TString title, outfile_name;
+  TString title, outfile_name_1, outfile_name_2;
 
 
   //const string sigma_type = "Pb BK";
   //numerator_filename = "data/diff_LHC_T_sigma_W_c_bk_Pb_diffraction.txt";
   //denominator_filename = "data/J_LHC_T_inclusive_c_bk_Pb.txt";
   //title = "Diffractive c#bar{c} cross section divided by the inclusive cross section";
-  outfile_name = "figures/diffractive_inclusive_ccbar_ratio.ps";
+  outfile_name_1 = "figures/diffractive_inclusive_ccbar_ratio.ps";
+  outfile_name_2 = "figures/diffractive_inclusive_bbbar_ratio.ps";
 
-  TCanvas* ratios_canvas = new TCanvas("ratios_canvas", "", 1000, 2*600);
-  //ratios_canvas->SetBottomMargin(0.3);
-  //ratios_canvas->SetLeftMargin(0.3);
-  ratios_canvas->Divide(1, 2);
 
-  ratios_canvas->cd(1);
-
-  ratios_canvas->cd(1)->SetBottomMargin(0.14);
-  ratios_canvas->cd(1)->SetLeftMargin(0.15);
+  TCanvas* top_canvas = new TCanvas("top_canvas", "", 1000, 600);
+  top_canvas->SetBottomMargin(0.14);
+  top_canvas->SetLeftMargin(0.15);
 
   TMultiGraph* ratios_graph = new TMultiGraph();
   //ratios_graph->SetTitle(title);
@@ -108,7 +104,7 @@ int main() {
   ratios_graph->GetYaxis()->SetLabelSize(0.05);
   ratios_graph->GetXaxis()->SetLabelSize(0.05);
 
-  ratios_canvas->cd(1)->BuildLegend(0.2, 0.6, 0.4, 0.9);
+  top_canvas->BuildLegend(0.2, 0.6, 0.4, 0.9);
 
   TLatex* Q2_text = new TLatex(3.5e1, 0.5, "Q^{2}=0\\text{ GeV}^{2}");
   Q2_text->SetTextSize(0.06);
@@ -116,14 +112,16 @@ int main() {
   TLatex* gamma = new TLatex(3.5e1, 0.4, "#gamma");
   gamma->SetTextSize(0.06);
   gamma->Draw("same");
-  TLatex* process_text = new TLatex(3.5e1, 0.4, "\\ \\ \\, +\\text{Pb}/\\text{p} \\rightarrow c\\bar{c}+X");
+  TLatex* process_text = new TLatex(3.5e1, 0.4, "\\ \\, +\\text{Pb}/\\text{p} \\rightarrow c\\bar{c}+X");
   process_text->SetTextSize(0.06);
   process_text->Draw("same");
 
-  ratios_canvas->cd(2);
+  top_canvas->Print(outfile_name_1);
 
-  ratios_canvas->cd(2)->SetBottomMargin(0.14);
-  ratios_canvas->cd(2)->SetLeftMargin(0.15);
+  
+  TCanvas* bottom_canvas = new TCanvas("bottom_canvas", "", 1000, 600);
+  bottom_canvas->SetBottomMargin(0.14);
+  bottom_canvas->SetLeftMargin(0.15);
 
   TMultiGraph* ratios_graph_2 = new TMultiGraph();
   //ratios_graph->SetTitle(title);
@@ -168,7 +166,7 @@ int main() {
   ratios_graph_2->GetYaxis()->SetLabelSize(0.05);
   ratios_graph_2->GetXaxis()->SetLabelSize(0.05);
 
-  ratios_canvas->cd(2)->BuildLegend(0.2, 0.6, 0.4, 0.9);
+  bottom_canvas->BuildLegend(0.2, 0.6, 0.4, 0.9);
 
   Q2_text = new TLatex(3.5e1, 0.09, "Q^{2}=0\\text{ GeV}^{2}");
   Q2_text->SetTextSize(0.06);
@@ -176,11 +174,11 @@ int main() {
   gamma = new TLatex(3.5e1, 0.075, "#gamma");
   gamma->SetTextSize(0.06);
   gamma->Draw("same");
-  process_text = new TLatex(3.5e1, 0.075, "\\ \\ \\, +\\text{Pb}/\\text{p} \\rightarrow b\\bar{b}+X");
+  process_text = new TLatex(3.5e1, 0.075, "\\ \\, +\\text{Pb}/\\text{p} \\rightarrow b\\bar{b}+X");
   process_text->SetTextSize(0.06);
   process_text->Draw("same");
 
-  ratios_canvas->Print(outfile_name);
+  bottom_canvas->Print(outfile_name_2);
 
   return 0;
 }

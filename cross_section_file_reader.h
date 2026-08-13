@@ -56,7 +56,6 @@ void read_sigma_file(string filename, vector<double> &Q2, vector<double> &x, vec
 }
 
 void read_LHC_sigma_file(string filename, vector<double> &x, vector<double> &sigma, vector<double> &sigma_error) {
-
     ifstream data_file(filename);
     string line;
 

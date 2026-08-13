@@ -49,6 +49,9 @@ J_qqg_contribution_calculator: J_qqg_contribution_calculator.cpp
 
 LHC_ratio_plotter: LHC_ratio_plotter.cpp
 	g++ LHC_ratio_plotter.cpp $$(root-config --glibs --cflags --libs) -lgsl -o LHC_ratio_plotter.exe
+	
+LHC_ratio_plotter_separate: LHC_ratio_plotter_separate.cpp
+	g++ LHC_ratio_plotter_separate.cpp $$(root-config --glibs --cflags --libs) -lgsl -o LHC_ratio_plotter_separate.exe
 
 LHC_ratio_plotter_old: LHC_ratio_plotter_old.cpp
 	g++ LHC_ratio_plotter_old.cpp $$(root-config --glibs --cflags --libs) -lgsl -o LHC_ratio_plotter_old.exe
