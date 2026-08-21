@@ -51,8 +51,8 @@ int main() {
   //numerator_filename = "data/diff_LHC_T_sigma_W_c_bk_Pb_diffraction.txt";
   //denominator_filename = "data/J_LHC_T_inclusive_c_bk_Pb.txt";
   //title = "Diffractive c#bar{c} cross section divided by the inclusive cross section";
-  outfile_name_1 = "figures/diffractive_inclusive_ccbar_ratio.ps";
-  outfile_name_2 = "figures/diffractive_inclusive_bbbar_ratio.ps";
+  outfile_name_1 = "figures/diffractive_inclusive_ccbar_ratio.png";
+  outfile_name_2 = "figures/diffractive_inclusive_bbbar_ratio.png";
 
 
   TCanvas* top_canvas = new TCanvas("top_canvas", "", 0.9/0.8*0.5*1.5*2000, 1.5*800);

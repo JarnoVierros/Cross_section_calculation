@@ -728,7 +728,7 @@ struct plot {
   legend->SetTextSize(0.14);
   legend->Draw("Same");
 
-  TString figure_filename = "figures/F2D_data_comparison.ps";
+  TString figure_filename = "figures/F2D_data_comparison.png";
   multicanvas->Print(figure_filename);
 
   return 0;
