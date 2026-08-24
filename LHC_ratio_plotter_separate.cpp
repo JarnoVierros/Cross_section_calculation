@@ -163,12 +163,13 @@ int main() {
   ratios_graph_2->GetXaxis()->SetTitle("#it{W} [GeV]");
   ratios_graph_2->GetYaxis()->SetTitle("#frac{#it{#sigma}_{D}}{#it{#sigma}}");
   ratios_graph_2->GetXaxis()->SetLimits(2.6e1, 2.1e3);
-  ratios_graph_2->GetYaxis()->SetTitleSize(0.05);
+  ratios_graph_2->GetYaxis()->SetTitleSize(0.06);
   ratios_graph_2->GetXaxis()->SetTitleSize(0.05);
   ratios_graph_2->GetYaxis()->SetLabelSize(0.05);
   ratios_graph_2->GetXaxis()->SetLabelSize(0.05);
 
   ratios_graph_2->GetXaxis()->SetTitleOffset(1.3);
+  ratios_graph_2->GetYaxis()->SetTitleOffset(1.1);
 
   bottom_canvas->BuildLegend(0.25, 0.6, 0.45, 0.9);
 
