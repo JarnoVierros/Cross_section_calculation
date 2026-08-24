@@ -40,9 +40,9 @@ int main() {
     main_dir + "/output/J_LHC_T_inclusive_b_bfkl_p.txt",
     main_dir + "/output/J_LHC_T_inclusive_b_bk_p.txt",
   };
-  vector<TString> graph_titles = {"Pb bfkl", "Pb bk", "p bfkl", "p bk", "Pb bfkl", "Pb bk", "p bfkl", "p bk"};
+  vector<TString> graph_titles = {"Pb BFKL", "Pb BK", "p BFKL", "p BK", "Pb BFKL", "Pb BK", "p BFKL", "p BK"};
   vector<int> line_colors = {2, 2, 4, 4, 2, 2, 4, 4};
-  vector<int> line_styles = {2, 1, 5, 7, 2, 1, 5, 7};
+  vector<int> line_styles = {7, 1, 7, 1, 7, 1, 7, 1};
 
   TString title, outfile_name_1, outfile_name_2;
 
@@ -51,13 +51,13 @@ int main() {
   //numerator_filename = "data/diff_LHC_T_sigma_W_c_bk_Pb_diffraction.txt";
   //denominator_filename = "data/J_LHC_T_inclusive_c_bk_Pb.txt";
   //title = "Diffractive c#bar{c} cross section divided by the inclusive cross section";
-  outfile_name_1 = "figures/diffractive_inclusive_ccbar_ratio.png";
-  outfile_name_2 = "figures/diffractive_inclusive_bbbar_ratio.png";
+  outfile_name_1 = "figures/diffractive_inclusive_ccbar_ratio.ps";
+  outfile_name_2 = "figures/diffractive_inclusive_bbbar_ratio.ps";
 
 
-  TCanvas* top_canvas = new TCanvas("top_canvas", "", 0.9/0.8*0.5*1.5*2000, 1.5*800);
+  TCanvas* top_canvas = new TCanvas("top_canvas", "", 0.9/0.85*0.5*1.5*2000, 1.5*800);
   top_canvas->SetBottomMargin(0.14);
-  top_canvas->SetLeftMargin(0.2);
+  top_canvas->SetLeftMargin(0.15);
 
   TMultiGraph* ratios_graph = new TMultiGraph();
   //ratios_graph->SetTitle(title);
@@ -93,7 +93,7 @@ int main() {
   }
   //ratios_graph->GetXaxis()->SetRangeUser(9e1, 2e4);
 
-  ratios_graph->GetYaxis()->SetTitle("#frac{#it{#sigma}_{diffractive}}{#it{#sigma}_{inclusive}}");
+  ratios_graph->GetYaxis()->SetTitle("#frac{#it{#sigma}_{D}}{#it{#sigma}}");
   gPad->SetLogx();
 
   ratios_graph->Draw("AC");
@@ -161,7 +161,7 @@ int main() {
   //ratios_graph_2->GetYaxis()->SetRangeUser(0, 01);
   ratios_graph_2->Draw("AC");
   ratios_graph_2->GetXaxis()->SetTitle("#it{W} [GeV]");
-  ratios_graph_2->GetYaxis()->SetTitle("#frac{#it{#sigma}_{diffractive}}{#it{#sigma}_{inclusive}}");
+  ratios_graph_2->GetYaxis()->SetTitle("#frac{#it{#sigma}_{D}}{#it{#sigma}}");
   ratios_graph_2->GetXaxis()->SetLimits(2.6e1, 2.1e3);
   ratios_graph_2->GetYaxis()->SetTitleSize(0.05);
   ratios_graph_2->GetXaxis()->SetTitleSize(0.05);
