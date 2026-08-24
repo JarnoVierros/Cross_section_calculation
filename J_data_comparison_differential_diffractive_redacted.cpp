@@ -578,7 +578,7 @@ struct plot {
     plots.push_back(new_plot);
 
     if (k==0) {
-      legend->AddEntry(measurement_data, "#splitline{experimental}{data}");
+      legend->AddEntry(measurement_data, "H1 data");
       legend->AddEntry(prediction, "total", "L");
       legend->AddEntry(FL_prediction, "longitudinal", "L");
       legend->AddEntry(FT_prediction, "transverse", "L");
@@ -721,11 +721,11 @@ struct plot {
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
   //top_pad->Draw();
 
-  TPad* legend_pad = new TPad("legend_pad", "legend_pad", 0.78, 0, 1, 1);
+  TPad* legend_pad = new TPad("legend_pad", "legend_pad", 0.8, 0, 1, 1);
   legend_pad->SetMargin(0, 0, 0, 0);
   legend_pad->Draw();
   legend_pad->cd(0);
-  legend->SetTextSize(0.13);
+  legend->SetTextSize(0.14);
   legend->Draw("Same");
 
   TString figure_filename = "figures/F2D_data_comparison.ps";
