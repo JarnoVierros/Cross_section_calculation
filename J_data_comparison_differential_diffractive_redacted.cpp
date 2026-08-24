@@ -578,7 +578,7 @@ struct plot {
     plots.push_back(new_plot);
 
     if (k==0) {
-      legend->AddEntry(measurement_data, "q#bar{q}");
+      legend->AddEntry(measurement_data, "#splitline{experimental}{data}");
       legend->AddEntry(prediction, "total", "L");
       legend->AddEntry(FL_prediction, "longitudinal", "L");
       legend->AddEntry(FT_prediction, "transverse", "L");
@@ -654,8 +654,8 @@ struct plot {
     double beta_y = 0.070;
 
     if (i == 3) {
-      Q2_string = "              #it{Q}^{2} = " + Q2_stream.str() + " GeV^{2}";
-      beta_string = "              #it{#beta} = " + beta_stream.str();
+      Q2_string = "          #it{Q}^{2} = " + Q2_stream.str() + " GeV^{2}";
+      beta_string = "          #it{#beta} = " + beta_stream.str();
       Q2_x = 8e-5;
       beta_x = 8e-5;
     //} else if (i == 7) {
@@ -666,8 +666,8 @@ struct plot {
       Q2_x = 3e-4;
       beta_x = 3e-4;
     } else if (i == 7) {
-      Q2_string = "             #it{Q}^{2} = " + Q2_stream.str() + " GeV^{2}";
-      beta_string = "             #it{#beta} = " + beta_stream.str();
+      Q2_string = "         #it{Q}^{2} = " + Q2_stream.str() + " GeV^{2}";
+      beta_string = "         #it{#beta} = " + beta_stream.str();
       Q2_x = 8e-5;
       beta_x = 8e-5;
     } else if (i == 14) {
@@ -708,7 +708,7 @@ struct plot {
 
   plots_pad->cd(0);
   TString x_unit_string = "#it{x}";
-  TLatex* x_unit_text = new TLatex(0.5, 0.5*margin_fraction, x_unit_string);
+  TLatex* x_unit_text = new TLatex(0.5, 0.6*margin_fraction, x_unit_string);
   x_unit_text->SetTextSize(26);
   x_unit_text->Draw("Same");
   
@@ -721,14 +721,14 @@ struct plot {
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
   //top_pad->Draw();
 
-  TPad* legend_pad = new TPad("legend_pad", "legend_pad", 0.8, 0, 1, 1);
+  TPad* legend_pad = new TPad("legend_pad", "legend_pad", 0.78, 0, 1, 1);
   legend_pad->SetMargin(0, 0, 0, 0);
   legend_pad->Draw();
   legend_pad->cd(0);
-  legend->SetTextSize(0.14);
+  legend->SetTextSize(0.13);
   legend->Draw("Same");
 
-  TString figure_filename = "figures/F2D_data_comparison.png";
+  TString figure_filename = "figures/F2D_data_comparison.ps";
   multicanvas->Print(figure_filename);
 
   return 0;

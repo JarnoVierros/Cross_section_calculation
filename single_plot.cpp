@@ -32,8 +32,8 @@ void zero_array(double array[], int size) {
 
 const double min_b_W = 83.6; //83.6
 
-string nucleus = "p";
-bool diffractive = false;
+string nucleus = "Pb";
+bool diffractive = true;
 string diff_dipole;
 string particle_name = "c";
 
@@ -60,7 +60,7 @@ int main() {
   }
   */
 
-  graph_titles = {"c\\bar{c}\\ BK", "c\\bar{c}\\ BFKL", "b\\bar{b}\\ BK", "b\\bar{b}\\ BFKL"};
+  graph_titles = {"c\\bar{c}\\ \\text{BK}", "c\\bar{c}\\ \\text{BFKL}", "b\\bar{b}\\ \\text{BK}", "b\\bar{b}\\ \\text{BFKL}"};
 
   string c_filenames[4];
   string b_filenames[4];
@@ -252,7 +252,7 @@ int main() {
     left_comparison_graph->GetXaxis()->SetTitle("#it{W} [GeV]");
     if (diffractive) {
       //left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}"+nucleus+"X} [nb]";
-      left_title = "#it{#sigma} [nb]";
+      left_title = "#it{#sigma}_{D} [nb]";
     } else {
       //left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}X} [nb]";
       left_title = "#it{#sigma} [nb]";
@@ -282,14 +282,14 @@ int main() {
       Q2_text->Draw("same");
       TLatex* gamma = new TLatex(1.5e3, 1.5e4, "#gamma");
       gamma->Draw("same");
-      TLatex* process_text = new TLatex(1.5e3, 1.5e4, "\\ \\ \\, + \\text{Pb}\\rightarrow q\\bar{q} + X");
+      TLatex* process_text = new TLatex(1.5e3, 1.5e4, "\\ + \\text{Pb}\\rightarrow q\\bar{q} + X");
       process_text->Draw("same");
     } else {
       TLatex* Q2_text = new TLatex(3e3, 2.5e2, "Q^{2} = 0 \\text{ GeV}^{2}\\");
       Q2_text->Draw("same");
       TLatex* gamma = new TLatex(2e3, 1e2, "#gamma");
       gamma->Draw("same");
-      TLatex* process_text = new TLatex(2e3, 1e2, "\\ \\ \\, + \\text{p}\\rightarrow q\\bar{q} + X");
+      TLatex* process_text = new TLatex(2e3, 1e2, "\\ + \\text{p}\\rightarrow q\\bar{q} + X");
       process_text->Draw("same");
     }
 
@@ -560,7 +560,7 @@ int main() {
     right_comparison_graph->GetXaxis()->SetTitle("#it{W} [GeV]");
     if (diffractive) {
       //left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}"+nucleus+"X} [nb]";
-      right_title = "#it{#sigma} [nb]";
+      right_title = "#it{#sigma}_{D} [nb]";
     } else {
       //left_title = "#sigma^{#gamma"+nucleus+"#rightarrowq#bar{q}X} [nb]";
       right_title = "#it{#sigma} [nb]";
@@ -588,14 +588,14 @@ int main() {
       Q2_text->Draw("same");
       TLatex* gamma = new TLatex(7e2, 1e3, "#gamma");
       gamma->Draw("same");
-      TLatex* process_text = new TLatex(7e2, 1e3, "\\ \\ \\, + \\text{Pb}\\rightarrow q\\bar{q} + \\text{Pb} + X");
+      TLatex* process_text = new TLatex(7e2, 1e3, "\\ + \\text{Pb}\\rightarrow q\\bar{q} + \\text{Pb} + X");
       process_text->Draw("same");
     } else {
       TLatex* Q2_text = new TLatex(3e3, 10, "Q^{2} = 0 \\text{ GeV}^{2}\\");
       Q2_text->Draw("same");
       TLatex* gamma = new TLatex(1.25e3, 3, "#gamma");
       gamma->Draw("same");
-      TLatex* process_text = new TLatex(1.25e3, 3, "\\ \\ \\, + \\text{p}\\rightarrow q\\bar{q} + \\text{p} + X");
+      TLatex* process_text = new TLatex(1.25e3, 3, "\\ + \\text{p}\\rightarrow q\\bar{q} + \\text{p} + X");
       process_text->Draw("same");
     }
     /*
