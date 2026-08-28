@@ -86,7 +86,7 @@ void read_data_file(string filename, vector<double> &Q2_values, vector<double> &
 struct plot {
   TMultiGraph* comparison_graph;
   TGraphErrors* measurement_data;
-  TGraphErrors* prediction;
+  TGraph* prediction;
   TGraph* FL_prediction;
   TGraph* FT_prediction;
   TGraph* qqg_correction;
@@ -532,9 +532,10 @@ struct plot {
     measurement_data->SetTitle("Measurement data");
     comparison_graph->Add(measurement_data, "P");
 
-    TGraphErrors* prediction = new TGraphErrors(valid_prediction_size, x_selection_arr, chosen_prediction_xpomF2_arr, zeroes, chosen_prediction_error_arr);
+    //TGraphErrors* prediction = new TGraphErrors(valid_prediction_size, x_selection_arr, chosen_prediction_xpomF2_arr, zeroes, chosen_prediction_error_arr);
+    TGraph* prediction = new TGraph(valid_prediction_size, x_selection_arr, chosen_prediction_xpomF2_arr);
     prediction->SetTitle("Prediction");
-    prediction->SetMarkerStyle(8);
+    prediction->SetMarkerStyle(0);
     prediction->SetMarkerColor(2);
     prediction->SetLineWidth(2);
 

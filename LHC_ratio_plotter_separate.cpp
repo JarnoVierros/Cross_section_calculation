@@ -4,6 +4,7 @@
 #include "TAxis.h"
 #include "TMultiGraph.h"
 #include "TLatex.h"
+#include "TStyle.h"
 
 #include <string>
 #include <iostream>
@@ -18,7 +19,9 @@ const string main_dir = "/home/jarno/Cross_section_calculation";
 
 int main() {
 
-  double linewidth = 3;
+  gStyle->SetLineStyleString(11, "50 15");
+
+  double linewidth = 4;
 
   vector<string> numerator_filenames = {
     main_dir + "/output/diff_LHC_T_sigma_W_c_bfkl_Pb_diffraction.txt",
@@ -42,7 +45,7 @@ int main() {
   };
   vector<TString> graph_titles = {"Pb BFKL", "Pb BK", "p BFKL", "p BK", "Pb BFKL", "Pb BK", "p BFKL", "p BK"};
   vector<int> line_colors = {2, 2, 4, 4, 2, 2, 4, 4};
-  vector<int> line_styles = {7, 1, 7, 1, 7, 1, 7, 1};
+  vector<int> line_styles = {7, 1, 11, 1, 7, 1, 11, 1};
 
   TString title, outfile_name_1, outfile_name_2;
 
@@ -106,7 +109,7 @@ int main() {
 
   ratios_graph->GetXaxis()->SetTitleOffset(1.3);
 
-  top_canvas->BuildLegend(0.25, 0.6, 0.45, 0.9);
+  top_canvas->BuildLegend(0.20, 0.6, 0.50, 0.9);
 
   TLatex* Q2_text = new TLatex(3.5e1, 0.4, "Q^{2}=0\\text{ GeV}^{2}");
   Q2_text->SetTextSize(0.06);
@@ -171,7 +174,7 @@ int main() {
   ratios_graph_2->GetXaxis()->SetTitleOffset(1.3);
   ratios_graph_2->GetYaxis()->SetTitleOffset(1.1);
 
-  bottom_canvas->BuildLegend(0.25, 0.6, 0.45, 0.9);
+  bottom_canvas->BuildLegend(0.20, 0.6, 0.45, 0.9);
 
   Q2_text = new TLatex(3.5e1, 0.075, "Q^{2}=0\\text{ GeV}^{2}");
   Q2_text->SetTextSize(0.06);

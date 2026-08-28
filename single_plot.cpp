@@ -6,6 +6,7 @@
 #include "TMultiGraph.h"
 #include "TLatex.h"
 #include "TMathText.h"
+#include "TStyle.h"
 
 #include <string>
 #include <iostream>
@@ -33,13 +34,15 @@ void zero_array(double array[], int size) {
 const double min_b_W = 83.6; //83.6
 
 string nucleus = "Pb";
-bool diffractive = true;
+bool diffractive = false;
 string diff_dipole;
 string particle_name = "c";
 
-double linewidth = 3;
+double linewidth = 4;
 
 int main() {
+
+  gStyle->SetLineStyleString(11, "50 15");
 
   if (diffractive) {
     diff_dipole = "_diffraction";
@@ -166,32 +169,24 @@ int main() {
     left_comparison_graph->SetTitle(left_title);
 
     if (nucleus == "Pb") {
+      double c_BFKL_Pb_Q20_x_arr[c_x[2].size()];
+      vector_to_array(c_BFKL_Pb_Q20_x_arr, c_x[2]);
+      TGraph* c_BFKL_Q20_graph = new TGraph(c_x[2].size(), c_BFKL_Pb_Q20_x_arr, c_BFKL_sigma_tot_Pb_Q20);
+      c_BFKL_Q20_graph->SetTitle(graph_titles[1]); //Pb BFKL
+      c_BFKL_Q20_graph->SetLineColor(2);
+      c_BFKL_Q20_graph->SetLineStyle(7);
+      c_BFKL_Q20_graph->SetMarkerSize(0);
+      c_BFKL_Q20_graph->SetLineWidth(linewidth);
+      left_comparison_graph->Add(c_BFKL_Q20_graph);
+
       double c_BK_Pb_Q20_x_arr[c_x[0].size()];
       vector_to_array(c_BK_Pb_Q20_x_arr, c_x[0]);
       TGraph* c_BK_Q20_graph = new TGraph(c_x[0].size(), c_BK_Pb_Q20_x_arr, c_BK_sigma_tot_Pb_Q20);
       c_BK_Q20_graph->SetTitle(graph_titles[0]); //Pb BK
       c_BK_Q20_graph->SetLineColor(2);
       c_BK_Q20_graph->SetLineWidth(linewidth);
+      c_BK_Q20_graph->SetMarkerSize(0);
       left_comparison_graph->Add(c_BK_Q20_graph);
-      double c_BFKL_Pb_Q20_x_arr[c_x[2].size()];
-      vector_to_array(c_BFKL_Pb_Q20_x_arr, c_x[2]);
-
-      TGraph* c_BFKL_Q20_graph = new TGraph(c_x[2].size(), c_BFKL_Pb_Q20_x_arr, c_BFKL_sigma_tot_Pb_Q20);
-      c_BFKL_Q20_graph->SetTitle(graph_titles[1]); //Pb BFKL
-      c_BFKL_Q20_graph->SetLineColor(2);
-      c_BFKL_Q20_graph->SetLineStyle(2);
-      c_BFKL_Q20_graph->SetLineWidth(linewidth);
-      left_comparison_graph->Add(c_BFKL_Q20_graph);
-
-      double b_BK_Pb_Q20_x_arr[b_x[0].size()];
-      vector_to_array(b_BK_Pb_Q20_x_arr, b_x[0]);
-
-      TGraph* b_BK_Q20_graph = new TGraph(b_x[0].size(), b_BK_Pb_Q20_x_arr, b_BK_sigma_tot_Pb_Q20);
-      b_BK_Q20_graph->SetTitle(graph_titles[2]); //Pb BK
-      b_BK_Q20_graph->SetLineColor(4);
-      b_BK_Q20_graph->SetLineStyle(7);
-      b_BK_Q20_graph->SetLineWidth(linewidth);
-      left_comparison_graph->Add(b_BK_Q20_graph);
 
       double b_BFKL_Pb_Q20_x_arr[b_x[0].size()];
       vector_to_array(b_BFKL_Pb_Q20_x_arr, b_x[0]);
@@ -199,20 +194,24 @@ int main() {
       TGraph* b_BFKL_Q20_graph = new TGraph(b_x[0].size(), b_BFKL_Pb_Q20_x_arr, b_BFKL_sigma_tot_Pb_Q20);
       b_BFKL_Q20_graph->SetTitle(graph_titles[3]); //Pb BFKL
       b_BFKL_Q20_graph->SetLineColor(4);
-      b_BFKL_Q20_graph->SetLineStyle(3);
+      b_BFKL_Q20_graph->SetLineStyle(11);
+      b_BFKL_Q20_graph->SetMarkerSize(0);
       b_BFKL_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(b_BFKL_Q20_graph);
+
+      double b_BK_Pb_Q20_x_arr[b_x[0].size()];
+      vector_to_array(b_BK_Pb_Q20_x_arr, b_x[0]);
+
+      TGraph* b_BK_Q20_graph = new TGraph(b_x[0].size(), b_BK_Pb_Q20_x_arr, b_BK_sigma_tot_Pb_Q20);
+      b_BK_Q20_graph->SetTitle(graph_titles[2]); //Pb BK
+      b_BK_Q20_graph->SetLineColor(4);
+      b_BK_Q20_graph->SetLineStyle(1);
+      b_BK_Q20_graph->SetMarkerSize(0);
+      b_BK_Q20_graph->SetLineWidth(linewidth);
+      left_comparison_graph->Add(b_BK_Q20_graph);
     }
 
     if (nucleus == "p") {
-      double c_BK_p_Q20_x_arr[c_x[0].size()];
-      vector_to_array(c_BK_p_Q20_x_arr, c_x[0]);
-
-      TGraph* c_BK_p_Q20_graph = new TGraph(c_x[0].size(), c_BK_p_Q20_x_arr, c_BK_sigma_tot_p_Q20);
-      c_BK_p_Q20_graph->SetTitle(graph_titles[0]); //p BK
-      c_BK_p_Q20_graph->SetLineColor(2);
-      c_BK_p_Q20_graph->SetLineWidth(linewidth);
-      left_comparison_graph->Add(c_BK_p_Q20_graph);
 
       double c_BFKL_p_Q20_x_arr[c_x[2].size()];
       vector_to_array(c_BFKL_p_Q20_x_arr, c_x[2]);
@@ -220,19 +219,20 @@ int main() {
       TGraph* c_BFKL_p_Q20_graph = new TGraph(c_x[2].size(), c_BFKL_p_Q20_x_arr, c_BFKL_sigma_tot_p_Q20);
       c_BFKL_p_Q20_graph->SetTitle(graph_titles[1]); //p BFKL
       c_BFKL_p_Q20_graph->SetLineColor(2);
-      c_BFKL_p_Q20_graph->SetLineStyle(2);
+      c_BFKL_p_Q20_graph->SetLineStyle(7);
+      c_BFKL_p_Q20_graph->SetMarkerSize(0);
       c_BFKL_p_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(c_BFKL_p_Q20_graph);
 
+      double c_BK_p_Q20_x_arr[c_x[0].size()];
+      vector_to_array(c_BK_p_Q20_x_arr, c_x[0]);
 
-      double b_BK_p_Q20_x_arr[b_x[0].size()];
-      vector_to_array(b_BK_p_Q20_x_arr, b_x[0]);
-      TGraph* b_BK_p_Q20_graph = new TGraph(b_x[0].size(), b_BK_p_Q20_x_arr, b_BK_sigma_tot_p_Q20);
-      b_BK_p_Q20_graph->SetTitle(graph_titles[2]); //p BK
-      b_BK_p_Q20_graph->SetLineColor(4);
-      b_BK_p_Q20_graph->SetLineStyle(7);
-      b_BK_p_Q20_graph->SetLineWidth(linewidth);
-      left_comparison_graph->Add(b_BK_p_Q20_graph);
+      TGraph* c_BK_p_Q20_graph = new TGraph(c_x[0].size(), c_BK_p_Q20_x_arr, c_BK_sigma_tot_p_Q20);
+      c_BK_p_Q20_graph->SetTitle(graph_titles[0]); //p BK
+      c_BK_p_Q20_graph->SetLineColor(2);
+      c_BK_p_Q20_graph->SetLineWidth(linewidth);
+      c_BK_p_Q20_graph->SetMarkerSize(0);
+      left_comparison_graph->Add(c_BK_p_Q20_graph);
 
       double b_BFKL_p_Q20_x_arr[b_x[0].size()];
       vector_to_array(b_BFKL_p_Q20_x_arr, b_x[0]);
@@ -240,9 +240,20 @@ int main() {
       TGraph* b_BFKL_p_Q20_graph = new TGraph(b_x[0].size(), b_BFKL_p_Q20_x_arr, b_BFKL_sigma_tot_p_Q20);
       b_BFKL_p_Q20_graph->SetTitle(graph_titles[3]); //p BFKL
       b_BFKL_p_Q20_graph->SetLineColor(4);
-      b_BFKL_p_Q20_graph->SetLineStyle(3);
+      b_BFKL_p_Q20_graph->SetLineStyle(11);
+      b_BFKL_p_Q20_graph->SetMarkerSize(0);
       b_BFKL_p_Q20_graph->SetLineWidth(linewidth);
       left_comparison_graph->Add(b_BFKL_p_Q20_graph);
+
+      double b_BK_p_Q20_x_arr[b_x[0].size()];
+      vector_to_array(b_BK_p_Q20_x_arr, b_x[0]);
+      TGraph* b_BK_p_Q20_graph = new TGraph(b_x[0].size(), b_BK_p_Q20_x_arr, b_BK_sigma_tot_p_Q20);
+      b_BK_p_Q20_graph->SetTitle(graph_titles[2]); //p BK
+      b_BK_p_Q20_graph->SetLineColor(4);
+      b_BK_p_Q20_graph->SetLineStyle(1);
+      b_BK_p_Q20_graph->SetMarkerSize(0);
+      b_BK_p_Q20_graph->SetLineWidth(linewidth);
+      left_comparison_graph->Add(b_BK_p_Q20_graph);
     }
 
     left_comparison_graph->Draw("A");
@@ -271,7 +282,7 @@ int main() {
     if (false) {
       double_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
     } else {
-      double_canvas->BuildLegend(0.14, 0.65, 0.35, 0.9);
+      double_canvas->BuildLegend(0.14, 0.65, 0.42, 0.9);
     }
 
     //left_comparison_graph->GetXaxis()->SetLabelOffset(-0.05);
@@ -469,14 +480,6 @@ int main() {
 
 
     if (nucleus == "Pb") {
-      double c_BK_Pb_Q20_x_arr[right_c_x[0].size()];
-      vector_to_array(c_BK_Pb_Q20_x_arr, right_c_x[0]);
-
-      TGraph* c_BK_Q20_graph = new TGraph(right_c_x[0].size(), c_BK_Pb_Q20_x_arr, right_c_BK_sigma_tot_Pb_Q20);
-      c_BK_Q20_graph->SetTitle(graph_titles[0]); //Pb BK
-      c_BK_Q20_graph->SetLineColor(2);
-      c_BK_Q20_graph->SetLineWidth(linewidth);
-      right_comparison_graph->Add(c_BK_Q20_graph);
 
       double c_BFKL_Pb_Q20_x_arr[right_c_x[2].size()];
       vector_to_array(c_BFKL_Pb_Q20_x_arr, right_c_x[2]);
@@ -484,20 +487,20 @@ int main() {
       TGraph* c_BFKL_Q20_graph = new TGraph(right_c_x[2].size(), c_BFKL_Pb_Q20_x_arr, right_c_BFKL_sigma_tot_Pb_Q20);
       c_BFKL_Q20_graph->SetTitle(graph_titles[1]); //Pb BFKL
       c_BFKL_Q20_graph->SetLineColor(2);
-      c_BFKL_Q20_graph->SetLineStyle(2);
+      c_BFKL_Q20_graph->SetLineStyle(7);
+      c_BFKL_Q20_graph->SetMarkerSize(0);
       c_BFKL_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(c_BFKL_Q20_graph);
 
+      double c_BK_Pb_Q20_x_arr[right_c_x[0].size()];
+      vector_to_array(c_BK_Pb_Q20_x_arr, right_c_x[0]);
 
-      double b_BK_Pb_Q20_x_arr[right_b_x[0].size()];
-      vector_to_array(b_BK_Pb_Q20_x_arr, right_b_x[0]);
-
-      TGraph* b_BK_Q20_graph = new TGraph(right_b_x[0].size(), b_BK_Pb_Q20_x_arr, right_b_BK_sigma_tot_Pb_Q20);
-      b_BK_Q20_graph->SetTitle(graph_titles[2]); //Pb BK
-      b_BK_Q20_graph->SetLineColor(4);
-      b_BK_Q20_graph->SetLineStyle(7);
-      b_BK_Q20_graph->SetLineWidth(linewidth);
-      right_comparison_graph->Add(b_BK_Q20_graph);
+      TGraph* c_BK_Q20_graph = new TGraph(right_c_x[0].size(), c_BK_Pb_Q20_x_arr, right_c_BK_sigma_tot_Pb_Q20);
+      c_BK_Q20_graph->SetTitle(graph_titles[0]); //Pb BK
+      c_BK_Q20_graph->SetLineColor(2);
+      c_BK_Q20_graph->SetMarkerSize(0);
+      c_BK_Q20_graph->SetLineWidth(linewidth);
+      right_comparison_graph->Add(c_BK_Q20_graph);
 
       double b_BFKL_Pb_Q20_x_arr[right_b_x[0].size()];
       vector_to_array(b_BFKL_Pb_Q20_x_arr, right_b_x[0]);
@@ -505,20 +508,25 @@ int main() {
       TGraph* b_BFKL_Q20_graph = new TGraph(right_b_x[0].size(), b_BFKL_Pb_Q20_x_arr, right_b_BFKL_sigma_tot_Pb_Q20);
       b_BFKL_Q20_graph->SetTitle(graph_titles[3]); //Pb BFKL
       b_BFKL_Q20_graph->SetLineColor(4);
-      b_BFKL_Q20_graph->SetLineStyle(3);
+      b_BFKL_Q20_graph->SetMarkerSize(0);
+      b_BFKL_Q20_graph->SetLineStyle(11);
       b_BFKL_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(b_BFKL_Q20_graph);
+
+      double b_BK_Pb_Q20_x_arr[right_b_x[0].size()];
+      vector_to_array(b_BK_Pb_Q20_x_arr, right_b_x[0]);
+
+      TGraph* b_BK_Q20_graph = new TGraph(right_b_x[0].size(), b_BK_Pb_Q20_x_arr, right_b_BK_sigma_tot_Pb_Q20);
+      b_BK_Q20_graph->SetTitle(graph_titles[2]); //Pb BK
+      b_BK_Q20_graph->SetLineColor(4);
+      b_BK_Q20_graph->SetMarkerSize(0);
+      b_BK_Q20_graph->SetLineStyle(1);
+      b_BK_Q20_graph->SetLineWidth(linewidth);
+      right_comparison_graph->Add(b_BK_Q20_graph);
+
     }
 
     if (nucleus == "p") {
-      double c_BK_p_Q20_x_arr[right_c_x[0].size()];
-      vector_to_array(c_BK_p_Q20_x_arr, right_c_x[0]);
-
-      TGraph* c_BK_p_Q20_graph = new TGraph(right_c_x[0].size(), c_BK_p_Q20_x_arr, right_c_BK_sigma_tot_p_Q20);
-      c_BK_p_Q20_graph->SetTitle(graph_titles[0]); //p BK
-      c_BK_p_Q20_graph->SetLineColor(2);
-      c_BK_p_Q20_graph->SetLineWidth(linewidth);
-      right_comparison_graph->Add(c_BK_p_Q20_graph);
 
       double c_BFKL_p_Q20_x_arr[right_c_x[2].size()];
       vector_to_array(c_BFKL_p_Q20_x_arr, right_c_x[2]);
@@ -526,11 +534,20 @@ int main() {
       TGraph* c_BFKL_p_Q20_graph = new TGraph(right_c_x[2].size(), c_BFKL_p_Q20_x_arr, right_c_BFKL_sigma_tot_p_Q20);
       c_BFKL_p_Q20_graph->SetTitle(graph_titles[1]); //p BFKL
       c_BFKL_p_Q20_graph->SetLineColor(2);
-      c_BFKL_p_Q20_graph->SetLineStyle(2);
+      c_BFKL_p_Q20_graph->SetLineStyle(7);
+      c_BFKL_p_Q20_graph->SetMarkerSize(0);
       c_BFKL_p_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(c_BFKL_p_Q20_graph);
 
+      double c_BK_p_Q20_x_arr[right_c_x[0].size()];
+      vector_to_array(c_BK_p_Q20_x_arr, right_c_x[0]);
 
+      TGraph* c_BK_p_Q20_graph = new TGraph(right_c_x[0].size(), c_BK_p_Q20_x_arr, right_c_BK_sigma_tot_p_Q20);
+      c_BK_p_Q20_graph->SetTitle(graph_titles[0]); //p BK
+      c_BK_p_Q20_graph->SetLineColor(2);
+      c_BK_p_Q20_graph->SetLineWidth(linewidth);
+      c_BK_p_Q20_graph->SetMarkerSize(0);
+      right_comparison_graph->Add(c_BK_p_Q20_graph);
 
       double b_BK_p_Q20_x_arr[right_b_x[0].size()];
       vector_to_array(b_BK_p_Q20_x_arr, right_b_x[0]);
@@ -538,7 +555,11 @@ int main() {
       TGraph* b_BK_p_Q20_graph = new TGraph(right_b_x[0].size(), b_BK_p_Q20_x_arr, right_b_BK_sigma_tot_p_Q20);
       b_BK_p_Q20_graph->SetTitle(graph_titles[2]); //p BK
       b_BK_p_Q20_graph->SetLineColor(4);
-      b_BK_p_Q20_graph->SetLineStyle(7);
+
+
+
+      b_BK_p_Q20_graph->SetLineStyle(11);
+      b_BK_p_Q20_graph->SetMarkerSize(0);
       b_BK_p_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(b_BK_p_Q20_graph);
 
@@ -548,7 +569,8 @@ int main() {
       TGraph* b_BFKL_p_Q20_graph = new TGraph(right_b_x[0].size(), b_BFKL_p_Q20_x_arr, right_b_BFKL_sigma_tot_p_Q20);
       b_BFKL_p_Q20_graph->SetTitle(graph_titles[3]); //p BFKL
       b_BFKL_p_Q20_graph->SetLineColor(4);
-      b_BFKL_p_Q20_graph->SetLineStyle(3);
+      b_BFKL_p_Q20_graph->SetLineStyle(1);
+      b_BFKL_p_Q20_graph->SetMarkerSize(0);
       b_BFKL_p_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(b_BFKL_p_Q20_graph);
     }
@@ -579,7 +601,7 @@ int main() {
     if (false) {
       double_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
     } else {
-      double_canvas->BuildLegend(0.14, 0.65, 0.35, 0.9);
+      double_canvas->BuildLegend(0.14, 0.65, 0.42, 0.9);
     }
 
 

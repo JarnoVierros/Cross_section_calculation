@@ -49,6 +49,8 @@ static InterpMultilinear<4, double>* bfkl_interpolator;
 
 static string dipole_model;
 
+const double line_width = 2;
+
 double epsilon2(double z, double Q2) {
   return m_f*m_f + z*(1-z)*Q2;
 }
@@ -379,16 +381,24 @@ int main() {
 
     comparison_graphs[n] = new TMultiGraph();
 
-    measurement_datas[n] = new TGraphErrors(size(Q2_values), measured_x, measured_sigma, measured_x_error, measured_sigma_error);
-    measurement_datas[n]->SetMarkerStyle(7);
-    comparison_graphs[n]->Add(measurement_datas[n], "P");
 
     bk_model_fits[n] = new TGraph(size(Q2_values), measured_x, bk_model_sigma);
-    comparison_graphs[n]->Add(bk_model_fits[n], "PC");
+    bk_model_fits[n]->SetLineStyle(1);
+    bk_model_fits[n]->SetLineWidth(line_width);
+    bk_model_fits[n]->SetLineColor(2);
+    bk_model_fits[n]->SetMarkerStyle(0);
+    comparison_graphs[n]->Add(bk_model_fits[n], "C");
 
     bfkl_model_fits[n] = new TGraph(size(Q2_values), measured_x, bfkl_model_sigma);
     bfkl_model_fits[n]->SetLineStyle(2);
-    comparison_graphs[n]->Add(bfkl_model_fits[n], "PC");
+    bfkl_model_fits[n]->SetLineWidth(line_width);
+    bfkl_model_fits[n]->SetLineColor(2);
+    bfkl_model_fits[n]->SetMarkerStyle(0);
+    comparison_graphs[n]->Add(bfkl_model_fits[n], "C");
+
+    measurement_datas[n] = new TGraphErrors(size(Q2_values), measured_x, measured_sigma, measured_x_error, measured_sigma_error);
+    measurement_datas[n]->SetMarkerStyle(7);
+    comparison_graphs[n]->Add(measurement_datas[n], "P");
 
     comparison_graphs[n]->GetXaxis()->SetLimits(1e-5, 2e-2);
     comparison_graphs[n]->GetYaxis()->SetRangeUser(0, 0.5);
@@ -507,16 +517,23 @@ int main() {
       dummy_measurement->SetMarkerStyle(7);
 
       TGraph* dummy_bk_prediction = new TGraph(1, dummy_arr, dummy_arr);
+      dummy_bk_prediction->SetLineStyle(1);
+      dummy_bk_prediction->SetLineWidth(line_width);
+      dummy_bk_prediction->SetLineColor(2);
+      dummy_bk_prediction->SetMarkerStyle(0);
 
       TGraph* dummy_bfkl_prediction = new TGraph(1, dummy_arr, dummy_arr);
       dummy_bfkl_prediction->SetLineStyle(2);
+      dummy_bfkl_prediction->SetLineWidth(line_width);
+      dummy_bfkl_prediction->SetLineColor(2);
+      dummy_bfkl_prediction->SetMarkerStyle(0);
 
       float location[4] = {0.33, 0.4, 0.9, 0.8};
       TLegend* legend = new TLegend(location[0], location[1], location[2], location[3]);
 
       legend->AddEntry(dummy_measurement,"H1 and ZEUS data", "PE");
-      legend->AddEntry(dummy_bk_prediction,"BK prediction", "L");
       legend->AddEntry(dummy_bfkl_prediction,"BFKL prediction", "L");
+      legend->AddEntry(dummy_bk_prediction,"BK prediction", "L");
       legend->SetTextSize(0.08);
       legend->Draw();
     }
@@ -543,7 +560,7 @@ int main() {
   //TPad *top_pad = new TPad("top_pad", "top", 0, 0.45, 1, 0.9);
   //top_pad->Draw();
 
-  TString figure_filename = "figures/J_inclusive_sigma_r_data_comparison_shifted_x.png";
+  TString figure_filename = "figures/J_inclusive_sigma_r_data_comparison_shifted_x.pdf";
   multicanvas->Print(figure_filename);
 
   //cout << "chisq=" << chisq << ", ndf=" << ndf << ", chisq/ndf=" << chisq/ndf << endl;
