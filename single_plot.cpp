@@ -33,7 +33,7 @@ void zero_array(double array[], int size) {
 
 const double min_b_W = 83.6; //83.6
 
-string nucleus = "Pb";
+string nucleus = "p";
 bool diffractive = false;
 string diff_dipole;
 string particle_name = "c";
@@ -282,7 +282,7 @@ int main() {
     if (false) {
       double_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
     } else {
-      double_canvas->BuildLegend(0.14, 0.65, 0.42, 0.9);
+      double_canvas->BuildLegend(0.12, 0.65, 0.35, 0.9);
     }
 
     //left_comparison_graph->GetXaxis()->SetLabelOffset(-0.05);
@@ -549,19 +549,6 @@ int main() {
       c_BK_p_Q20_graph->SetMarkerSize(0);
       right_comparison_graph->Add(c_BK_p_Q20_graph);
 
-      double b_BK_p_Q20_x_arr[right_b_x[0].size()];
-      vector_to_array(b_BK_p_Q20_x_arr, right_b_x[0]);
-
-      TGraph* b_BK_p_Q20_graph = new TGraph(right_b_x[0].size(), b_BK_p_Q20_x_arr, right_b_BK_sigma_tot_p_Q20);
-      b_BK_p_Q20_graph->SetTitle(graph_titles[2]); //p BK
-      b_BK_p_Q20_graph->SetLineColor(4);
-
-
-
-      b_BK_p_Q20_graph->SetLineStyle(11);
-      b_BK_p_Q20_graph->SetMarkerSize(0);
-      b_BK_p_Q20_graph->SetLineWidth(linewidth);
-      right_comparison_graph->Add(b_BK_p_Q20_graph);
 
       double b_BFKL_p_Q20_x_arr[right_b_x[0].size()];
       vector_to_array(b_BFKL_p_Q20_x_arr, right_b_x[0]);
@@ -569,10 +556,22 @@ int main() {
       TGraph* b_BFKL_p_Q20_graph = new TGraph(right_b_x[0].size(), b_BFKL_p_Q20_x_arr, right_b_BFKL_sigma_tot_p_Q20);
       b_BFKL_p_Q20_graph->SetTitle(graph_titles[3]); //p BFKL
       b_BFKL_p_Q20_graph->SetLineColor(4);
-      b_BFKL_p_Q20_graph->SetLineStyle(1);
+      b_BFKL_p_Q20_graph->SetLineStyle(11);
       b_BFKL_p_Q20_graph->SetMarkerSize(0);
       b_BFKL_p_Q20_graph->SetLineWidth(linewidth);
       right_comparison_graph->Add(b_BFKL_p_Q20_graph);
+
+
+      double b_BK_p_Q20_x_arr[right_b_x[0].size()];
+      vector_to_array(b_BK_p_Q20_x_arr, right_b_x[0]);
+
+      TGraph* b_BK_p_Q20_graph = new TGraph(right_b_x[0].size(), b_BK_p_Q20_x_arr, right_b_BK_sigma_tot_p_Q20);
+      b_BK_p_Q20_graph->SetTitle(graph_titles[2]); //p BK
+      b_BK_p_Q20_graph->SetLineColor(4);
+      b_BK_p_Q20_graph->SetLineStyle(1);
+      b_BK_p_Q20_graph->SetMarkerSize(0);
+      b_BK_p_Q20_graph->SetLineWidth(linewidth);
+      right_comparison_graph->Add(b_BK_p_Q20_graph);
     }
     //right_comparison_graph->GetYaxis()->SetLimits(3e-1, 5e4);
     right_comparison_graph->Draw("A");
@@ -601,7 +600,7 @@ int main() {
     if (false) {
       double_canvas->BuildLegend(0.75, 0.55, 0.9, 0.9);
     } else {
-      double_canvas->BuildLegend(0.14, 0.65, 0.42, 0.9);
+      double_canvas->BuildLegend(0.12, 0.65, 0.35, 0.9);
     }
 
 
