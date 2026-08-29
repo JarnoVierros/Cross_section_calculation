@@ -108,7 +108,7 @@ int main() {
   ratios_graph->GetXaxis()->SetLabelSize(0.05);
 
   ratios_graph->GetXaxis()->SetTitleOffset(1.3);
-  ratios_graph->GetYaxis()->SetTitleOffset(1.1);
+  ratios_graph->GetYaxis()->SetTitleOffset(1.2);
 
   top_canvas->BuildLegend(0.20, 0.6, 0.50, 0.9);
 
@@ -173,7 +173,7 @@ int main() {
   ratios_graph_2->GetXaxis()->SetLabelSize(0.05);
 
   ratios_graph_2->GetXaxis()->SetTitleOffset(1.3);
-  ratios_graph_2->GetYaxis()->SetTitleOffset(1.1);
+  ratios_graph_2->GetYaxis()->SetTitleOffset(1.2);
 
   bottom_canvas->BuildLegend(0.20, 0.6, 0.50, 0.9);
 
