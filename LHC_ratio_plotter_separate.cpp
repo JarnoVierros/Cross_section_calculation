@@ -102,12 +102,13 @@ int main() {
   ratios_graph->Draw("AC");
   ratios_graph->GetXaxis()->SetTitle("#it{W} [GeV]");
   ratios_graph->GetXaxis()->SetLimits(2.6e1, 2.1e3);
-  ratios_graph->GetYaxis()->SetTitleSize(0.05);
+  ratios_graph->GetYaxis()->SetTitleSize(0.06);
   ratios_graph->GetXaxis()->SetTitleSize(0.05);
   ratios_graph->GetYaxis()->SetLabelSize(0.05);
   ratios_graph->GetXaxis()->SetLabelSize(0.05);
 
   ratios_graph->GetXaxis()->SetTitleOffset(1.3);
+  ratios_graph->GetYaxis()->SetTitleOffset(1.1);
 
   top_canvas->BuildLegend(0.20, 0.6, 0.50, 0.9);
 
@@ -124,9 +125,9 @@ int main() {
   top_canvas->Print(outfile_name_1);
 
   
-  TCanvas* bottom_canvas = new TCanvas("bottom_canvas", "", 0.9/0.8*0.5*1.5*2000, 1.5*800);
+  TCanvas* bottom_canvas = new TCanvas("bottom_canvas", "", 0.9/0.85*0.5*1.5*2000, 1.5*800);
   bottom_canvas->SetBottomMargin(0.14);
-  bottom_canvas->SetLeftMargin(0.2);
+  bottom_canvas->SetLeftMargin(0.15);
 
   TMultiGraph* ratios_graph_2 = new TMultiGraph();
   //ratios_graph->SetTitle(title);
@@ -174,7 +175,7 @@ int main() {
   ratios_graph_2->GetXaxis()->SetTitleOffset(1.3);
   ratios_graph_2->GetYaxis()->SetTitleOffset(1.1);
 
-  bottom_canvas->BuildLegend(0.20, 0.6, 0.45, 0.9);
+  bottom_canvas->BuildLegend(0.20, 0.6, 0.50, 0.9);
 
   Q2_text = new TLatex(3.5e1, 0.075, "Q^{2}=0\\text{ GeV}^{2}");
   Q2_text->SetTextSize(0.06);
